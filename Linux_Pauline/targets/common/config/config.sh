@@ -90,7 +90,7 @@ fi
 # Services
 #
 
-SRC_PACKAGE_OPENSSL="@COMMON@""ftp://ftp.openssl.org/source/openssl-1.0.2s.tar.gz"
+SRC_PACKAGE_OPENSSL="@COMMON@""https://ftp.openssl.org/source/old/1.0.2/openssl-1.0.2u.tar.gz"
 SRC_PACKAGE_OPENSSH="@COMMON@""http://ftp.fr.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-8.0p1.tar.gz"
 SRC_PACKAGE_NTP="@COMMON@""http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-4.2.8p13.tar.gz"
 SRC_PACKAGE_VSFTPD="@COMMON@""https://security.appspot.com/downloads/vsftpd-3.0.3.tar.gz"
