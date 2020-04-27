@@ -69,7 +69,7 @@ cd ${FPGA_GHRD_FOLDER}/software/spl_bsp || exit 1
 cp Makefile_old Makefile
 
 rm -rf uboot-socfpga
-tar -xvf old-uboot-socfpga.tar.gz
+tar -xvJf old-uboot-socfpga-2013-01-01.tar.xz
 
 cp -rfv ${FPGA_GHRD_FOLDER}/software/spl_bsp/generated/* ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/board/altera/socfpga
 
