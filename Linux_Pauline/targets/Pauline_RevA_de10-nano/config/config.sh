@@ -31,6 +31,9 @@ export ALTERA_TOOLS_ROOT=${ALTERA_BASEDIR}
 # GHRD (Golden Hardware Reference Design) DE10-nano project folder (DE10_NANO_SoC_GHRD folder)
 export FPGA_GHRD_FOLDER=${ALTERA_DE10_GHRD_BASEDIR}
 
+# Pauline project base folder
+export PAULINE_BASE=${BASE_DIR}/../
+
 # Kernel
 
 SRC_PACKAGE_KERNEL="https://github.com/altera-opensource/linux-socfpga/archive/rel_socfpga-4.14.73-ltsi-rt_19.03.01_pr.tar.gz"

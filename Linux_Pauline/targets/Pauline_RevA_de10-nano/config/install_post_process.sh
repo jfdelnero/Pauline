@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2019 Jean-François DEL NERO
+# (c)2014-2020 Jean-François DEL NERO
 #
 # DE10-Nano target post install process
 #
@@ -15,14 +15,39 @@ source ${_SOCEDS_ROOT}/env.sh || exit 1
 
 mkdir ${TARGET_HOME}/output_objects
 
+#
+# Generate Pauline tools
+#
+
+cd ${PAULINE_BASE}/Softwares_Pauline/Pauline_control
+make clean
+make mrproper
+make CC=${TGT_MACH}-gcc  || exit 1
+cp ${PAULINE_BASE}/Softwares_Pauline/Pauline_control/pauline ${TARGET_HOME}/output_objects || exit 1
+
+
+#
+# Generate OLED splash screen
+#
+
+cd ${PAULINE_BASE}/Softwares_Pauline/ssd1306-1.8.2/tools
+make clean
+make CC=${TGT_MACH}-gcc CXX=${TGT_MACH}-gcc -C ../examples -f Makefile.linux PROJECT=demos/sh1106_pauline_splash || exit 1
+cp   ${PAULINE_BASE}/Softwares_Pauline/ssd1306-1.8.2/bld/demos/sh1106_pauline_splash.out  ${TARGET_HOME}/output_objects/oled_splash || exit 1
+
+#
 # Generate the dts and build the dtb
+#
+
 echo --- Generate the dts and build the dtb ---
 
 cd ${FPGA_GHRD_FOLDER} || exit 1
 sopc2dts --input soc_system.sopcinfo --output ${TARGET_HOME}/output_objects/soc_system.dts --type dts --board soc_system_board_info.xml --board hps_common_board_info.xml --bridge-removal all --clocks  || exit 1
 dtc -I dts -O dtb -o ${TARGET_HOME}/output_objects/soc_system.dtb ${TARGET_HOME}/output_objects/soc_system.dts  || exit 1
 
+#
 # Generate bsp files
+#
 echo --- Generate bsp files ---
 
 cd ${FPGA_GHRD_FOLDER}
@@ -34,7 +59,10 @@ ${ALTERA_TOOLS_ROOT}/embedded/host_tools/altera/preloadergen/bsp-create-settings
 
 cd ${FPGA_GHRD_FOLDER}/software/spl_bsp
 
+#
 # build the preloader
+#
+
 echo --- build the preloader ---
 
 cd ${FPGA_GHRD_FOLDER}/software/spl_bsp || exit 1
@@ -136,6 +164,9 @@ sudo losetup --show --sector-size 512 -f -P ${TARGET_HOME}/output_objects/paulin
 sudo mount /dev/loop0p2 ${TARGET_HOME}/output_objects/tmp_mount_point
 
 sudo cp -av ${TARGET_ROOTFS_MIRROR}/* ${TARGET_HOME}/output_objects/tmp_mount_point/.
+
+sudo cp -av ${TARGET_HOME}/output_objects/pauline  ${TARGET_HOME}/output_objects/tmp_mount_point/sbin || exit 1
+sudo cp -av ${TARGET_HOME}/output_objects/oled_splash ${TARGET_HOME}/output_objects/tmp_mount_point/sbin || exit 1
 
 sudo chown -R root ${TARGET_HOME}/output_objects/tmp_mount_point/*
 sudo chgrp -R root ${TARGET_HOME}/output_objects/tmp_mount_point/*
