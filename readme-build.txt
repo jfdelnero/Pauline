@@ -108,7 +108,7 @@ Cross Compiler, System librairies, Linux kernel, Compiler, tools...
 
         You can write it to the SD Card:
 
-        sudo dd if=pauline_sdcard.img of=/dev/your_sd_card_reader status=progress bs=4M
+        sudo dd if=pauline_sdcard.img of=/dev/your_sd_card_reader status=progress bs=4M ; sync
 
         (Or use any other software under Windows (https://rufus.ie/,...))
 
