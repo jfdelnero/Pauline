@@ -42,7 +42,7 @@ cp   ${PAULINE_BASE}/Softwares_Pauline/ssd1306-1.8.2/bld/demos/sh1106_pauline_sp
 echo --- Generate the dts and build the dtb ---
 
 cd ${FPGA_GHRD_FOLDER} || exit 1
-sopc2dts --input soc_system.sopcinfo --output ${TARGET_HOME}/output_objects/soc_system.dts --type dts --board soc_system_board_info.xml --board hps_common_board_info.xml --bridge-removal all --clocks  || exit 1
+sopc2dts --input soc_system.sopcinfo --output ${TARGET_HOME}/output_objects/soc_system.dts --type dts --board software/spl_bsp/soc_system_board_info.xml --board software/spl_bsp/hps_common_board_info.xml --bridge-removal all --clocks  || exit 1
 dtc -I dts -O dtb -o ${TARGET_HOME}/output_objects/soc_system.dtb ${TARGET_HOME}/output_objects/soc_system.dts  || exit 1
 
 #
