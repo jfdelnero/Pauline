@@ -165,8 +165,8 @@ sudo mount /dev/loop0p2 ${TARGET_HOME}/output_objects/tmp_mount_point
 
 sudo cp -av ${TARGET_ROOTFS_MIRROR}/* ${TARGET_HOME}/output_objects/tmp_mount_point/.
 
-sudo cp -av ${TARGET_HOME}/output_objects/pauline  ${TARGET_HOME}/output_objects/tmp_mount_point/sbin || exit 1
-sudo cp -av ${TARGET_HOME}/output_objects/oled_splash ${TARGET_HOME}/output_objects/tmp_mount_point/sbin || exit 1
+sudo cp -av ${TARGET_HOME}/output_objects/pauline  ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
+sudo cp -av ${TARGET_HOME}/output_objects/oled_splash ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
 
 sudo chown -R root ${TARGET_HOME}/output_objects/tmp_mount_point/*
 sudo chgrp -R root ${TARGET_HOME}/output_objects/tmp_mount_point/*
