@@ -168,6 +168,14 @@ sudo cp -av ${TARGET_ROOTFS_MIRROR}/* ${TARGET_HOME}/output_objects/tmp_mount_po
 sudo cp -av ${TARGET_HOME}/output_objects/pauline  ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
 sudo cp -av ${TARGET_HOME}/output_objects/oled_splash ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
 
+sudo mkdir  ${TARGET_HOME}/output_objects/tmp_mount_point/home/pauline
+sudo chown 1000 ${TARGET_HOME}/output_objects/tmp_mount_point/home/pauline
+sudo chgrp 1000 ${TARGET_HOME}/output_objects/tmp_mount_point/home/pauline
+sudo chmod o+wr ${TARGET_HOME}/output_objects/tmp_mount_point/home/pauline
+
+sudo chown 1001 ${TARGET_HOME}/output_objects/tmp_mount_point/ramdisk
+sudo chgrp 1001 ${TARGET_HOME}/output_objects/tmp_mount_point/ramdisk
+
 sudo chown -R root ${TARGET_HOME}/output_objects/tmp_mount_point/*
 sudo chgrp -R root ${TARGET_HOME}/output_objects/tmp_mount_point/*
 
@@ -188,4 +196,3 @@ sudo losetup -d /dev/loop0
 
 #sudo dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=/dev/sdd3 bs=64k seek=0
 #sudo dd if=${TARGET_HOME}/output_objects/u-boot.img of=/dev/sdd3 bs=64k seek=4
-

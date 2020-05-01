@@ -17,6 +17,7 @@ export DEBUG_SUPPORT="1"
 export NETWORK_SUPPORT="1"
 export WIRELESS_SUPPORT="1"
 export TARGET_BUILD_SUPPORT="1"
+export LIBGFX_SUPPORT="1"
 
 export NETWORK_STATION_MODE="1"
 #export NETWORK_ROUTER_MODE="1"
@@ -48,3 +49,5 @@ SRC_PACKAGE_UBOOT="https://github.com/altera-opensource/u-boot-socfpga/archive/r
 SRC_PACKAGE_FTRACE="http://ftp.debian.org/debian/pool/main/t/trace-cmd/trace-cmd_2.4.0.orig.tar.gz"
 SRC_PACKAGE_VALGRIND=
 
+# misc
+SRC_PACKAGE_FSWEBCAM="@COMMON@""https://www.sanslogic.co.uk/fswebcam/files/fswebcam-20140113.tar.gz"
