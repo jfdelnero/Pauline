@@ -118,9 +118,9 @@ ${ALTERA_TOOLS_ROOT}/quartus/bin/quartus_cpf -c -o bitstream_compression=off ${F
 ############################################################################################
 # Create SD Card image
 
-dd if=/dev/zero of=${TARGET_HOME}/output_objects/pauline_sdcard.img iflag=fullblock bs=1M count=500 && sync
-sudo losetup loop0 --sector-size 512  ${TARGET_HOME}/output_objects/pauline_sdcard.img
-sudo sfdisk /dev/loop0 < ${TARGET_CONFIG}/sfdisk_pauline.txt
+dd if=/dev/zero of=${TARGET_HOME}/output_objects/pauline_sdcard.img iflag=fullblock bs=1M count=512 && sync
+sudo losetup loop0 --sector-size 512  ${TARGET_HOME}/output_objects/pauline_sdcard.img || exit 1
+sudo sfdisk -f /dev/loop0 < ${TARGET_CONFIG}/sfdisk_pauline.txt || exit 1
 sudo losetup -d /dev/loop0
 
 ############################################################################################
@@ -130,9 +130,9 @@ sudo losetup -d /dev/loop0
 #sudo dd if=${TARGET_HOME}/output_objects/u-boot.img of=/dev/loop0p3 bs=64k seek=4              && sync
 #sudo losetup -d /dev/loop0
 
-#921600
-dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=921600  conv=notrunc && sync
-dd if=${TARGET_HOME}/output_objects/u-boot.img of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=922112 conv=notrunc && sync
+#1040384
+dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=1040384  conv=notrunc && sync
+dd if=${TARGET_HOME}/output_objects/u-boot.img of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=1040896 conv=notrunc && sync
 
 fdisk -l ${TARGET_HOME}/output_objects/pauline_sdcard.img
 
@@ -175,6 +175,7 @@ sudo chmod o+wr ${TARGET_HOME}/output_objects/tmp_mount_point/home/pauline
 
 sudo chown 1001 ${TARGET_HOME}/output_objects/tmp_mount_point/ramdisk
 sudo chgrp 1001 ${TARGET_HOME}/output_objects/tmp_mount_point/ramdisk
+sudo chmod o+wr ${TARGET_HOME}/output_objects/tmp_mount_point/ramdisk
 
 sudo chown -R root ${TARGET_HOME}/output_objects/tmp_mount_point/*
 sudo chgrp -R root ${TARGET_HOME}/output_objects/tmp_mount_point/*

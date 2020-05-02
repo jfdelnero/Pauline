@@ -87,12 +87,46 @@ mount -t tmpfs -o size=64m  tmpfs /mnt
 cp -aR /etc/* /mnt
 mount --move /mnt /etc
 
-mount -t tmpfs -o size=64m,gid=pauline,uid=pauline  tmpfs /home/pauline
-cp -aR /home/pauline/* /mnt
-mount --move /mnt /home/pauline
+#######
+# Test the data partition presence
+SIZELEN=`sfdisk /dev/mmcblk0p4 -F -s 2>/dev/null | wc -m`
+if [ $SIZELEN == 0 ]; then
+   echo "Partition 4 not defined... Add it"
 
-mount -t tmpfs -o size=64m,gid=ramdisk,uid=ramdisk  tmpfs /home/ramdisk
-cp -aR /home/ramdisk/* /mnt
-mount --move /mnt /home/ramdisk
+   # Add a partition (vfat) - (2097152 sectors -> keep/reserved the first 1GB for the system partitions)
+   echo 'start=2097152,type=c' | sfdisk /dev/mmcblk0 -f -N 4
+
+   # And restart the system...
+   reboot
+fi
+
+#
+# Data partition mount / initialization
+#
+mount -o fmask=0000,dmask=0000 /dev/mmcblk0p4 /home/pauline
+ret=$?
+
+if [ $ret -ne 0 ]; then
+
+   # TODO !!! Ask the user before doing this !!!
+
+   MNTLEN=`grep mmcblk0p4 /proc/mounts | wc -m`
+   if [ $MNTLEN == 0 ]; then
+      echo "Formating the data partition !"
+      mkfs.vfat /dev/mmcblk0p4
+      sync
+
+      mount -o fmask=0000,dmask=0000 /dev/mmcblk0p4 /home/pauline
+   fi
+fi
+
+# Push to the disk the dirty data after 1 second !
+echo 100 > /proc/sys/vm/dirty_expire_centisecs
+echo 100 > /proc/sys/vm/dirty_writeback_centisecs
+
+mount -t tmpfs -o size=64m  tmpfs /ramdisk
+cp -aR /ramdisk/* /mnt
+mount --move /mnt /ramdisk
 
 mount -a
+
