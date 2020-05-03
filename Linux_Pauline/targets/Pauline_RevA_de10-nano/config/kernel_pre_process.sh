@@ -8,3 +8,4 @@
 
 source ${TARGET_CONFIG}/config.sh || exit 1
 
+cp ${TARGET_CONFIG}/patches/ssd1307fb.c ./drivers/video/fbdev/ || exit 1
