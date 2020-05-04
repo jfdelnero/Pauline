@@ -15,3 +15,5 @@ echo -- Contact: hxc2001 at hxc2001.com ----------- https://hxc2001.com --
 echo -- \(c\) 2004-2020 Jean-François DEL NERO -----------------------------
 echo ---------------------------------------------------------------------
 
+/usr/sbin/splash_screen /data/pauline_splash_bitmaps/ready.bmp
+

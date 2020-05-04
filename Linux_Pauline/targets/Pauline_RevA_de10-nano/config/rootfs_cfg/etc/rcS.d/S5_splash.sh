@@ -1,4 +1,4 @@
 #!/bin/sh
 
-/usr/sbin/oled_splash
+/usr/sbin/splash_screen /data/pauline_splash_bitmaps/starting.bmp
 

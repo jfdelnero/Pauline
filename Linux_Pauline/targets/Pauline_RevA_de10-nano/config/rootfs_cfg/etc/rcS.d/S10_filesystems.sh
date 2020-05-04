@@ -91,12 +91,15 @@ mount --move /mnt /etc
 # Test the data partition presence
 SIZELEN=`sfdisk /dev/mmcblk0p4 -F -s 2>/dev/null | wc -m`
 if [ $SIZELEN == 0 ]; then
+   /usr/sbin/splash_screen /data/pauline_splash_bitmaps/prep_data_disk.bmp
    echo "Partition 4 not defined... Add it"
+
 
    # Add a partition (vfat) - (2097152 sectors -> keep/reserved the first 1GB for the system partitions)
    echo 'start=2097152,type=c' | sfdisk /dev/mmcblk0 -f -N 4
 
    # And restart the system...
+   /usr/sbin/splash_screen /data/pauline_splash_bitmaps/rebooting.bmp
    reboot
 fi
 
@@ -112,11 +115,14 @@ if [ $ret -ne 0 ]; then
 
    MNTLEN=`grep mmcblk0p4 /proc/mounts | wc -m`
    if [ $MNTLEN == 0 ]; then
+      /usr/sbin/splash_screen /data/pauline_splash_bitmaps/formatting_data_disk.bmp
       echo "Formating the data partition !"
       mkfs.vfat /dev/mmcblk0p4
       sync
 
       mount -o fmask=0000,dmask=0000 /dev/mmcblk0p4 /home/pauline
+
+      /usr/sbin/splash_screen /data/pauline_splash_bitmaps/starting.bmp
    fi
 fi
 

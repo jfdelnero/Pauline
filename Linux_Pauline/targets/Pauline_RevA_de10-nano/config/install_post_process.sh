@@ -30,10 +30,10 @@ cp ${PAULINE_BASE}/Softwares_Pauline/Pauline_control/pauline ${TARGET_HOME}/outp
 # Generate OLED splash screen
 #
 
-cd ${PAULINE_BASE}/Softwares_Pauline/ssd1306-1.8.2/tools
+cd ${PAULINE_BASE}/Softwares_Pauline/splash_screen
 make clean
-make CC=${TGT_MACH}-gcc CXX=${TGT_MACH}-gcc -C ../examples -f Makefile.linux PROJECT=demos/sh1106_pauline_splash || exit 1
-cp   ${PAULINE_BASE}/Softwares_Pauline/ssd1306-1.8.2/bld/demos/sh1106_pauline_splash.out  ${TARGET_HOME}/output_objects/oled_splash || exit 1
+make CC=${TGT_MACH}-gcc || exit 1
+cp   ${PAULINE_BASE}/Softwares_Pauline/splash_screen/splash_screen  ${TARGET_HOME}/output_objects/splash_screen || exit 1
 
 #
 # Generate the dts and build the dtb
@@ -167,7 +167,10 @@ sudo mount /dev/loop0p2 ${TARGET_HOME}/output_objects/tmp_mount_point
 sudo cp -av ${TARGET_ROOTFS_MIRROR}/* ${TARGET_HOME}/output_objects/tmp_mount_point/.
 
 sudo cp -av ${TARGET_HOME}/output_objects/pauline  ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
-sudo cp -av ${TARGET_HOME}/output_objects/oled_splash ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
+sudo cp -av ${TARGET_HOME}/output_objects/splash_screen ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 
+
+sudo mkdir  ${TARGET_HOME}/output_objects/tmp_mount_point/data
+sudo cp -ar ${PAULINE_BASE}/Softwares_Pauline/splash_screen/pauline_splash_bitmaps ${TARGET_HOME}/output_objects/tmp_mount_point/data/
 
 sudo mkdir  ${TARGET_HOME}/output_objects/tmp_mount_point/home/pauline
 sudo chown 1000 ${TARGET_HOME}/output_objects/tmp_mount_point/home/pauline
