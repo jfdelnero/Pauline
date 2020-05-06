@@ -41,6 +41,10 @@
 #include "script.h"
 #include "fpga.h"
 #include "network.h"
+#include "errors.h"
+
+#include "bmp_file.h"
+#include "screen.h"
 
 extern char home_folder[512];
 extern fpga_state * fpga;
@@ -402,6 +406,9 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 	FILE *f;
 	unsigned char * tmpptr;
 	uint32_t  buffersize;
+	int error;
+
+	error = PAULINE_NO_ERROR;
 
 	f = NULL;
 	dump_running = 1;
@@ -409,12 +416,16 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 	{
 		script_printf(MSG_INFO_0,"Start disk reading...\nTrack(s): %d <-> %d, Side(s): %d <-> %d, Ignore index: %d, Time: %dms, %s\n",dump_start_track,dump_max_track,dump_start_side,dump_max_side,ignore_index,dump_time_per_track,high_res_mode?"50Mhz":"25Mhz");
 
+		display_bmp("/data/pauline_splash_bitmaps/reading_floppy.bmp");
+
 	//	floppy_ctrl_motor(fpga, drive, 1);
 		floppy_ctrl_selectbyte(fpga, 0x1F);
 
 
 		if( prepare_folder( name, comment, start_index, incmode, folder_path) < 0 )
 		{
+			display_bmp("/data/pauline_splash_bitmaps/error.bmp");
+
 			script_printf(MSG_ERROR,"ERROR : Can't create the folder\n",temp);
 			dump_running = 0;
 			return -1;
@@ -449,6 +460,8 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 				floppy_ctrl_selectbyte(fpga, 0x00);
 
 				dump_running = 0;
+
+				display_bmp("/data/pauline_splash_bitmaps/error.bmp");
 
 				return -1;
 			}
@@ -488,8 +501,11 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			sprintf(temp,"%s/track%.2d.%d.hxcstream",folder_path,i,j);
 			f = fopen(temp,"wb");
 			if(!f)
+			{
 				script_printf(MSG_ERROR,"ERROR : Can't create %s\n",temp);
 
+				display_bmp("/data/pauline_splash_bitmaps/error.bmp");
+			}
 			floppy_ctrl_side(fpga, drive, j);
 
 			if(high_res_mode)
@@ -519,10 +535,20 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 				}
 				else
 				{
+					if( fpga->regs->floppy_done & (0x01 << 5) )
+					{
+						error = PAULINE_NOINDEX_ERROR;
+					}
+					else
+					{
+						error = PAULINE_INTERNAL_ERROR;
+					}
+
 					i = dump_max_track + 1;
 					j = dump_max_side + 1;
 					fpga->last_dump_offset = fpga->regs->floppy_dump_buffer_size;
 					script_printf(MSG_ERROR,"ERROR : get_next_available_stream_chunk failed !\n");
+					display_bmp("/data/pauline_splash_bitmaps/error.bmp");
 				}
 			}
 
@@ -540,6 +566,8 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			{
 				script_printf(MSG_INFO_0,"%s done !\n",temp);
 			}
+
+			display_bmp("/data/pauline_splash_bitmaps/reading_floppy.bmp");
 		}
 
 		if(i<dump_max_track && !spy)
@@ -569,7 +597,33 @@ readstop:
 		//floppy_ctrl_motor(fpga, drive, 0);
 	}
 
-	script_printf(MSG_INFO_0,"Done...\n");
+	if(error)
+	{
+		switch(error)
+		{
+			case PAULINE_INTERNAL_ERROR:
+				display_bmp("/data/pauline_splash_bitmaps/internal_error.bmp");
+				script_printf(MSG_INFO_0,"Internal error !\n");
+			break;
+			case PAULINE_NOINDEX_ERROR:
+				display_bmp("/data/pauline_splash_bitmaps/no_index.bmp");
+				script_printf(MSG_INFO_0,"No index signal ! Disk in drive ?\n");
+			break;
+		}
+	}
+	else
+	{
+		if(!stop_process)
+		{
+			script_printf(MSG_INFO_0,"Done...\n");
+			display_bmp("/data/pauline_splash_bitmaps/done.bmp");
+		}
+		else
+		{
+			script_printf(MSG_INFO_0,"Stopped !!!\n");
+			display_bmp("/data/pauline_splash_bitmaps/stopped.bmp");
+		}
+	}
 
 	return 0;
 }

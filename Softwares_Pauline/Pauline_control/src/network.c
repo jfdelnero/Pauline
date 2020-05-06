@@ -59,6 +59,9 @@
 #define SOCKET_ERROR        -1
 #define QUEUE_SIZE          5
 
+#include "bmp_file.h"
+#include "screen.h"
+
 typedef struct thread_params_
 {
 	int hSocket;
@@ -133,6 +136,8 @@ void *connection_thread(void *threadid)
 
 	if(!tp->mode)
 	{
+		display_bmp("/data/pauline_splash_bitmaps/connected.bmp");
+
 		line_index = 0;
 		// Receive until the peer shuts down the connection
 		do {
@@ -161,6 +166,8 @@ void *connection_thread(void *threadid)
 						{
 							printf("Exiting !\n");
 							close(threadparams_cmd[tp->index]->hSocket);
+
+							display_bmp("/data/pauline_splash_bitmaps/disconnected.bmp");
 							return NULL;
 						}
 						else
@@ -176,6 +183,8 @@ void *connection_thread(void *threadid)
 		} while (iResult > 0);
 
 		close(threadparams_cmd[tp->index]->hSocket);
+
+		display_bmp("/data/pauline_splash_bitmaps/disconnected.bmp");
 
 		printf("Connection closed !\n");
 	}
@@ -206,7 +215,7 @@ int Printf_socket(int MSGTYPE,char * chaine, ...)
 {
 	char temp[DEFAULT_BUFLEN];
 	char textbuf[DEFAULT_BUFLEN];
-    int iSendResult,i,j;
+	int iSendResult,i,j;
 
 	if(MSGTYPE!=MSG_DEBUG)
 	{
@@ -351,6 +360,8 @@ void *tcp_listener(void *threadid)
 			  , Address.sin_addr.s_addr
 			  , ntohs(Address.sin_port)
 			);
+
+	display_bmp("/data/pauline_splash_bitmaps/ready.bmp");
 
 	printf("Making a listen queue of %d elements\r\n",QUEUE_SIZE);
 

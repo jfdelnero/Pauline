@@ -1,0 +1,3 @@
+#define PAULINE_NO_ERROR        0x0
+#define PAULINE_INTERNAL_ERROR  0x1
+#define PAULINE_NOINDEX_ERROR   0x2
