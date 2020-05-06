@@ -172,16 +172,12 @@ void *connection_thread(void *threadid)
 					}
 				}while(i < iResult);
 			}
-			else if (iResult == 0)
-				printf("Connection closing...\n");
-			else  {
-					printf("Connection closed !\n");
-			}
 
 		} while (iResult > 0);
 
 		close(threadparams_cmd[tp->index]->hSocket);
 
+		printf("Connection closed !\n");
 	}
 	else
 	{
