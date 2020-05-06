@@ -26,16 +26,23 @@
 */
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <ftw.h>
+#include <dirent.h>
+#include <errno.h>
 
 #include "script.h"
 #include "fpga.h"
 #include "network.h"
 
+extern char home_folder[512];
 extern fpga_state * fpga;
 typedef int (* CMD_FUNC)(char * line);
 
@@ -66,43 +73,332 @@ void setOutputFunc( PRINTF_FUNC ext_printf )
 	return;
 }
 
-int get_param_offset(char * line, int param)
+static int is_end_line(char c)
 {
-	int i,j;
-
-	i = 0;
-	j = 0;
-
-	while( ( line[j] != 0 ) && ( line[j] == ' ' ) )
+	if( c == 0 || c == '#' || c == '\r' || c == '\n' )
 	{
-		j++;
+		return 1;
 	}
-
-	do
+	else
 	{
-		while( ( line[j] != 0 ) && ( line[j] != ' ' ) )
-		{
-			j++;
-		}
-
-		while( ( line[j] != 0 ) && ( line[j] == ' ' ) )
-		{
-			j++;
-		}
-
-		if(line[j] == 0)
-			return -1;
-
-		i++;
-	}while(i<param);
-
-	return j;
+		return 0;
+	}
 }
 
-int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_side,int dump_max_side,int high_res_mode,int doubestep,int ignore_index,int spy)
+static int is_space(char c)
+{
+	if( c == ' ' || c == '\t' )
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+static int get_next_word(char * line, int offset)
+{
+	while( !is_end_line(line[offset]) && ( line[offset] == ' ' ) )
+	{
+		offset++;
+	}
+
+	return offset;
+}
+
+static int copy_param(char * dest, char * line, int offs)
+{
+	int i,insidequote;
+
+	i = 0;
+	insidequote = 0;
+	while( !is_end_line(line[offs]) && ( insidequote || !is_space(line[offs]) ) )
+	{
+		if(line[offs] != '"')
+		{
+			if(dest)
+				dest[i] = line[offs];
+
+			i++;
+		}
+		else
+		{
+			if(insidequote)
+				insidequote = 0;
+			else
+				insidequote = 1;
+		}
+
+		offs++;
+	}
+
+	if(dest)
+		dest[i] = 0;
+
+	return offs;
+}
+
+static int get_param_offset(char * line, int param)
+{
+	int param_cnt, offs;
+
+	offs = 0;
+	offs = get_next_word(line, offs);
+
+	param_cnt = 0;
+	do
+	{
+		offs = copy_param(NULL, line, offs);
+
+		offs = get_next_word( line, offs );
+
+		if(line[offs] == 0 || line[offs] == '#')
+			return -1;
+
+		param_cnt++;
+	}while( param_cnt < param );
+
+	return offs;
+}
+
+static int get_param(char * line, int param_offset,char * param)
+{
+	int offs;
+
+	offs = get_param_offset(line, param_offset);
+
+	if(offs>=0)
+	{
+		offs = copy_param(param, line, offs);
+
+		return 1;
+	}
+
+	return -1;
+}
+
+int is_dir_present(char * path)
+{
+	DIR* dir = opendir(path);
+
+	if (dir)
+	{
+		closedir(dir);
+		return 1;
+	}
+	else
+	{
+		if (ENOENT == errno)
+		{
+			return 0;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+}
+
+char global_search_name[512];
+int global_max_index;
+
+static int display_info(const char *fpath, const struct stat *sb, int tflag, struct FTW *ftwbuf)
+{
+	int i,j,val;
+
+	if(tflag == FTW_D)
+	{
+		i = strlen(fpath);
+		while( (fpath[i] != '/') && i)
+		{
+			i--;
+		}
+
+		if(  fpath[i] == '/' )
+			i++;
+
+		if( !strncmp( &fpath[i],global_search_name,strlen(global_search_name)) )
+		{
+			if( strlen(&fpath[i]) - strlen(global_search_name) == 4 )
+			{
+				i += strlen(global_search_name);
+
+				for(j=0;j<4;j++)
+				{
+					if(  !(fpath[i + j] >= '0' && fpath[i + j] <= '9') )
+					{
+						break;
+					}
+				}
+
+				if( j == 4 )
+				{
+					val = atoi(&fpath[i]);
+
+					if(val > global_max_index)
+					{
+						global_max_index = val;
+					}
+				}
+			}
+		}
+
+	}
+
+    return 0;
+}
+
+int prepare_folder(char * name, char * comment, int start_index, int mode, char * folder_pathoutput)
+{
+	char folder_path[1024];
+	char dump_name[512];
+	char tmp[512];
+	struct stat st = {0};
+	int ret;
+	int max;
+
+	ret = -1;
+	strcpy(dump_name,"untitled dump");
+	if(name)
+	{
+		if(strlen(name))
+		{
+			strcpy(dump_name,name);
+		}
+	}
+
+	switch(mode)
+	{
+		case 0:
+			sprintf(folder_path,"%s/%s",home_folder,dump_name);
+
+			if(!is_dir_present(folder_path))
+			{
+				ret = mkdir(folder_path, 0777);
+			}
+
+			if(strlen(comment))
+			{
+				sprintf(tmp,"/%s-%s",dump_name,comment);
+			}
+			else
+			{
+				sprintf(tmp,"/%s",dump_name);
+			}
+
+			strcat(folder_path,tmp);
+
+			if(is_dir_present(folder_path))
+			{
+				sprintf(tmp,"rm -rf \"%s\"",folder_path);
+				ret = system(tmp);
+			}
+
+			if (stat(folder_path, &st) == -1)
+			{
+				ret = mkdir(folder_path, 0777);
+			}
+
+			strcpy(folder_pathoutput,folder_path);
+
+			// No file index
+		break;
+		case 1:
+			// Manual - no auto increment (overwrite if present)
+			sprintf(folder_path,"%s/%s",home_folder,dump_name);
+
+			if(!is_dir_present(folder_path))
+			{
+				ret = mkdir(folder_path, 0777);
+			}
+
+			if(strlen(comment))
+			{
+				sprintf(tmp,"/%s-%s-%.4d",dump_name,comment,start_index);
+			}
+			else
+			{
+				sprintf(tmp,"/%s-%.4d",dump_name,start_index);
+			}
+			strcat(folder_path,tmp);
+
+			if(is_dir_present(folder_path))
+			{
+				sprintf(tmp,"rm -rf \"%s\"",folder_path);
+				ret = system(tmp);
+			}
+
+			if (stat(folder_path, &st) == -1)
+			{
+				ret = mkdir(folder_path, 0777);
+			}
+
+			strcpy(folder_pathoutput,folder_path);
+
+		break;
+		case 2:
+			sprintf(folder_path,"%s/%s",home_folder,dump_name);
+
+			if(!is_dir_present(folder_path))
+			{
+				ret = mkdir(folder_path, 0777);
+				if(ret < 0)
+					return -1;
+			}
+
+			// Find the last index (no overwrite!)
+			global_max_index = 0;
+			if(strlen(comment))
+			{
+				sprintf(global_search_name,"%s-%s-",dump_name,comment);
+			}
+			else
+			{
+				sprintf(global_search_name,"%s-",dump_name);
+			}
+
+			ftw(folder_path, display_info, 20 );
+
+			max = global_max_index;
+
+			if(max != 9999)
+			{
+				max++;
+
+				if(max < start_index)
+					max = start_index;
+
+				if(strlen(comment))
+				{
+					sprintf(tmp,"/%s-%s-%.4d",dump_name,comment,max);
+				}
+				else
+				{
+					sprintf(tmp,"/%s-%.4d",dump_name,max);
+				}
+				strcat(folder_path,tmp);
+
+				if(!is_dir_present(folder_path))
+				{
+					ret = mkdir(folder_path, 0777);
+					strcpy(folder_pathoutput,folder_path);
+					ret = 0;
+				}
+			}
+		break;
+	}
+
+	return ret;
+}
+
+int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_side,int dump_max_side,int high_res_mode,int doubestep,int ignore_index,int spy, char * name, char * comment, int start_index, int incmode )
 {
 	int i,j;
 	char temp[512];
+	char folder_path[512];
+	DIR* dir;
+
 	FILE *f;
 	unsigned char * tmpptr;
 	uint32_t  buffersize;
@@ -115,6 +411,14 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 
 	//	floppy_ctrl_motor(fpga, drive, 1);
 		floppy_ctrl_selectbyte(fpga, 0x1F);
+
+
+		if( prepare_folder( name, comment, start_index, incmode, folder_path) < 0 )
+		{
+			script_printf(MSG_ERROR,"ERROR : Can't create the folder\n",temp);
+			dump_running = 0;
+			return -1;
+		}
 
 		for(i=0;i<1000;i++)
 			usleep(1000);
@@ -181,7 +485,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			if(stop_process)
 				goto readstop;
 
-			sprintf(temp,"/root/track%.2d.%d.hxcstream",i,j);
+			sprintf(temp,"%s/track%.2d.%d.hxcstream",folder_path,i,j);
 			f = fopen(temp,"wb");
 			if(!f)
 				script_printf(MSG_ERROR,"ERROR : Can't create %s\n",temp);
@@ -225,7 +529,17 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			if(f)
 				fclose(f);
 
-			script_printf(MSG_INFO_0,"%s done !\n",temp);
+			if(strlen(temp) > 24)
+			{
+				temp[strlen(temp) - 36] = '.';
+				temp[strlen(temp) - 35] = '.';
+				temp[strlen(temp) - 34] = '.';
+				script_printf(MSG_INFO_0,"%s done !\n",&temp[strlen(temp) - 36]);
+			}
+			else
+			{
+				script_printf(MSG_INFO_0,"%s done !\n",temp);
+			}
 		}
 
 		if(i<dump_max_track && !spy)
@@ -260,41 +574,20 @@ readstop:
 	return 0;
 }
 
-int get_param(char * line, int param_index,char * param)
-{
-	int i,j;
-
-	i = get_param_offset(line, param_index);
-	j = 0;
-
-	if(i>=0)
-	{
-		while( ( line[i] != 0 ) && ( line[i] != ' ' ) && ( line[i] != '\r' ) && ( line[i] != '\n' ) )
-		{
-			param[j] = line[i];
-			j++;
-			i++;
-		}
-
-		param[j] = 0;
-
-		return 1;
-	}
-
-	return -1;
-
-}
-
 void *diskdump_thread(void *threadid)
 {
 	char * cmdline;
 	int p[16];
 	char tmp[512];
-	int i;
+	char name[512];
+	char comment[512];
+
+	char str_index_mode[512];
+	int i,index_mode;
 
 	cmdline= (char*) threadid;
 
-	for(i=0;i<9;i++)
+	for(i=0;i<12;i++)
 	{
 		if(get_param(cmdline, i + 1,tmp)>=0)
 		{
@@ -302,7 +595,45 @@ void *diskdump_thread(void *threadid)
 		}
 	}
 
-	readdisk(p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8]);
+	name[0] = 0;
+	if(!(get_param(cmdline, 9 + 1,name)>=0))
+	{
+	}
+
+	if(!strlen(name))
+		strcpy(name,"untitled");
+
+	comment[0] = 0;
+	if(!(get_param(cmdline, 10 + 1,comment)>=0))
+	{
+	}
+
+	if(!(get_param(cmdline, 12 + 1,str_index_mode)>=0))
+	{
+		str_index_mode[0] = 0;
+		index_mode = 2;
+	}
+	else
+	{
+		index_mode = 2;
+
+		if(!strcmp(str_index_mode,"AUTO_INDEX_NAME"))
+		{
+			index_mode = 2;
+		}
+
+		if(!strcmp(str_index_mode,"NONE_INDEX_NAME"))
+		{
+			index_mode = 0;
+		}
+
+		if(!strcmp(str_index_mode,"MANUAL_INDEX_NAME"))
+		{
+			index_mode = 1;
+		}
+	}
+
+	readdisk(p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8],name,comment,p[11],index_mode);
 
 	return 0;
 }
