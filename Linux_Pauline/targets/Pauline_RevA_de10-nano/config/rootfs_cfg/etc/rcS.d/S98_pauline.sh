@@ -1,4 +1,4 @@
 #!/bin/sh
 
-/usr/sbin/pauline -server &
+/usr/sbin/pauline  -home_folder:/home/pauline -server &
 
