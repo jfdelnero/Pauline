@@ -47,6 +47,7 @@
 
 int verbose;
 fpga_state * fpga;
+char home_folder[512];
 
 typedef struct gpio_description_
 {
@@ -135,6 +136,7 @@ void printhelp(char* argv[])
 	printf("  -help \t\t\t: This help\n");
 	printf("  -license\t\t\t: Print the license\n");
 	printf("  -verbose\t\t\t: Verbose mode\n");
+	printf("  -home_folder:[path]\t\t\t: Set the base folder\n");
 	printf("  -reset\t\t\t: FPGA reset\n");
 	printf("  -drive:[drive nb]\t\t: select the drive number\n");
 	printf("  -load:[filename]\t\t: load the a image\n");
@@ -194,6 +196,7 @@ int main(int argc, char* argv[])
 	verbose = 0;
 	drive = 0;
 	doublestep = -1;
+	home_folder[0] = '\0';
 
 	printf("HxC Floppy Emulator : Pauline floppy drive simulator / floppy drive dumper control software v1.0.0.0\n");
 	printf("Copyright (C) 2006-2020 Jean-Francois DEL NERO\n");
@@ -241,6 +244,11 @@ int main(int argc, char* argv[])
 	{
 		printf("FPGA Init failed !\n");
 		exit(-1);
+	}
+
+	if(isOption(argc,argv,"home_folder",(char*)&home_folder)>0)
+	{
+		printf("Home folder : %s\n",home_folder);
 	}
 
 	if(isOption(argc,argv,"server",0)>0)
@@ -579,6 +587,7 @@ int main(int argc, char* argv[])
 		(isOption(argc,argv,"readdsk",0)<=0 ) &&
 		(isOption(argc,argv,"writedsk",0)<=0 ) &&
 		(isOption(argc,argv,"regs",0)<=0 ) &&
+		(isOption(argc,argv,"home_folder",0)<=0 ) &&
 		(isOption(argc,argv,"server",0)<=0 ) &&
 		(isOption(argc,argv,"test_interface",0)<=0 ) &&
 		(isOption(argc,argv,"setiolow",0)<=0 ) &&
