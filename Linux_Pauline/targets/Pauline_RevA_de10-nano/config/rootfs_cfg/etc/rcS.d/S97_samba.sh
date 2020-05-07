@@ -11,5 +11,6 @@ mount -t tmpfs -o size=64m  tmpfs /mnt
 cp -aR /usr/local/samba/var/* /mnt
 mount --move /mnt /usr/local/samba/var
 
+echo -ne "pauline\npauline\n" | smbpasswd -a -s pauline
+echo -ne "ramdisk\nramdisk\n" | smbpasswd -a -s ramdisk
 smbd
-
