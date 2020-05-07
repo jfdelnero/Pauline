@@ -261,14 +261,51 @@ int prepare_folder(char * name, char * comment, int start_index, int mode, char 
 	struct stat st = {0};
 	int ret;
 	int max;
+	int i;
 
 	ret = -1;
+
 	strcpy(dump_name,"untitled dump");
 	if(name)
 	{
-		if(strlen(name))
+		i = strlen(name);
+		if(i)
 		{
 			strcpy(dump_name,name);
+			while(i)
+			{
+				if(dump_name[i - 1] == ' ')
+				{
+					dump_name[i - 1] = '\0';
+				}
+				else
+				{
+					break;
+				}
+
+				i--;
+			}
+		}
+	}
+
+	if(comment)
+	{
+		i = strlen(comment);
+		if(i)
+		{
+			while(i)
+			{
+				if(comment[i - 1] == ' ')
+				{
+					comment[i - 1] = '\0';
+				}
+				else
+				{
+					break;
+				}
+
+				i--;
+			}
 		}
 	}
 
