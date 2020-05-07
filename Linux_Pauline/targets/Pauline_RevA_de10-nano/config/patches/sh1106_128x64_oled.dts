@@ -9,13 +9,13 @@
 					reg = <0x3c>;
 					solomon,width = <128>;
 					solomon,height = <64>;
-					solomon,com-lrremap;
-					solomon,com-seq;
+					/*solomon,com-lrremap;*/
+					/*solomon,com-seq;*/
 					solomon,segment-no-remap;
 					solomon,page-offset = <0>;
 					solomon,segment-offset = <2>;
 					/*solomon,com-invdir;*/
-					solomon,com-offset = <1>;
+					solomon,com-offset = <0>;
 					solomon,lookup-table = /bits/ 8 <0x3f 0x3f 0x3f 0x3f>;
 			};
 		}; //end i2c@0xffc06000 (hps_0_i2c2)

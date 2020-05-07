@@ -33,12 +33,17 @@
 #define SSD1307FB_SET_ADDRESS_MODE_HORIZONTAL	(0x00)
 #define SSD1307FB_SET_ADDRESS_MODE_VERTICAL	(0x01)
 #define SSD1307FB_SET_ADDRESS_MODE_PAGE		(0x02)
+#define SSD1307FB_SET_START_LINE	0x40
 #define SSD1307FB_SET_COL_RANGE		0x21
 #define SSD1307FB_SET_PAGE_RANGE	0x22
 #define SSD1307FB_CONTRAST		0x81
 #define SSD1307FB_SET_LOOKUP_TABLE	0x91
 #define	SSD1307FB_CHARGE_PUMP		0x8d
 #define SSD1307FB_SEG_REMAP_ON		0xa1
+#define SSD1307FB_SEG_REMAP_OFF		0xa0
+#define SSD1307FB_DISPLAYALLON_RESUME	0xa4
+#define SSD1307FB_NORMAL_DISPLAY		0xa6
+#define SSD1307FB_INVERSE_DISPLAY		0xa7
 #define SSD1307FB_DISPLAY_OFF		0xae
 #define SSD1307FB_SET_MULTIPLEX_RATIO	0xa8
 #define SSD1307FB_DISPLAY_ON		0xaf
@@ -375,6 +380,22 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
 			par->pwm->pwm, par->pwm_period);
 	}
 
+	/* Display off */
+	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
+	if (ret < 0)
+		return ret;
+
+	/* Set COM direction */
+	com_invdir = 0xc0 | (par->com_invdir & 0x1) << 3;
+	ret = ssd1307fb_write_cmd(par->client,  com_invdir);
+	if (ret < 0)
+		return ret;
+
+	/* Set start line */
+	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_START_LINE | 0x00);
+	if (ret < 0)
+		return ret;
+
 	/* Set initial contrast */
 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_CONTRAST);
 	if (ret < 0)
@@ -385,15 +406,15 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
 		return ret;
 
 	/* Set segment re-map */
-	if (par->seg_remap) {
+	if (par->seg_remap)
 		ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SEG_REMAP_ON);
-		if (ret < 0)
-			return ret;
-	}
+	else
+		ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SEG_REMAP_OFF);
 
-	/* Set COM direction */
-	com_invdir = 0xc0 | (par->com_invdir & 0x1) << 3;
-	ret = ssd1307fb_write_cmd(par->client,  com_invdir);
+	if (ret < 0)
+		return ret;
+
+	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_NORMAL_DISPLAY);
 	if (ret < 0)
 		return ret;
 
@@ -513,6 +534,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
 	if (ret < 0)
 		return ret;
 
+#if 0
 	/* Set column range */
 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COL_RANGE);
 	if (ret < 0)
@@ -525,6 +547,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
 	ret = ssd1307fb_write_cmd(par->client, par->width - 1);
 	if (ret < 0)
 		return ret;
+#endif
 
 	/* Set page range */
 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PAGE_RANGE);
@@ -541,12 +564,10 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
 	if (ret < 0)
 		return ret;
 
-	/* Clear the screen */
-	par->next_page_update = 0;
-	for( i = 0; i < par->height / 8 ; i++ )
-	{
-		ssd1307fb_update_display(par);
-	}
+	/* Clear screen */
+	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAYALLON_RESUME);
+	if (ret < 0)
+		return ret;
 
 	/* Turn on the display */
 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
