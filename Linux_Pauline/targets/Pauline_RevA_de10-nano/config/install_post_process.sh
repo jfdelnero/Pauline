@@ -36,6 +36,33 @@ make CC=${TGT_MACH}-gcc || exit 1
 cp   ${PAULINE_BASE}/Softwares_Pauline/splash_screen/splash_screen  ${TARGET_HOME}/output_objects/splash_screen || exit 1
 
 #
+# Build the cross compiled hxc tool
+#
+
+cd ${PAULINE_BASE}/../../build
+make mrproper
+make CC=${TGT_MACH}-gcc HxCFloppyEmulator_cmdline || exit 1
+
+mkdir ${TARGET_HOME}/output_objects/target_hxc_tool
+cp   hxcfe  ${TARGET_HOME}/output_objects/target_hxc_tool/hxcfe || exit 1
+cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
+cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
+
+#
+# Build the pc hxc tool
+#
+
+#cd ${PAULINE_BASE}/../../build
+#make mrproper
+#make TARGET=mingw32 || exit 1
+
+#mkdir ${TARGET_HOME}/output_objects/pc_hxc_tool
+#cp   HxCFloppyEmulator.exe  ${TARGET_HOME}/output_objects/pc_hxc_tool/HxCFloppyEmulator.exe || exit 1
+#cp   hxcfe.exe  ${TARGET_HOME}/output_objects/pc_hxc_tool/hxcfe.exe || exit 1
+#cp   libusbhxcfe.dll  ${TARGET_HOME}/output_objects/pc_hxc_tool/libusbhxcfe.dll || exit 1
+#cp   libhxcfe.dll  ${TARGET_HOME}/output_objects/pc_hxc_tool/libhxcfe.dll || exit 1
+
+#
 # Generate the dts and build the dtb
 #
 
@@ -167,10 +194,25 @@ sudo mount /dev/loop0p2 ${TARGET_HOME}/output_objects/tmp_mount_point
 sudo cp -av ${TARGET_ROOTFS_MIRROR}/* ${TARGET_HOME}/output_objects/tmp_mount_point/.
 
 sudo cp -av ${TARGET_HOME}/output_objects/pauline  ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
-sudo cp -av ${TARGET_HOME}/output_objects/splash_screen ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 
+sudo cp -av ${TARGET_HOME}/output_objects/splash_screen ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
+sudo cp -av ${TARGET_HOME}/output_objects/hxcfe ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
+
+sudo cp -av ${TARGET_HOME}/output_objects/target_hxc_tool/hxcfe ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
+sudo cp -av ${TARGET_HOME}/output_objects/target_hxc_tool/*.so ${TARGET_HOME}/output_objects/tmp_mount_point/lib || exit 1
+
+#
+# Prepare data folder.
+#
 
 sudo mkdir  ${TARGET_HOME}/output_objects/tmp_mount_point/data
-sudo cp -ar ${PAULINE_BASE}/Softwares_Pauline/splash_screen/pauline_splash_bitmaps ${TARGET_HOME}/output_objects/tmp_mount_point/data/
+sudo cp -ar ${PAULINE_BASE}/Softwares_Pauline/splash_screen/pauline_splash_bitmaps ${TARGET_HOME}/output_objects/tmp_mount_point/data/ || exit 1
+
+sudo mkdir  ${TARGET_HOME}/output_objects/tmp_mount_point/data/Documentations
+sudo mkdir  ${TARGET_HOME}/output_objects/tmp_mount_point/data/Tools
+sudo cp -ar ${PAULINE_BASE}/Softwares_Pauline/splash_screen/pauline_splash_bitmaps ${TARGET_HOME}/output_objects/tmp_mount_point/data/ || exit 1
+sudo cp -ar ${TARGET_HOME}/output_objects/pc_hxc_tool ${TARGET_HOME}/output_objects/tmp_mount_point/data/Tools/
+
+###
 
 sudo mkdir  ${TARGET_HOME}/output_objects/tmp_mount_point/home/pauline
 sudo chown 1000 ${TARGET_HOME}/output_objects/tmp_mount_point/home/pauline
