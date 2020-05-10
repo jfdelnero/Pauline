@@ -32,11 +32,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdarg.h>
 
 #include "types.h"
 #include "bmp_file.h"
 
 #include "screen.h"
+
+#include "font_x_b_8x13.h"
 
 #define SCREEN_TTY "/dev/tty1"
 
@@ -93,6 +96,59 @@ void set_fb_pixstate(unsigned char * buffer,int xpos, int ypos,int state)
 		{
 			buffer[buffer_offset] &= ~(0x01 << (xpos&7));
 		}
+	}
+}
+
+void print_char_screen(unsigned char * buffer,int xpos, int ypos, unsigned char c)
+{
+	int char_offset;
+	int x,y;
+	int bit_offset;
+	unsigned char * char_ptr;
+
+	char_offset = c * font_x_b_8x13.char_size;
+ 
+	if( char_offset < font_x_b_8x13.buffer_size )
+	{
+		bit_offset = 0;
+		char_ptr = (unsigned char*)&font_x_b_8x13.font_data[char_offset];
+		for(y=0;y<font_x_b_8x13.char_y_size;y++)
+		{
+			for(x=0;x<font_x_b_8x13.char_x_size;x++)
+			{
+				if( char_ptr[bit_offset>>3] & (0x80>>(bit_offset&7)) )
+				{
+					set_fb_pixstate(buffer, xpos + x, ypos + y,1);
+				}
+				else
+				{
+					set_fb_pixstate(buffer, xpos + x, ypos + y,0);
+				}
+				bit_offset++;
+			}			 
+		}
+	}
+}
+
+void printf_screen(unsigned char * buffer,int xpos, int ypos, char * string, ...)
+{
+	int i;
+	char fullline[512];
+
+	va_list marker;
+
+	va_start( marker, string );
+
+	vsnprintf(fullline,sizeof(fullline),string,marker);
+
+	va_end( marker );
+
+	i = 0;
+	while(fullline[i])
+	{
+		print_char_screen(buffer,xpos, ypos, fullline[i]);
+		xpos += font_x_b_8x13.char_x_size;
+		i++;
 	}
 }
 
