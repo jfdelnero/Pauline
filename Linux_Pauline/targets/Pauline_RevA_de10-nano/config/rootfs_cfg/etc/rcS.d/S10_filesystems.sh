@@ -126,6 +126,32 @@ if [ $ret -ne 0 ]; then
    fi
 fi
 
+# Test and copy the pauline folders
+
+if [ ! -d "/home/pauline/Disks_Captures" ] ; then
+	mkdir "/home/pauline/Disks_Captures"
+fi
+
+if [ ! -d "/home/pauline/Drives_Simulation" ] ; then
+	mkdir "/home/pauline/Drives_Simulation"
+	cp -ar /data/Settings/* /home/pauline/Settings
+fi
+
+if [ ! -d "/home/pauline/Tools" ] ; then
+	mkdir "/home/pauline/Tools"
+	cp -ar /data/Tools/* /home/pauline/Tools
+fi
+
+if [ ! -d "/home/pauline/Documentations" ] ; then
+	mkdir "/home/pauline/Documentations"
+	cp -ar /data/Documentations/* /home/pauline/Documentations
+fi
+
+if [ ! -d "/home/pauline/Settings" ] ; then
+	mkdir "/home/pauline/Settings"
+	cp -ar /data/Settings/* /home/pauline/Settings
+fi
+
 # Push to the disk the dirty data after 1 second !
 echo 100 > /proc/sys/vm/dirty_expire_centisecs
 echo 100 > /proc/sys/vm/dirty_writeback_centisecs
