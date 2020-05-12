@@ -130,26 +130,64 @@ void print_char_screen(unsigned char * buffer,int xpos, int ypos, unsigned char 
 	}
 }
 
-void printf_screen(unsigned char * buffer,int xpos, int ypos, char * string, ...)
+void printf_screen(int xpos, int ypos, char * string, ...)
 {
 	int i;
 	char fullline[512];
+	unsigned char * buffer;
+	int fd,ret;
 
 	va_list marker;
 
-	va_start( marker, string );
+	buffer = malloc((FB_XSIZE*FB_YSIZE)/8);
+	if(!buffer)
+		return;
 
-	vsnprintf(fullline,sizeof(fullline),string,marker);
-
-	va_end( marker );
-
-	i = 0;
-	while(fullline[i])
+	fd = open( SCREEN_FB, O_RDWR);
+	if(fd)
 	{
-		print_char_screen(buffer,xpos, ypos, fullline[i]);
-		xpos += font_x_b_8x13.char_x_size;
-		i++;
+		ret = read(fd, buffer, (FB_XSIZE*FB_YSIZE)/8);
+
+		va_start( marker, string );
+
+		vsnprintf(fullline,sizeof(fullline),string,marker);
+
+		va_end( marker );
+
+		if(xpos == -1)
+		{
+			xpos = (strlen(fullline)*font_x_b_8x13.char_x_size);
+			if(xpos > FB_XSIZE)
+				xpos = 0;
+			else
+				xpos = (FB_XSIZE - xpos) / 2;
+		}
+
+		if(ypos == -1)
+		{
+			ypos = (font_x_b_8x13.char_y_size);
+			if(ypos > FB_YSIZE)
+				ypos = 0;
+			else
+				ypos = (FB_YSIZE - ypos) / 2;
+		}
+
+		i = 0;
+		while(fullline[i])
+		{
+			print_char_screen(buffer,xpos, ypos, fullline[i]);
+			xpos += font_x_b_8x13.char_x_size;
+			i++;
+		}
+
+		lseek(fd, 0, SEEK_SET);
+
+		ret = write(fd, buffer, (FB_XSIZE*FB_YSIZE)/8);
+
+		close(fd);
 	}
+
+	free(buffer);
 }
 
 /*
