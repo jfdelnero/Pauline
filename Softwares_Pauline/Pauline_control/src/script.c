@@ -550,7 +550,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			else
 				buffersize = (dump_time_per_track * (((25000000 / 16 /*16 bits shift*/ ) * 4 /*A word is 4 bytes*/) / 1000));
 
-			printf_screen(-1, 46, "T:%.3d H:%d",i,j);
+			printf_screen(-1, 46, NULL, "T:%.3d H:%d",i,j);
 
 			buffersize += ((4 - (buffersize&3)) & 3);
 
