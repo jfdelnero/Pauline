@@ -44,6 +44,8 @@
 #include "stream_hfe.h"
 #include "network.h"
 #include "script.h"
+#include "bmp_file.h"
+#include "screen.h"
 
 int verbose;
 fpga_state * fpga;
@@ -265,7 +267,15 @@ int main(int argc, char* argv[])
 		}
 
 		for(;;)
+		{
+			if(threadparams_cmd[0] == NULL)
+			{
+				display_bmp("/data/pauline_splash_bitmaps/ready.bmp");
+				print_netif_ips(0,64 - 13);
+				screen_printtime(0,0,PRINTSCREEN_TRANSPARENT | PRINTSCREEN_BLACK_FG);
+			}
 			sleep(1);
+		}
 	}
 
 	memset(filename,0,sizeof(filename));
