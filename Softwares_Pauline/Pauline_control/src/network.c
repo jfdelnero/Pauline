@@ -25,11 +25,14 @@
 //
 */
 
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <ifaddrs.h>
+#include <linux/if_link.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -55,22 +58,11 @@
 #include "network.h"
 #include "script.h"
 
-#define MAXCONNECTION 128
 #define SOCKET_ERROR        -1
 #define QUEUE_SIZE          5
 
 #include "bmp_file.h"
 #include "screen.h"
-
-typedef struct thread_params_
-{
-	int hSocket;
-	int mode;
-	int index;
-	int tid;
-	char clientname[2048];
-	char clientip[24];
-}thread_params;
 
 pthread_t     * threads_data;
 thread_params * threadparams_data[MAXCONNECTION];
@@ -275,7 +267,36 @@ int Printf_socket(int MSGTYPE,char * chaine, ...)
 
 		va_end( marker );
 	}
-    return 0;
+	return 0;
+}
+
+int print_netif_ips(int x,int y)
+{
+	int i;
+	struct ifaddrs *addrs, *tmp;
+
+	getifaddrs(&addrs);
+	tmp = addrs;
+
+	i = 0;
+	while (tmp) 
+	{
+		if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET)
+		{
+			struct sockaddr_in *pAddr = (struct sockaddr_in *)tmp->ifa_addr;
+			//printf("%s: %s\n", tmp->ifa_name, inet_ntoa(pAddr->sin_addr));
+			if(!strcmp(tmp->ifa_name,"eth0"))
+			{
+				printf_screen(x, (y - 13), PRINTSCREEN_BLACK_FG, "%s", "IP:");				
+				printf_screen(x, y + (i * 13), PRINTSCREEN_BLACK_FG, "%s", inet_ntoa(pAddr->sin_addr));
+				i++;
+			}
+		}
+
+		tmp = tmp->ifa_next;
+	}
+
+	freeifaddrs(addrs);	
 }
 
 void *tcp_listener(void *threadid)

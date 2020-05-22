@@ -25,6 +25,21 @@
 //
 */
 
+#define MAXCONNECTION 128
+
+typedef struct thread_params_
+{
+	int hSocket;
+	int mode;
+	int index;
+	int tid;
+	char clientname[2048];
+	char clientip[24];
+}thread_params;
+
+extern thread_params * threadparams_data[MAXCONNECTION];
+extern thread_params * threadparams_cmd[MAXCONNECTION];
+
 typedef struct listener_thread_params_
 {
 	int port;
@@ -35,3 +50,4 @@ void *ConnectionThread(void *threadid);
 
 void *tcp_listener(void *threadid);
 int senddatapacket(unsigned char * buffer,int size);
+int print_netif_ips(int x,int y);
