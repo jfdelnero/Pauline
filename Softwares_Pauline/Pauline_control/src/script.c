@@ -679,6 +679,8 @@ void *diskdump_thread(void *threadid)
 
 	cmdline= (char*) threadid;
 
+	pthread_detach(pthread_self());
+
 	for(i=0;i<12;i++)
 	{
 		if(get_param(cmdline, i + 1,tmp)>=0)
@@ -727,7 +729,7 @@ void *diskdump_thread(void *threadid)
 
 	readdisk(p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8],name,comment,p[11],index_mode);
 
-	return 0;
+	pthread_exit(NULL);
 }
 
 int cmd_dump(char * line)

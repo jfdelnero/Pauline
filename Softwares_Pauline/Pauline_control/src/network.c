@@ -168,7 +168,8 @@ void *connection_thread(void *threadid)
 							close(threadparams_cmd[tp->index]->hSocket);
 
 							display_bmp("/data/pauline_splash_bitmaps/disconnected.bmp");
-							return NULL;
+
+							pthread_exit(NULL);
 						}
 						else
 						{
@@ -208,7 +209,7 @@ void *connection_thread(void *threadid)
 		*/
 	}
 
-	return NULL;
+	pthread_exit(NULL);
 }
 
 int Printf_socket(int MSGTYPE,char * chaine, ...)
@@ -294,6 +295,8 @@ void *tcp_listener(void *threadid)
 
 	struct sigaction new_actn, old_actn;
 
+	pthread_detach(pthread_self());
+
 	if(threadid)
 		mode = 1;
 	else
@@ -332,7 +335,7 @@ void *tcp_listener(void *threadid)
 	if(hServerSocket == SOCKET_ERROR)
 	{
 		printf("Could not make a socket\n");
-		return 0;
+		pthread_exit(NULL);
 	}
 
 	/* fill address struct */
@@ -346,7 +349,7 @@ void *tcp_listener(void *threadid)
 	if(bind(hServerSocket,(struct sockaddr*)&Address,sizeof(Address)) == SOCKET_ERROR)
 	{
 		printf("Could not connect to host\r\n");
-		return 0;
+		pthread_exit(NULL);
 	}
 
  /*  get port number */
@@ -369,7 +372,7 @@ void *tcp_listener(void *threadid)
 	if(listen(hServerSocket,QUEUE_SIZE) == SOCKET_ERROR)
 	{
 		printf("Could not listen\r\n");
-		return 0;
+		pthread_exit(NULL);
 	}
 
 	tp = malloc( sizeof(thread_params) *  MAXCONNECTION );
@@ -509,4 +512,6 @@ void *tcp_listener(void *threadid)
 			close(hSocket);
 		}
 	}
+
+	pthread_exit(NULL);
 }
