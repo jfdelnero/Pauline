@@ -33,10 +33,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "types.h"
 #include "bmp_file.h"
-
 #include "screen.h"
 
 #include "font_x_b_8x13.h"
@@ -98,16 +98,26 @@ void set_fb_pixstate(unsigned char * buffer,int xpos, int ypos,int state)
 		}
 	}
 }
-
-void print_char_screen(unsigned char * buffer,int xpos, int ypos, unsigned char c)
+void print_char_screen(unsigned char * buffer,int xpos, int ypos, unsigned int flags, unsigned char c)
 {
 	int char_offset;
 	int x,y;
 	int bit_offset;
+	int setpixel,transparent;
 	unsigned char * char_ptr;
 
 	char_offset = c * font_x_b_8x13.char_size;
- 
+
+	if(flags & PRINTSCREEN_BLACK_FG)
+		setpixel = 0;
+	else
+		setpixel = 1;
+
+	if(flags & PRINTSCREEN_TRANSPARENT)
+		transparent = 1;
+	else
+		transparent = 0;
+
 	if( char_offset < font_x_b_8x13.buffer_size )
 	{
 		bit_offset = 0;
@@ -118,11 +128,12 @@ void print_char_screen(unsigned char * buffer,int xpos, int ypos, unsigned char 
 			{
 				if( char_ptr[bit_offset>>3] & (0x80>>(bit_offset&7)) )
 				{
-					set_fb_pixstate(buffer, xpos + x, ypos + y,1);
+					set_fb_pixstate(buffer, xpos + x, ypos + y, setpixel);
 				}
 				else
 				{
-					set_fb_pixstate(buffer, xpos + x, ypos + y,0);
+					if(!transparent)
+						set_fb_pixstate(buffer, xpos + x, ypos + y, setpixel^1);
 				}
 				bit_offset++;
 			}			 
@@ -130,7 +141,7 @@ void print_char_screen(unsigned char * buffer,int xpos, int ypos, unsigned char 
 	}
 }
 
-void printf_screen(int xpos, int ypos, char * string, ...)
+void printf_screen(int xpos, int ypos, unsigned int flags, char * string, ...)
 {
 	int i;
 	char fullline[512];
@@ -175,7 +186,7 @@ void printf_screen(int xpos, int ypos, char * string, ...)
 		i = 0;
 		while(fullline[i])
 		{
-			print_char_screen(buffer,xpos, ypos, fullline[i]);
+			print_char_screen(buffer,xpos, ypos, flags, fullline[i]);
 			xpos += font_x_b_8x13.char_x_size;
 			i++;
 		}
@@ -269,45 +280,11 @@ void display_bmp(char * file)
 	free_screen( screen );
 }
 
-/*
-int main(int argc, char *argv[])
+void screen_printtime(int x, int y, unsigned int flags)
 {
-	bitmap_data bmp;
-	unsigned char * buffer;
-	int x,y,fd;
-	int ret;
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
 
-	if(argc > 1)
-	{
-		buffer = malloc((FB_XSIZE*FB_YSIZE)/8);
-		if(buffer)
-		{
-			fbcon_cursor (0);
-
-			if(!bmp_load(argv[1],&bmp))
-			{
-				for(y=0;y<FB_YSIZE;y++)
-				{
-					for(x=0;x<FB_XSIZE;x++)
-					{
-						set_fb_pixstate(buffer,x, y, getpixstate(&bmp, x, y));
-					}
-				}
-
-				fd = open( SCREEN_FB, O_RDWR);
-				if(fd)
-				{
-					ret = write(fd, buffer, (FB_XSIZE*FB_YSIZE)/8);
-					close(fd);
-				}
-
-				if(bmp.data)
-					free(bmp.data);
-			}
-			free(buffer);
-		}
-	}
-
-	return 0;
+	printf_screen(x,y,flags,"%d-%02d-%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+	printf_screen(x,y + 13,flags,"%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
-*/
