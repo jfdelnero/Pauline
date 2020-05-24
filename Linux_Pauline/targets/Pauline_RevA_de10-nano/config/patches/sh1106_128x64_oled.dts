@@ -4,6 +4,8 @@
 
 		hps_0_i2c2: i2c@0xffc06000 {
 
+			i2c-sda-hold-time-ns = <300>;
+
 			ssd1306: oled@3c {
 					compatible = "solomon,ssd1306fb-i2c";
 					reg = <0x3c>;
