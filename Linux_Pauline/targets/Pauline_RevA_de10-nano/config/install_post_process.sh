@@ -16,6 +16,19 @@ source ${_SOCEDS_ROOT}/env.sh || exit 1
 mkdir ${TARGET_HOME}/output_objects
 
 #
+# Build the cross compiled hxc tool
+#
+
+cd ${PAULINE_BASE}/../../build
+make mrproper
+make CC=${TGT_MACH}-gcc HxCFloppyEmulator_cmdline || exit 1
+
+mkdir ${TARGET_HOME}/output_objects/target_hxc_tool
+cp   hxcfe  ${TARGET_HOME}/output_objects/target_hxc_tool/hxcfe || exit 1
+cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
+cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
+
+#
 # Generate Pauline tools
 #
 
@@ -34,19 +47,6 @@ cd ${PAULINE_BASE}/Softwares_Pauline/splash_screen
 make clean
 make CC=${TGT_MACH}-gcc || exit 1
 cp   ${PAULINE_BASE}/Softwares_Pauline/splash_screen/splash_screen  ${TARGET_HOME}/output_objects/splash_screen || exit 1
-
-#
-# Build the cross compiled hxc tool
-#
-
-cd ${PAULINE_BASE}/../../build
-make mrproper
-make CC=${TGT_MACH}-gcc HxCFloppyEmulator_cmdline || exit 1
-
-mkdir ${TARGET_HOME}/output_objects/target_hxc_tool
-cp   hxcfe  ${TARGET_HOME}/output_objects/target_hxc_tool/hxcfe || exit 1
-cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
-cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
 
 #
 # Build the pc hxc tool
