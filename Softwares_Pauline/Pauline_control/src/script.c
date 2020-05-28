@@ -117,7 +117,7 @@ static int copy_param(char * dest, char * line, int offs)
 
 	i = 0;
 	insidequote = 0;
-	while( !is_end_line(line[offs]) && ( insidequote || !is_space(line[offs]) ) )
+	while( !is_end_line(line[offs]) && ( insidequote || !is_space(line[offs]) ) && (i < (DEFAULT_BUFLEN - 1)) )
 	{
 		if(line[offs] != '"')
 		{
@@ -1129,25 +1129,25 @@ cmd_list cmdlist[] =
 
 int extract_cmd(char * line, char * command)
 {
-	int i;
+	int offs,i;
 
 	i = 0;
-	while( ( line[i] != 0 ) && ( line[i] == ' ' ) )
-	{
-		i++;
-	}
+	offs = 0;
 
-	if( line[i] != 0 )
+	offs = get_next_word(line, offs);
+
+	if( !is_end_line(line[offs]) )
 	{
-		while( ( line[i] != 0 ) && ( line[i] != ' ' ) && ( line[i] != '\r' ) && ( line[i] != '\n' ))
+		while( !is_end_line(line[offs]) && !is_space(line[offs]) && i < (DEFAULT_BUFLEN - 1) )
 		{
-			command[i] = line[i];
+			command[i] = line[offs];
+			offs++;
 			i++;
 		}
 
 		command[i] = 0;
 
-		return 1;
+		return i;
 	}
 
 	return 0;
