@@ -4748,7 +4748,7 @@ P 11300 8650
 F 0 "U11" H 11450 8800 50  0000 C CNN
 F 1 "74LCX125MX" H 11600 8550 50  0000 C CNN
 F 2 "" H 11300 8650 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LVC125" H 11300 8650 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74lvc125a.pdf" H 11300 8650 50  0001 C CNN
 	1    11300 8650
 	1    0    0    -1  
 $EndComp
@@ -4759,7 +4759,7 @@ P 11300 9250
 F 0 "U11" H 11450 9400 50  0000 C CNN
 F 1 "74LCX125MX" H 11600 9150 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11300 9250 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LVC125" H 11300 9250 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74lvc125a.pdf" H 11300 9250 50  0001 C CNN
 	2    11300 9250
 	1    0    0    -1  
 $EndComp
@@ -4770,7 +4770,7 @@ P 13550 9250
 F 0 "U11" H 13700 9400 50  0000 C CNN
 F 1 "74LCX125MX" H 13850 9150 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 13550 9250 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LVC125" H 13550 9250 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74lvc125a.pdf" H 13550 9250 50  0001 C CNN
 	4    13550 9250
 	1    0    0    -1  
 $EndComp
@@ -5029,7 +5029,7 @@ P 9500 8750
 F 0 "U11" H 9730 8796 50  0000 L CNN
 F 1 "74LCX125MX" H 9730 8705 50  0000 L CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 9500 8750 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LVC125" H 9500 8750 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74lvc125a.pdf" H 9500 8750 50  0001 C CNN
 	5    9500 8750
 	1    0    0    -1  
 $EndComp
@@ -5607,7 +5607,7 @@ P 13550 8650
 F 0 "U11" H 13700 8800 50  0000 C CNN
 F 1 "74LCX125MX" H 13850 8550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 13550 8650 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LVC125" H 13550 8650 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74lvc125a.pdf" H 13550 8650 50  0001 C CNN
 	3    13550 8650
 	1    0    0    -1  
 $EndComp
