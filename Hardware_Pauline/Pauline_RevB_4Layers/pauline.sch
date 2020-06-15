@@ -762,7 +762,7 @@ P 5900 1000
 F 0 "U1" H 6150 1100 50  0000 C CNN
 F 1 "74LVC06AD" H 6300 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 1000 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 5900 1000 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 1000 50  0001 C CNN
 	4    5900 1000
 	1    0    0    -1  
 $EndComp
@@ -777,7 +777,7 @@ P 5900 1950
 F 0 "U1" H 6150 2050 50  0000 C CNN
 F 1 "74LVC06AD" H 6300 1850 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 1950 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 5900 1950 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 1950 50  0001 C CNN
 	3    5900 1950
 	1    0    0    -1  
 $EndComp
@@ -796,7 +796,7 @@ P 5900 2900
 F 0 "U1" H 6150 3000 50  0000 C CNN
 F 1 "74LVC06AD" H 6300 2800 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 2900 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 5900 2900 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 2900 50  0001 C CNN
 	5    5900 2900
 	1    0    0    -1  
 $EndComp
@@ -815,7 +815,7 @@ P 5900 3800
 F 0 "U1" H 6150 3900 50  0000 C CNN
 F 1 "74LVC06AD" H 6300 3700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 3800 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 5900 3800 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 3800 50  0001 C CNN
 	2    5900 3800
 	1    0    0    -1  
 $EndComp
@@ -842,7 +842,7 @@ P 5900 5650
 F 0 "U1" H 6150 5750 50  0000 C CNN
 F 1 "74LVC06AD" H 6300 5550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 5650 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 5900 5650 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 5650 50  0001 C CNN
 	1    5900 5650
 	1    0    0    -1  
 $EndComp
@@ -861,7 +861,7 @@ P 5900 4700
 F 0 "U1" H 6150 4800 50  0000 C CNN
 F 1 "74LVC06AD" H 6300 4600 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 4700 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 5900 4700 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 4700 50  0001 C CNN
 	6    5900 4700
 	1    0    0    -1  
 $EndComp
@@ -872,7 +872,7 @@ P 5900 4200
 F 0 "U2" H 5650 4100 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 5400 4300 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 4200 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 5900 4200 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 5900 4200 50  0001 C CNN
 	5    5900 4200
 	-1   0    0    1   
 $EndComp
@@ -883,7 +883,7 @@ P 5900 1400
 F 0 "U2" H 5650 1300 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 5400 1500 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 1400 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 5900 1400 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 5900 1400 50  0001 C CNN
 	3    5900 1400
 	-1   0    0    1   
 $EndComp
@@ -894,7 +894,7 @@ P 5900 3300
 F 0 "U2" H 5650 3200 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 5400 3400 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 3300 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 5900 3300 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 5900 3300 50  0001 C CNN
 	2    5900 3300
 	-1   0    0    1   
 $EndComp
@@ -905,7 +905,7 @@ P 5900 5100
 F 0 "U2" H 5650 5000 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 5400 5200 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 5100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 5900 5100 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 5900 5100 50  0001 C CNN
 	1    5900 5100
 	-1   0    0    1   
 $EndComp
@@ -916,7 +916,7 @@ P 5900 6050
 F 0 "U2" H 5650 5950 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 5400 6150 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 6050 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 5900 6050 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 5900 6050 50  0001 C CNN
 	6    5900 6050
 	-1   0    0    1   
 $EndComp
@@ -927,7 +927,7 @@ P 8750 1000
 F 0 "U3" H 9000 1100 50  0000 C CNN
 F 1 "74LVC06AD" H 9150 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 1000 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 8750 1000 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 1000 50  0001 C CNN
 	4    8750 1000
 	1    0    0    -1  
 $EndComp
@@ -946,7 +946,7 @@ P 8750 1950
 F 0 "U3" H 9000 2050 50  0000 C CNN
 F 1 "74LVC06AD" H 9150 1850 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 1950 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 8750 1950 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 1950 50  0001 C CNN
 	3    8750 1950
 	1    0    0    -1  
 $EndComp
@@ -965,7 +965,7 @@ P 8750 2900
 F 0 "U3" H 9000 3000 50  0000 C CNN
 F 1 "74LVC06AD" H 9150 2800 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 2900 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 8750 2900 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 2900 50  0001 C CNN
 	5    8750 2900
 	1    0    0    -1  
 $EndComp
@@ -984,7 +984,7 @@ P 8750 3800
 F 0 "U3" H 9000 3900 50  0000 C CNN
 F 1 "74LVC06AD" H 9150 3700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 3800 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 8750 3800 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 3800 50  0001 C CNN
 	2    8750 3800
 	1    0    0    -1  
 $EndComp
@@ -1011,7 +1011,7 @@ P 8750 5650
 F 0 "U3" H 9000 5750 50  0000 C CNN
 F 1 "74LVC06AD" H 9150 5550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 5650 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 8750 5650 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 5650 50  0001 C CNN
 	1    8750 5650
 	1    0    0    -1  
 $EndComp
@@ -1028,7 +1028,7 @@ P 8750 4700
 F 0 "U3" H 9000 4800 50  0000 C CNN
 F 1 "74LVC06AD" H 9150 4600 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 4700 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 8750 4700 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 4700 50  0001 C CNN
 	6    8750 4700
 	1    0    0    -1  
 $EndComp
@@ -1039,7 +1039,7 @@ P 8750 4200
 F 0 "U4" H 8500 4100 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 8250 4300 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 4200 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 8750 4200 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 8750 4200 50  0001 C CNN
 	5    8750 4200
 	-1   0    0    1   
 $EndComp
@@ -1050,7 +1050,7 @@ P 8750 2350
 F 0 "U4" H 8500 2250 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 8250 2450 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 2350 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 8750 2350 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 8750 2350 50  0001 C CNN
 	4    8750 2350
 	-1   0    0    1   
 $EndComp
@@ -1061,7 +1061,7 @@ P 8750 1400
 F 0 "U4" H 8500 1300 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 8250 1500 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 1400 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 8750 1400 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 8750 1400 50  0001 C CNN
 	3    8750 1400
 	-1   0    0    1   
 $EndComp
@@ -1072,7 +1072,7 @@ P 8750 3300
 F 0 "U4" H 8500 3200 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 8250 3400 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 3300 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 8750 3300 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 8750 3300 50  0001 C CNN
 	2    8750 3300
 	-1   0    0    1   
 $EndComp
@@ -1083,7 +1083,7 @@ P 8750 5100
 F 0 "U4" H 8500 5000 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 8250 5200 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 5100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 8750 5100 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 8750 5100 50  0001 C CNN
 	1    8750 5100
 	-1   0    0    1   
 $EndComp
@@ -1094,7 +1094,7 @@ P 8750 6050
 F 0 "U4" H 8500 5950 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 8250 6150 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 6050 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 8750 6050 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 8750 6050 50  0001 C CNN
 	6    8750 6050
 	-1   0    0    1   
 $EndComp
@@ -1105,7 +1105,7 @@ P 11550 1000
 F 0 "U5" H 11750 1100 50  0000 C CNN
 F 1 "74LVC06AD" H 11900 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 1000 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 11550 1000 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 1000 50  0001 C CNN
 	4    11550 1000
 	1    0    0    -1  
 $EndComp
@@ -1124,7 +1124,7 @@ P 11550 1950
 F 0 "U5" H 11800 2050 50  0000 C CNN
 F 1 "74LVC06AD" H 11950 1850 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 1950 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 11550 1950 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 1950 50  0001 C CNN
 	3    11550 1950
 	1    0    0    -1  
 $EndComp
@@ -1143,7 +1143,7 @@ P 11550 2900
 F 0 "U5" H 11800 3000 50  0000 C CNN
 F 1 "74LVC06AD" H 11950 2800 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 2900 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 11550 2900 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 2900 50  0001 C CNN
 	5    11550 2900
 	1    0    0    -1  
 $EndComp
@@ -1162,7 +1162,7 @@ P 11550 3800
 F 0 "U5" H 11800 3900 50  0000 C CNN
 F 1 "74LVC06AD" H 11950 3700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 3800 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 11550 3800 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 3800 50  0001 C CNN
 	2    11550 3800
 	1    0    0    -1  
 $EndComp
@@ -1189,7 +1189,7 @@ P 11550 5650
 F 0 "U5" H 11800 5750 50  0000 C CNN
 F 1 "74LVC06AD" H 11950 5550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 5650 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 11550 5650 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 5650 50  0001 C CNN
 	1    11550 5650
 	1    0    0    -1  
 $EndComp
@@ -1208,7 +1208,7 @@ P 11550 4700
 F 0 "U5" H 11800 4800 50  0000 C CNN
 F 1 "74LVC06AD" H 11950 4600 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 4700 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 11550 4700 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 4700 50  0001 C CNN
 	6    11550 4700
 	1    0    0    -1  
 $EndComp
@@ -1219,7 +1219,7 @@ P 11550 4200
 F 0 "U6" H 11300 4100 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 11050 4300 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 4200 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 11550 4200 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 11550 4200 50  0001 C CNN
 	5    11550 4200
 	-1   0    0    1   
 $EndComp
@@ -1230,7 +1230,7 @@ P 11550 2350
 F 0 "U6" H 11300 2250 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 11050 2450 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 2350 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 11550 2350 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 11550 2350 50  0001 C CNN
 	4    11550 2350
 	-1   0    0    1   
 $EndComp
@@ -1241,7 +1241,7 @@ P 11550 1400
 F 0 "U6" H 11300 1300 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 11050 1500 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 1400 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 11550 1400 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 11550 1400 50  0001 C CNN
 	3    11550 1400
 	-1   0    0    1   
 $EndComp
@@ -1252,7 +1252,7 @@ P 11550 3300
 F 0 "U6" H 11300 3200 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 11050 3400 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 3300 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 11550 3300 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 11550 3300 50  0001 C CNN
 	2    11550 3300
 	-1   0    0    1   
 $EndComp
@@ -1263,7 +1263,7 @@ P 11550 5100
 F 0 "U6" H 11300 5000 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 11050 5200 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 5100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 11550 5100 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 11550 5100 50  0001 C CNN
 	1    11550 5100
 	-1   0    0    1   
 $EndComp
@@ -1274,7 +1274,7 @@ P 11550 6050
 F 0 "U6" H 11300 5950 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 11050 6150 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 6050 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 11550 6050 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 11550 6050 50  0001 C CNN
 	6    11550 6050
 	-1   0    0    1   
 $EndComp
@@ -1291,7 +1291,7 @@ P 14300 1950
 F 0 "U7" H 14550 2050 50  0000 C CNN
 F 1 "74LVC06AD" H 14700 1850 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 1950 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 14300 1950 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 1950 50  0001 C CNN
 	3    14300 1950
 	1    0    0    -1  
 $EndComp
@@ -1328,7 +1328,7 @@ P 14300 5650
 F 0 "U7" H 14550 5750 50  0000 C CNN
 F 1 "74LVC06AD" H 14700 5550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 5650 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 14300 5650 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 5650 50  0001 C CNN
 	1    14300 5650
 	1    0    0    -1  
 $EndComp
@@ -1347,7 +1347,7 @@ P 14300 3300
 F 0 "U8" H 14050 3200 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 13800 3400 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 3300 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 14300 3300 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 14300 3300 50  0001 C CNN
 	2    14300 3300
 	-1   0    0    1   
 $EndComp
@@ -1362,7 +1362,7 @@ P 14300 5100
 F 0 "U8" H 14050 5000 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 13800 5200 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 5100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 14300 5100 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 14300 5100 50  0001 C CNN
 	1    14300 5100
 	-1   0    0    1   
 $EndComp
@@ -1373,7 +1373,7 @@ P 14300 1400
 F 0 "U8" H 14050 1300 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 13800 1500 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 1400 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 14300 1400 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 14300 1400 50  0001 C CNN
 	3    14300 1400
 	-1   0    0    1   
 $EndComp
@@ -1384,7 +1384,7 @@ P 14300 2350
 F 0 "U8" H 14050 2200 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 13800 2450 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 2350 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 14300 2350 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 14300 2350 50  0001 C CNN
 	4    14300 2350
 	-1   0    0    1   
 $EndComp
@@ -1395,7 +1395,7 @@ P 14300 4200
 F 0 "U8" H 14050 4100 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 13800 4300 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 4200 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 14300 4200 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 14300 4200 50  0001 C CNN
 	5    14300 4200
 	-1   0    0    1   
 $EndComp
@@ -1406,7 +1406,7 @@ P 14300 6050
 F 0 "U8" H 14050 5950 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 13800 6150 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 6050 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 14300 6050 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 14300 6050 50  0001 C CNN
 	6    14300 6050
 	-1   0    0    1   
 $EndComp
@@ -1417,7 +1417,7 @@ P 14300 4700
 F 0 "U7" H 14550 4800 50  0000 C CNN
 F 1 "74LVC06AD" H 14700 4600 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 4700 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 14300 4700 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 4700 50  0001 C CNN
 	2    14300 4700
 	1    0    0    -1  
 $EndComp
@@ -1428,7 +1428,7 @@ P 14300 2900
 F 0 "U7" H 14550 3000 50  0000 C CNN
 F 1 "74LVC06AD" H 14700 2800 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 2900 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 14300 2900 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 2900 50  0001 C CNN
 	5    14300 2900
 	1    0    0    -1  
 $EndComp
@@ -1439,7 +1439,7 @@ P 14300 3800
 F 0 "U7" H 14550 3900 50  0000 C CNN
 F 1 "74LVC06AD" H 14700 3700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 3800 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 14300 3800 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 3800 50  0001 C CNN
 	6    14300 3800
 	1    0    0    -1  
 $EndComp
@@ -1450,7 +1450,7 @@ P 6200 7100
 F 0 "U2" H 6050 7450 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 6550 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 6200 7100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 6200 7100 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 6200 7100 50  0001 C CNN
 	7    6200 7100
 	1    0    0    -1  
 $EndComp
@@ -1494,7 +1494,7 @@ P 8500 7100
 F 0 "U3" H 8350 7450 50  0000 C CNN
 F 1 "74LVC06AD" H 8750 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8500 7100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 8500 7100 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8500 7100 50  0001 C CNN
 	7    8500 7100
 	1    0    0    -1  
 $EndComp
@@ -1505,7 +1505,7 @@ P 9100 7100
 F 0 "U4" H 8950 7450 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 9450 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 9100 7100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 9100 7100 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 9100 7100 50  0001 C CNN
 	7    9100 7100
 	1    0    0    -1  
 $EndComp
@@ -1560,7 +1560,7 @@ P 11200 7100
 F 0 "U5" H 11050 7450 50  0000 C CNN
 F 1 "74LVC06AD" H 11450 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11200 7100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 11200 7100 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11200 7100 50  0001 C CNN
 	7    11200 7100
 	1    0    0    -1  
 $EndComp
@@ -1615,7 +1615,7 @@ P 14100 7100
 F 0 "U7" H 13950 7450 50  0000 C CNN
 F 1 "74LVC06AD" H 14350 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14100 7100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 14100 7100 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14100 7100 50  0001 C CNN
 	7    14100 7100
 	1    0    0    -1  
 $EndComp
@@ -1626,7 +1626,7 @@ P 14700 7100
 F 0 "U8" H 14550 7450 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 15050 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14700 7100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 14700 7100 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 14700 7100 50  0001 C CNN
 	7    14700 7100
 	1    0    0    -1  
 $EndComp
@@ -1712,7 +1712,7 @@ P 14300 1000
 F 0 "U7" H 14550 1100 50  0000 C CNN
 F 1 "74LVC06AD" H 14700 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 1000 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 14300 1000 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 1000 50  0001 C CNN
 	4    14300 1000
 	1    0    0    -1  
 $EndComp
@@ -2546,7 +2546,7 @@ P 5600 7100
 F 0 "U1" H 5450 7450 50  0000 C CNN
 F 1 "74LVC06AD" H 5850 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5600 7100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 5600 7100 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5600 7100 50  0001 C CNN
 	7    5600 7100
 	1    0    0    -1  
 $EndComp
@@ -2609,7 +2609,7 @@ P 5900 2350
 F 0 "U2" H 5650 2250 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 5400 2450 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 2350 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 5900 2350 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 5900 2350 50  0001 C CNN
 	4    5900 2350
 	-1   0    0    1   
 $EndComp
@@ -2810,7 +2810,7 @@ P 17150 1950
 F 0 "U9" H 17400 2050 50  0000 C CNN
 F 1 "74LVC06AD" H 17550 1850 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 1950 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 17150 1950 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 1950 50  0001 C CNN
 	3    17150 1950
 	1    0    0    -1  
 $EndComp
@@ -2843,7 +2843,7 @@ P 17150 5650
 F 0 "U9" H 17400 5750 50  0000 C CNN
 F 1 "74LVC06AD" H 17550 5550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 5650 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 17150 5650 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 5650 50  0001 C CNN
 	1    17150 5650
 	1    0    0    -1  
 $EndComp
@@ -2858,7 +2858,7 @@ P 17150 3300
 F 0 "U10" H 16850 3200 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 16650 3400 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 3300 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 17150 3300 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 17150 3300 50  0001 C CNN
 	2    17150 3300
 	-1   0    0    1   
 $EndComp
@@ -2873,7 +2873,7 @@ P 17150 5100
 F 0 "U10" H 16850 5000 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 16650 5200 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 5100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 17150 5100 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 17150 5100 50  0001 C CNN
 	1    17150 5100
 	-1   0    0    1   
 $EndComp
@@ -2884,7 +2884,7 @@ P 17150 1400
 F 0 "U10" H 16850 1300 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 16650 1500 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 1400 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 17150 1400 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 17150 1400 50  0001 C CNN
 	3    17150 1400
 	-1   0    0    1   
 $EndComp
@@ -2895,7 +2895,7 @@ P 17150 2350
 F 0 "U10" H 16850 2250 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 16650 2450 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 2350 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 17150 2350 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 17150 2350 50  0001 C CNN
 	4    17150 2350
 	-1   0    0    1   
 $EndComp
@@ -2906,7 +2906,7 @@ P 17150 4200
 F 0 "U10" H 16850 4100 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 16650 4300 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 4200 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 17150 4200 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 17150 4200 50  0001 C CNN
 	5    17150 4200
 	-1   0    0    1   
 $EndComp
@@ -2917,7 +2917,7 @@ P 17150 6050
 F 0 "U10" H 16850 5950 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 16650 6150 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 6050 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 17150 6050 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 17150 6050 50  0001 C CNN
 	6    17150 6050
 	-1   0    0    1   
 $EndComp
@@ -2928,7 +2928,7 @@ P 17150 4700
 F 0 "U9" H 17400 4800 50  0000 C CNN
 F 1 "74LVC06AD" H 17550 4600 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 4700 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 17150 4700 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 4700 50  0001 C CNN
 	2    17150 4700
 	1    0    0    -1  
 $EndComp
@@ -2939,7 +2939,7 @@ P 17150 2900
 F 0 "U9" H 17400 3000 50  0000 C CNN
 F 1 "74LVC06AD" H 17550 2800 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 2900 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 17150 2900 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 2900 50  0001 C CNN
 	5    17150 2900
 	1    0    0    -1  
 $EndComp
@@ -2950,7 +2950,7 @@ P 17150 3800
 F 0 "U9" H 17400 3900 50  0000 C CNN
 F 1 "74LVC06AD" H 17550 3700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 3800 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 17150 3800 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 3800 50  0001 C CNN
 	6    17150 3800
 	1    0    0    -1  
 $EndComp
@@ -2961,7 +2961,7 @@ P 16950 7100
 F 0 "U9" H 16800 7450 50  0000 C CNN
 F 1 "74LVC06AD" H 17200 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 16950 7100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 16950 7100 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 16950 7100 50  0001 C CNN
 	7    16950 7100
 	1    0    0    -1  
 $EndComp
@@ -2972,7 +2972,7 @@ P 17550 7100
 F 0 "U10" H 17400 7450 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 17900 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17550 7100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 17550 7100 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 17550 7100 50  0001 C CNN
 	7    17550 7100
 	1    0    0    -1  
 $EndComp
@@ -3058,7 +3058,7 @@ P 17150 1000
 F 0 "U9" H 17400 1100 50  0000 C CNN
 F 1 "74LVC06AD" H 17550 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 1000 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74LS06" H 17150 1000 50  0001 C CNN
+F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 1000 50  0001 C CNN
 	4    17150 1000
 	1    0    0    -1  
 $EndComp
@@ -4274,7 +4274,7 @@ P 13350 10550
 F 0 "U12" H 13400 10400 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 13350 10750 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 13350 10550 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 13350 10550 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 13350 10550 50  0001 C CNN
 	5    13350 10550
 	-1   0    0    1   
 $EndComp
@@ -4285,7 +4285,7 @@ P 13350 10000
 F 0 "U12" H 13400 9850 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 13350 10200 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 13350 10000 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 13350 10000 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 13350 10000 50  0001 C CNN
 	4    13350 10000
 	-1   0    0    1   
 $EndComp
@@ -4631,7 +4631,7 @@ P 11300 10000
 F 0 "U12" H 11400 9850 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 11300 10200 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11300 10000 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 11300 10000 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 11300 10000 50  0001 C CNN
 	1    11300 10000
 	-1   0    0    1   
 $EndComp
@@ -4642,7 +4642,7 @@ P 11300 10500
 F 0 "U12" H 11400 10350 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 11300 10700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11300 10500 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 11300 10500 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 11300 10500 50  0001 C CNN
 	2    11300 10500
 	-1   0    0    1   
 $EndComp
@@ -4653,7 +4653,7 @@ P 11300 11000
 F 0 "U12" H 11400 10850 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 11300 11200 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11300 11000 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 11300 11000 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 11300 11000 50  0001 C CNN
 	3    11300 11000
 	-1   0    0    1   
 $EndComp
@@ -4846,7 +4846,7 @@ P 9500 10450
 F 0 "U12" H 9850 10450 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 10050 10350 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 9500 10450 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 9500 10450 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 9500 10450 50  0001 C CNN
 	7    9500 10450
 	1    0    0    -1  
 $EndComp
@@ -5059,7 +5059,7 @@ P 13350 11050
 F 0 "U12" H 13400 10900 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 13350 11250 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 13350 11050 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 13350 11050 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 13350 11050 50  0001 C CNN
 	6    13350 11050
 	-1   0    0    1   
 $EndComp
@@ -5952,7 +5952,7 @@ P 11800 7100
 F 0 "U6" H 11650 7450 50  0000 C CNN
 F 1 "MC74LVX14DR2G" H 12150 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11800 7100 50  0001 C CNN
-F 3 "http://www.ti.com/lit/gpn/sn74HC14" H 11800 7100 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF" H 11800 7100 50  0001 C CNN
 	7    11800 7100
 	1    0    0    -1  
 $EndComp
