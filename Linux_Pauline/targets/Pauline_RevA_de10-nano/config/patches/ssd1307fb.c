@@ -106,6 +106,9 @@ struct ssd1307fb_par {
 	struct timer_list timer;
 	int next_page_update;
 	int controller_type;
+	u8  modified_pages_flags;
+	u8  pages_mask;
+	struct mutex mutex_pages_flags;
 };
 
 struct ssd1307fb_array {
@@ -250,7 +253,7 @@ static int ssd1307fb_test_gdram_readaccess(struct i2c_client *client)
 	return 1;
 }
 
-static void ssd1307fb_update_display(struct ssd1307fb_par *par)
+static int ssd1307fb_update_display(struct ssd1307fb_par *par)
 {
 	struct ssd1307fb_array *array;
 	u8 *vmem = par->info->screen_base;
@@ -258,12 +261,15 @@ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
 	u32 src_buf_page_offset,src_line_offset,page_size;
 	u32 line_size;
 
+	if( !par->modified_pages_flags )
+		return -1;
+
 	page_size = par->width;
 
 	array = ssd1307fb_alloc_array( 6 + page_size,
-				      SSD1307FB_COMMAND);
+				      SSD1307FB_COMMAND );
 	if (!array)
-		return;
+		return -1;
 
 	/*
 	 * The screen is divided in pages, each having a height of 8
@@ -299,7 +305,24 @@ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
 
 	array_idx = 0;
 
-	page_nb = par->next_page_update;
+	page_nb = par->next_page_update & 7;
+
+	if( !mutex_lock_interruptible(&par->mutex_pages_flags) ) {
+
+		// Find the next page to update.
+		while( !( par->modified_pages_flags & ( 0x01 << page_nb ) ) ) {
+			page_nb = ( ( page_nb + 1 ) & 7 );
+		}
+
+		par->modified_pages_flags &= ( ~( 0x01 << (page_nb & 7) ) );
+
+		mutex_unlock(&par->mutex_pages_flags);
+	}
+	else {
+		kfree(array);
+		return -1;
+	}
+
 	src_buf_page_offset = page_size * page_nb;
 
 	//array->data[array_idx++] = 0x80;          // Command - Continue
@@ -330,17 +353,22 @@ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
 	ssd1307fb_write_array(par->client, array, array_idx);
 
 	kfree(array);
+
+	return page_nb;
 }
 
 static void ssd1307fb_timer_fn(unsigned long arg)
 {
+	int ret;
 	struct ssd1307fb_par *par;
 
 	par = (struct ssd1307fb_par *)arg;
 
-	ssd1307fb_update_display(par);
+	ret = ssd1307fb_update_display(par);
 
-	par->next_page_update = ( par->next_page_update + 1 ) & ( (par->height/8) - 1 );
+	if(ret >= 0) {
+		par->next_page_update = ( ret + 1 ) & ( (par->height/8) - 1 );
+	}
 
 	par->timer.expires += (100 * PAGE_REFRESH_INTERVAL / 1000);
 	add_timer(&par->timer);
@@ -349,7 +377,7 @@ static void ssd1307fb_timer_fn(unsigned long arg)
 static ssize_t ssd1307fb_write(struct fb_info *info, const char __user *buf,
 		size_t count, loff_t *ppos)
 {
-	//struct ssd1307fb_par *par = info->par;
+	struct ssd1307fb_par *par = info->par;
 	unsigned long total_size;
 	unsigned long p = *ppos;
 	void *dst;
@@ -370,9 +398,14 @@ static ssize_t ssd1307fb_write(struct fb_info *info, const char __user *buf,
 	if (copy_from_user(dst, buf, count))
 		return -EFAULT;
 
-	//ssd1307fb_update_display(par);
-
 	*ppos += count;
+
+	if( !mutex_lock_interruptible(&par->mutex_pages_flags) ) {
+
+		par->modified_pages_flags = par->pages_mask;
+
+		mutex_unlock(&par->mutex_pages_flags);
+	}
 
 	return count;
 }
@@ -389,23 +422,44 @@ static int ssd1307fb_blank(int blank_mode, struct fb_info *info)
 
 static void ssd1307fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
 {
-	//struct ssd1307fb_par *par = info->par;
+	struct ssd1307fb_par *par = info->par;
+
 	sys_fillrect(info, rect);
-	//ssd1307fb_update_display(par);
+
+	if( !mutex_lock_interruptible(&par->mutex_pages_flags) ) {
+
+		par->modified_pages_flags = par->pages_mask;
+
+		mutex_unlock(&par->mutex_pages_flags);
+	}
 }
 
 static void ssd1307fb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
 {
-	//struct ssd1307fb_par *par = info->par;
+	struct ssd1307fb_par *par = info->par;
+
 	sys_copyarea(info, area);
-	//ssd1307fb_update_display(par);
+
+	if( !mutex_lock_interruptible(&par->mutex_pages_flags) ) {
+
+		par->modified_pages_flags = par->pages_mask;
+
+		mutex_unlock(&par->mutex_pages_flags);
+	}
 }
 
 static void ssd1307fb_imageblit(struct fb_info *info, const struct fb_image *image)
 {
-	//struct ssd1307fb_par *par = info->par;
+	struct ssd1307fb_par *par = info->par;
+
 	sys_imageblit(info, image);
-	//ssd1307fb_update_display(par);
+
+	if( !mutex_lock_interruptible(&par->mutex_pages_flags) ) {
+
+		par->modified_pages_flags = par->pages_mask;
+
+		mutex_unlock(&par->mutex_pages_flags);
+	}
 }
 
 static struct fb_ops ssd1307fb_ops = {
@@ -421,7 +475,17 @@ static struct fb_ops ssd1307fb_ops = {
 static void ssd1307fb_deferred_io(struct fb_info *info,
 				struct list_head *pagelist)
 {
-	//ssd1307fb_update_display(info->par);
+	struct ssd1307fb_par *par = info->par;
+
+	par->modified_pages_flags = par->pages_mask;
+
+	if( !mutex_lock_interruptible(&par->mutex_pages_flags) ) {
+
+		par->modified_pages_flags = par->pages_mask;
+
+		mutex_unlock(&par->mutex_pages_flags);
+	}
+
 }
 
 static int ssd1307fb_init(struct ssd1307fb_par *par)
@@ -662,6 +726,8 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
 	if (ret < 0)
 		return ret;
 
+	par->pages_mask = ( 0xFF >> ( 8 - DIV_ROUND_UP(par->height, 8) ) );
+
 	/* Clear screen */
 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAYALLON_RESUME);
 	if (ret < 0)
@@ -845,6 +911,8 @@ static int ssd1307fb_probe(struct i2c_client *client,
 	par->contrast = 127;
 	par->vcomh = par->device_info->default_vcomh;
 
+	mutex_init( &par->mutex_pages_flags );
+
 	/* Setup display timing */
 	if (of_property_read_u32(node, "solomon,dclk-div", &par->dclk_div))
 		par->dclk_div = par->device_info->default_dclk_div;
@@ -976,8 +1044,12 @@ static int ssd1307fb_remove(struct i2c_client *client)
 		pwm_disable(par->pwm);
 		pwm_put(par->pwm);
 	}
+
 	if (par->vbat_reg)
 		regulator_disable(par->vbat_reg);
+
+	mutex_destroy(&par->mutex_pages_flags);
+
 	fb_deferred_io_cleanup(info);
 	__free_pages(__va(info->fix.smem_start), get_order(info->fix.smem_len));
 	framebuffer_release(info);
