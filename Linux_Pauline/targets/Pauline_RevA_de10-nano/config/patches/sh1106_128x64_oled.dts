@@ -15,7 +15,11 @@
 					/*solomon,com-seq;*/
 					solomon,segment-no-remap;
 					solomon,page-offset = <0>;
-					solomon,segment-offset = <2>;
+					// When segment-offset is not assigned,
+					// the segment offset is automatically set
+					// according to the detected controller :
+					// SH1106 : 2 pixels offset, SSD130X : 0 pixel offset.
+					/*solomon,segment-offset = <0>;*/
 					/*solomon,com-invdir;*/
 					solomon,com-offset = <0>;
 					solomon,lookup-table = /bits/ 8 <0x3f 0x3f 0x3f 0x3f>;
