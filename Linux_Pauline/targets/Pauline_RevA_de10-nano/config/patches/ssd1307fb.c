@@ -7,8 +7,8 @@
 
 /*
  * May-2020 : Timer deferred screen update.
- *            Page oriented screen update
- *            I2C SH1106 controller support
+ *            Page oriented screen update.
+ *            I2C SH1106 controller support.
  *
  * (c) 2020 Jean-François DEL NERO
  */
@@ -105,6 +105,7 @@ struct ssd1307fb_par {
 	u32 width;
 	struct timer_list timer;
 	int next_page_update;
+	int controller_type;
 };
 
 struct ssd1307fb_array {
@@ -175,6 +176,80 @@ static inline int ssd1307fb_write_cmd(struct i2c_client *client, u8 cmd)
 	return ret;
 }
 
+// ssd1307fb_test_gdram_readaccess : Function to test the GDRAM read capability.
+// Used to detect SH1106 controller.
+
+#define MEM_TEST_PATTERN(index) ( ( 0xAA ^ ( ( index & 0xF ) ^ ( ( (0xB - index) & 0xF ) << 4 ) ) ) & 0xFF )
+
+static int ssd1307fb_test_gdram_readaccess(struct i2c_client *client)
+{
+	int array_idx;
+	int data_idx;
+	int i;
+	struct i2c_msg msgs[2];
+	struct ssd1307fb_array *array;
+
+	array = ssd1307fb_alloc_array( 6 + 16,
+				      SSD1307FB_COMMAND);
+	if (!array)
+		return 0;
+
+	// Write the test pattern
+	array_idx = 0;
+
+	array->data[array_idx++] = 0xB0 | 0x00;	    // Set page number
+	array->data[array_idx++] = 0x80;            // Command - Continue
+	array->data[array_idx++] = SSD1307FB_SET_LOW_COLUMN | (0x02 & 0xFF);
+	array->data[array_idx++] = 0x80;            // Command - Continue
+	array->data[array_idx++] = SSD1307FB_SET_HIGH_COLUMN | ( (0x02 >> 4) & 0xFF);
+
+	array->data[array_idx++] = 0x40;            // Data - No Continue
+
+	data_idx = array_idx;
+
+	for(i=0;i<8;i++)
+	{
+		array->data[array_idx++] = MEM_TEST_PATTERN(i);
+	}
+
+	ssd1307fb_write_array(client, array, array_idx);
+
+	// Now read back and check the GDRAM content.
+
+	msgs[0].addr = client->addr;
+	msgs[0].flags = 0;
+	msgs[0].len = 1 + data_idx;
+	msgs[0].buf = (unsigned char*)array;
+
+	msgs[1].addr = client->addr;
+	msgs[1].flags = I2C_M_RD | I2C_M_NO_RD_ACK;
+	msgs[1].len = 1 + 8;        // 1 dummy read byte + 8 test bytes.
+	msgs[1].buf = (unsigned char*)array;
+
+	if( i2c_transfer(client->adapter, (struct i2c_msg *)&msgs, 2) != 2 ) {
+		kfree(array);
+		return 0;
+	}
+
+	for(i=0;i<8;i++)
+	{
+		// check the test pattern.
+		if( array->data[i] != MEM_TEST_PATTERN(i) )
+		{
+			// Error - probably an SSD130X controller
+			kfree(array);
+
+			return 0;
+		}
+	}
+
+	// Read back capability ok.
+
+	kfree(array);
+
+	return 1;
+}
+
 static void ssd1307fb_update_display(struct ssd1307fb_par *par)
 {
 	struct ssd1307fb_array *array;
@@ -227,14 +302,14 @@ static void ssd1307fb_update_display(struct ssd1307fb_par *par)
 	page_nb = par->next_page_update;
 	src_buf_page_offset = page_size * page_nb;
 
-	//array->data[array_idx++] = 0x80;			// Command - Continue
-	array->data[array_idx++] = 0xB0 | page_nb;	// Set page number
-	array->data[array_idx++] = 0x80;			// Command - Continue
+	//array->data[array_idx++] = 0x80;          // Command - Continue
+	array->data[array_idx++] = 0xB0 | page_nb;  // Set page number
+	array->data[array_idx++] = 0x80;            // Command - Continue
 	array->data[array_idx++] = SSD1307FB_SET_LOW_COLUMN | (par->segment_offset & 0xFF);
-	array->data[array_idx++] = 0x80;			// Command - Continue
+	array->data[array_idx++] = 0x80;            // Command - Continue
 	array->data[array_idx++] = SSD1307FB_SET_HIGH_COLUMN | ( (par->segment_offset >> 8) & 0xFF);
 
-	array->data[array_idx++] = 0x40;			// Data - No Continue
+	array->data[array_idx++] = 0x40;            // Data - No Continue
 
 	for (j = 0; j < par->width; j++) {
 
@@ -354,7 +429,6 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
 	int ret;
 	u32 precharge, dclk, com_invdir, compins;
 	struct pwm_args pargs;
-	int i;
 
 	if (par->device_info->need_pwm) {
 		par->pwm = pwm_get(&par->client->dev, NULL);
@@ -549,6 +623,30 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
 		return ret;
 #endif
 
+	/* Detect the screen controller type */
+	if( ssd1307fb_test_gdram_readaccess(par->client) ) {
+		// SSH1106 controller
+		par->controller_type = 1;
+	}
+	else {
+		// SSD130X controller
+		par->controller_type = 0;
+	}
+
+	// If segment_offset is unspecified then
+	// set it to the value according to
+	// the detected controller.
+	if( par->segment_offset == (u32)(-1) ){
+		if( par->controller_type ) {
+			// SSH1106 case : These screens are mostly 2 pixels shifted.
+			par->segment_offset = 2;
+		}
+		else {
+			// SSD130X : 0 pixel offset.
+			par->segment_offset = 0;
+		}
+	}
+
 	/* Set page range */
 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PAGE_RANGE);
 	if (ret < 0)
@@ -720,7 +818,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
 		par->page_offset = 1;
 
 	if (of_property_read_u32(node, "solomon,segment-offset", &par->segment_offset))
-		par->segment_offset = 0;
+		par->segment_offset = (u32)-1;
 
 	if (of_property_read_u32(node, "solomon,com-offset", &par->com_offset))
 		par->com_offset = 0;
@@ -892,6 +990,7 @@ static const struct i2c_device_id ssd1307fb_i2c_id[] = {
 	{ "ssd1306fb", 0 },
 	{ "ssd1307fb", 0 },
 	{ "ssd1309fb", 0 },
+	{ "sh1106fb", 0 },
 	{ }
 };
 MODULE_DEVICE_TABLE(i2c, ssd1307fb_i2c_id);
@@ -908,6 +1007,6 @@ static struct i2c_driver ssd1307fb_driver = {
 
 module_i2c_driver(ssd1307fb_driver);
 
-MODULE_DESCRIPTION("FB driver for the Solomon SSD1307 OLED controller");
-MODULE_AUTHOR("Maxime Ripard <maxime.ripard@free-electrons.com>");
+MODULE_DESCRIPTION("FB driver for the Solomon SSD1305/6/7/9 and Sino Wealth SH1106 I2C OLED controllers");
+MODULE_AUTHOR("Maxime Ripard <maxime.ripard@free-electrons.com>,Jean-François DEL NERO <jeanfrancoisdelnero@free.fr>");
 MODULE_LICENSE("GPL");
