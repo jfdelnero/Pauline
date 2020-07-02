@@ -158,6 +158,13 @@ void printf_screen(int xpos, int ypos, unsigned int flags, char * string, ...)
 	if(fd)
 	{
 		ret = read(fd, buffer, (FB_XSIZE*FB_YSIZE)/8);
+		if(ret < 0)
+		{
+			if(flags & PRINTSCREEN_BLACK_FG)
+				memset(buffer,0xFF,(FB_XSIZE*FB_YSIZE)/8);
+			else
+				memset(buffer,0x00,(FB_XSIZE*FB_YSIZE)/8);				
+		}
 
 		va_start( marker, string );
 
@@ -212,7 +219,6 @@ void splash_screen(	bitmap_data * screen )
 {
 	unsigned char * buffer;
 	int x,y,fd;
-	int ret;
 
 	if(!screen)
 		return;
@@ -232,7 +238,7 @@ void splash_screen(	bitmap_data * screen )
 		fd = open( SCREEN_FB, O_RDWR);
 		if(fd)
 		{
-			ret = write(fd, buffer, (FB_XSIZE*FB_YSIZE)/8);
+			write(fd, buffer, (FB_XSIZE*FB_YSIZE)/8);
 			close(fd);
 		}
 

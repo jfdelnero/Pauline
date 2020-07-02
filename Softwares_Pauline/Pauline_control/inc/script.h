@@ -33,12 +33,12 @@ int execute_line(char * line);
 int savepinstate_script(char * filename);
 
 // Output Message level
-#define MSG_NONE                         0
-#define MSG_INFO_0                       1
-#define MSG_INFO_1                       2
-#define MSG_WARNING                      3
-#define MSG_ERROR                        4
-#define MSG_DEBUG                        5
+#define MSGTYPE_NONE                         0
+#define MSGTYPE_INFO_0                       1
+#define MSGTYPE_INFO_1                       2
+#define MSGTYPE_WARNING                      3
+#define MSGTYPE_ERROR                        4
+#define MSGTYPE_DEBUG                        5
 
 typedef int (* PRINTF_FUNC)(int MSGTYPE, char * string, ... );
 

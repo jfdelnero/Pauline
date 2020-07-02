@@ -251,6 +251,16 @@ typedef struct _fpga_state
 
 	uint16_t * conv_lut;
 
+	int drive_sel_reg_number[4];
+	unsigned int drive_sel_bit_mask[4];
+
+	int drive_mot_reg_number[4];
+	unsigned int drive_mot_bit_mask[4];
+
+	HXCFE* libhxcfe;
+
+	pthread_mutex_t io_fpga_mutex;
+
 }fpga_state;
 
 
@@ -282,3 +292,4 @@ void set_extio(fpga_state * state, int io, int oe, int data);
 
 void test_interface(fpga_state * state);
 
+int get_drive_io(fpga_state * fpga, char * name, int drive, int * regs, unsigned int * bitmask);

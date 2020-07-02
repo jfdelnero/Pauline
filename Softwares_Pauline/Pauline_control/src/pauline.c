@@ -39,6 +39,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include "libhxcfe.h"
 #include "utils.h"
 #include "fpga.h"
 #include "stream_hfe.h"
@@ -139,6 +140,7 @@ void printhelp(char* argv[])
 	printf("  -license\t\t\t: Print the license\n");
 	printf("  -verbose\t\t\t: Verbose mode\n");
 	printf("  -home_folder:[path]\t\t\t: Set the base folder\n");
+	printf("  -initscript:[path]\t\t\t: Set the init script path\n");
 	printf("  -reset\t\t\t: FPGA reset\n");
 	printf("  -drive:[drive nb]\t\t: select the drive number\n");
 	printf("  -load:[filename]\t\t: load the a image\n");
@@ -190,6 +192,7 @@ int main(int argc, char* argv[])
 	int dump_time_per_track;
 	int high_res_mode;
 	int ret,index_to_dump_delay;
+	HXCFE* libhxcfe;
 
 	pthread_t listener_thread;
 
@@ -205,6 +208,8 @@ int main(int argc, char* argv[])
 	printf("This program comes with ABSOLUTELY NO WARRANTY\n");
 	printf("This is free software, and you are welcome to redistribute it\n");
 	printf("under certain conditions;\n\n");
+
+	libhxcfe = hxcfe_init();
 
 	// License print...
 	if(isOption(argc,argv,"license",0)>0)
@@ -222,6 +227,23 @@ int main(int argc, char* argv[])
 	if(isOption(argc,argv,"help",0)>0)
 	{
 		printhelp(argv);
+	}
+
+	if(isOption(argc,argv,"initscript",(char*)&filename)>0)
+	{
+		ret = hxcfe_execScriptFile( libhxcfe, filename );
+	}
+	else
+	{
+		ret = hxcfe_execScriptFile( libhxcfe, "/home/pauline/Settings/drives.script" );
+	}
+
+	if( ret < 0)
+	{
+		printf("Error while reading the init script !\n");
+
+		hxcfe_deinit( libhxcfe );
+		exit(-1);
 	}
 
 	if(isOption(argc,argv,"servertst",0)>0)
@@ -245,7 +267,16 @@ int main(int argc, char* argv[])
 	if(!fpga)
 	{
 		printf("FPGA Init failed !\n");
+		hxcfe_deinit( libhxcfe );
 		exit(-1);
+	}
+
+	fpga->libhxcfe = libhxcfe;
+
+	for(i=0;i<4;i++)
+	{
+		get_drive_io(fpga, "DRIVE_%d_SELECT_LINE", i, &fpga->drive_sel_reg_number[i], &fpga->drive_sel_bit_mask[i]);
+		get_drive_io(fpga, "DRIVE_%d_MOTOR_LINE", i, &fpga->drive_mot_reg_number[i], &fpga->drive_mot_bit_mask[i]);
 	}
 
 	if(isOption(argc,argv,"home_folder",(char*)&home_folder)>0)
@@ -512,6 +543,7 @@ int main(int argc, char* argv[])
 
 			floppy_ctrl_select_drive(fpga, drive, 0);
 			floppy_ctrl_motor(fpga, drive, 0);
+			hxcfe_deinit( libhxcfe );
 			exit(-1);
 		}
 
@@ -603,7 +635,9 @@ int main(int argc, char* argv[])
 		(isOption(argc,argv,"setiolow",0)<=0 ) &&
 		(isOption(argc,argv,"setiohigh",0)<=0 ) &&
 		(isOption(argc,argv,"setiohz",0)<=0 ) &&
+		(isOption(argc,argv,"initscript",0)<=0 ) &&
 		(isOption(argc,argv,"reset",0)<=0 )
+
 		)
 	{
 		printhelp(argv);

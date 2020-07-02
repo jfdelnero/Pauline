@@ -34,9 +34,13 @@
 #include <unistd.h>
 
 #include <stdint.h>
+#include <pthread.h>
+
+#include "libhxcfe.h"
 
 #include "fpga.h"
 #include "dump_chunk.h"
+#include "ios.h"
 
 static void prepare_LUT(uint16_t * lut)
 {
@@ -53,6 +57,30 @@ static void prepare_LUT(uint16_t * lut)
 		b++;
 		a--;
 	}
+}
+
+int get_drive_io(fpga_state * fpga, char * name, int drive, int * regs, unsigned int * bitmask)
+{
+	char str[512];
+	char * var;
+	int index;
+
+	sprintf(str,name,drive);
+
+	var = hxcfe_getEnvVar( fpga->libhxcfe, (char *)str, NULL );
+
+	if(var)
+	{
+		index = get_io_index(var);
+
+		if(index  >= 0)
+		{
+			get_io_address(index, regs, bitmask);
+			return 0;
+		}
+	}
+
+	return -1;
 }
 
 fpga_state * init_fpga()
@@ -97,6 +125,8 @@ fpga_state * init_fpga()
 	state->conv_lut = malloc(64 * 1024 * sizeof(uint16_t));
 
 	prepare_LUT(state->conv_lut);
+
+	pthread_mutex_init ( &state->io_fpga_mutex, NULL);
 
 	return state;
 }
@@ -263,39 +293,62 @@ void deinit_fpga(fpga_state * state)
 
 void floppy_ctrl_select_drive(fpga_state * state, int drive, int enable)
 {
+	pthread_mutex_lock( &state->io_fpga_mutex );
+
 	if(enable)
-		state->regs->floppy_ctrl_control |= (0x01<<(drive&3));
+		*(((uint32_t*)(state->regs)) + state->drive_sel_reg_number[drive&3]) |= (state->drive_sel_bit_mask[drive&3]);
 	else
-		state->regs->floppy_ctrl_control &= ~(0x01<<(drive&3));
+		*(((uint32_t*)(state->regs)) + state->drive_sel_reg_number[drive&3]) &= ~(state->drive_sel_bit_mask[drive&3]);
+
+	pthread_mutex_unlock( &state->io_fpga_mutex );
+
 }
 
 void floppy_ctrl_motor(fpga_state * state, int drive, int enable)
 {
+	pthread_mutex_lock( &state->io_fpga_mutex );
+
 	if(enable)
-		state->regs->floppy_ctrl_control |= (0x10);
+		*(((uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive&3]) |= (state->drive_mot_bit_mask[drive&3]);
 	else
-		state->regs->floppy_ctrl_control &= ~(0x10);
+		*(((uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive&3]) &= ~(state->drive_mot_bit_mask[drive&3]);
+
+	pthread_mutex_unlock( &state->io_fpga_mutex );
+
 }
 
 void floppy_ctrl_selectbyte(fpga_state * state, unsigned char byte)
 {
+	pthread_mutex_lock( &state->io_fpga_mutex );
+
 	state->regs->floppy_ctrl_control = ( (state->regs->floppy_ctrl_control & ~0x1F) | (byte & 0x1F));
+
+	pthread_mutex_unlock( &state->io_fpga_mutex );
 }
 
 
 void floppy_ctrl_side(fpga_state * state, int drive, int side)
 {
+	pthread_mutex_lock( &state->io_fpga_mutex );
+
 	if(side)
 		state->regs->floppy_ctrl_control |=  (0x20);
 	else
 		state->regs->floppy_ctrl_control &= ~(0x20);
+
+	pthread_mutex_unlock( &state->io_fpga_mutex );
+
 }
 
 
 void floppy_ctrl_move_head(fpga_state * state, int dir, int trk)
 {
+	pthread_mutex_lock( &state->io_fpga_mutex );
+
 	state->regs->floppy_ctrl_steprate = 12000;
 	state->regs->floppy_ctrl_headmove = 0x10000 | ((dir&1)<<17) | (trk & 0x1FF);
+
+	pthread_mutex_unlock( &state->io_fpga_mutex );
 
 	while(state->regs->floppy_ctrl_headmove & 0x10000)
 	{
@@ -347,10 +400,14 @@ void set_select_src(fpga_state * state, int drive, int src)
 
 	if(state)
 	{
-	    tmp = state->regs->drive_config[drive&3];
+		pthread_mutex_lock( &state->io_fpga_mutex );
+
+		tmp = state->regs->drive_config[drive&3];
 		tmp &= ~(0xF << 16);
 		tmp |= ((src&0xF) << 16);
 		state->regs->drive_config[drive&3] = tmp;
+
+		pthread_mutex_unlock( &state->io_fpga_mutex );
 	}
 }
 
@@ -360,10 +417,14 @@ void set_motor_src(fpga_state * state, int drive, int src)
 
 	if(state)
 	{
-	    tmp = state->regs->drive_config[drive&3];
+		pthread_mutex_lock( &state->io_fpga_mutex );
+
+		tmp = state->regs->drive_config[drive&3];
 		tmp &= ~(0xF << 20);
 		tmp |= ((src&0xF) << 20);
 		state->regs->drive_config[drive&3] = tmp;
+
+		pthread_mutex_unlock( &state->io_fpga_mutex );
 	}
 }
 
@@ -373,7 +434,9 @@ void enable_drive(fpga_state * state, int drive, int enable)
 
 	if(state)
 	{
-	    tmp = state->regs->control_reg;
+		pthread_mutex_lock( &state->io_fpga_mutex );
+
+		tmp = state->regs->control_reg;
 
 		if(enable)
 			tmp |= (0x1<<(drive&3));
@@ -383,12 +446,16 @@ void enable_drive(fpga_state * state, int drive, int enable)
 		tmp = tmp | 0x8000;
 
 		state->regs->control_reg = tmp;
+
+		pthread_mutex_unlock( &state->io_fpga_mutex );
 	}
 }
 
 void start_dump(fpga_state * state, uint32_t buffersize, int res, int delay, int ignore_index)
 {
 	uint32_t tmp;
+
+	pthread_mutex_lock( &state->io_fpga_mutex );
 
 	state->regs->dump_timeout_value = 2000 * 1000; // 2s
 	state->regs->dump_delay_value = delay; // 100ms
@@ -398,7 +465,11 @@ void start_dump(fpga_state * state, uint32_t buffersize, int res, int delay, int
 
 	state->last_dump_offset = 0x00000000;
 
+	pthread_mutex_unlock( &state->io_fpga_mutex );
+
 	alloc_dump_buffer(state, DUMP_IMAGE_BASE , buffersize, 1);
+
+	pthread_mutex_lock( &state->io_fpga_mutex );
 
 	state->regs->floppy_continuous_mode = state->regs->floppy_continuous_mode & ~0x10;
 
@@ -419,6 +490,8 @@ void start_dump(fpga_state * state, uint32_t buffersize, int res, int delay, int
 	state->regs->floppy_ctrl_control |= (0x1 << 21);
 	usleep(100);
 	state->regs->floppy_ctrl_control |= (0x1 << 20);
+
+	pthread_mutex_unlock( &state->io_fpga_mutex );
 }
 
 #define CHUNCK_MAX_SIZE ((((50000000/16)*4) / 16) & ~3) // a chunk size = 1/16 seconds @ 50Mhz
@@ -528,6 +601,8 @@ void set_extio(fpga_state * state, int io, int oe, int data)
 {
 	if(state)
 	{
+		pthread_mutex_lock( &state->io_fpga_mutex );
+
 		if(oe)
 		{
 			if(data)
@@ -546,6 +621,8 @@ void set_extio(fpga_state * state, int io, int oe, int data)
 			else
 				state->regs->gpio_reg &= ~( (0x01 << 2) << (io&3) );
 		}
+
+		pthread_mutex_unlock( &state->io_fpga_mutex );
 	}
 }
 

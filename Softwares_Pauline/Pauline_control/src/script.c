@@ -38,6 +38,8 @@
 #include <dirent.h>
 #include <errno.h>
 
+#include "libhxcfe.h"
+
 #include "script.h"
 #include "fpga.h"
 #include "network.h"
@@ -67,6 +69,7 @@ pthread_t     threads_dump;
 char thread_dump_cmdline[512];
 
 volatile int dump_running = 0;
+volatile int dump_drive = 0;
 volatile int stop_process = 0;
 
 volatile int headpos=0;
@@ -207,7 +210,7 @@ int is_dir_present(char * path)
 char global_search_name[512];
 int global_max_index;
 
-static int display_info(const char *fpath, const struct stat *sb, int tflag, struct FTW *ftwbuf)
+static int display_info(const char *fpath, const struct stat *sb, int tflag)
 {
 	int i,j,val;
 
@@ -438,7 +441,6 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 	int i,j;
 	char temp[512];
 	char folder_path[512];
-	DIR* dir;
 
 	FILE *f;
 	unsigned char * tmpptr;
@@ -449,21 +451,20 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 
 	f = NULL;
 	dump_running = 1;
+	dump_drive = drive;
 	if(!spy)
 	{
-		script_printf(MSG_INFO_0,"Start disk reading...\nTrack(s): %d <-> %d, Side(s): %d <-> %d, Ignore index: %d, Time: %dms, %s\n",dump_start_track,dump_max_track,dump_start_side,dump_max_side,ignore_index,dump_time_per_track,high_res_mode?"50Mhz":"25Mhz");
+		script_printf(MSGTYPE_INFO_0,"Start disk reading...\nTrack(s): %d <-> %d, Side(s): %d <-> %d, Ignore index: %d, Time: %dms, %s\n",dump_start_track,dump_max_track,dump_start_side,dump_max_side,ignore_index,dump_time_per_track,high_res_mode?"50Mhz":"25Mhz");
 
 		display_bmp("/data/pauline_splash_bitmaps/reading_floppy.bmp");
 
-	//	floppy_ctrl_motor(fpga, drive, 1);
-		floppy_ctrl_selectbyte(fpga, 0x1F);
-
+		floppy_ctrl_motor(fpga, drive, 1);
 
 		if( prepare_folder( name, comment, start_index, incmode, folder_path) < 0 )
 		{
 			display_bmp("/data/pauline_splash_bitmaps/error.bmp");
 
-			script_printf(MSG_ERROR,"ERROR : Can't create the folder\n",temp);
+			script_printf(MSGTYPE_ERROR,"ERROR : Can't create the folder\n",temp);
 			dump_running = 0;
 			return -1;
 		}
@@ -471,7 +472,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 		for(i=0;i<1000;i++)
 			usleep(1000);
 
-	//	floppy_ctrl_select_drive(fpga, drive, 1);
+		floppy_ctrl_select_drive(fpga, drive, 1);
 
 	//	usleep(1000);
 
@@ -490,11 +491,11 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 
 			if(i>=160)
 			{
-				script_printf(MSG_ERROR,"Head position calibration failed ! (%d)\n",i);
+				script_printf(MSGTYPE_ERROR,"Head position calibration failed ! (%d)\n",i);
 
-		//		floppy_ctrl_select_drive(fpga, drive, 0);
-		//		floppy_ctrl_motor(fpga, drive, 0);
-				floppy_ctrl_selectbyte(fpga, 0x00);
+				floppy_ctrl_select_drive(fpga, drive, 0);
+				floppy_ctrl_motor(fpga, drive, 0);
+				//floppy_ctrl_selectbyte(fpga, 0x00);
 
 				dump_running = 0;
 
@@ -516,7 +517,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 		}
 		else
 		{
-			script_printf(MSG_INFO_0,"Start spy mode reading...\nTime: %dms, %s\n",dump_time_per_track,high_res_mode?"50Mhz":"25Mhz");
+			script_printf(MSGTYPE_INFO_0,"Start spy mode reading...\nTime: %dms, %s\n",dump_time_per_track,high_res_mode?"50Mhz":"25Mhz");
 
 			dump_start_track = fpga->regs->floppy_ctrl_curtrack & 0x3FF;
 			dump_max_track = dump_start_track;
@@ -539,7 +540,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			f = fopen(temp,"wb");
 			if(!f)
 			{
-				script_printf(MSG_ERROR,"ERROR : Can't create %s\n",temp);
+				script_printf(MSGTYPE_ERROR,"ERROR : Can't create %s\n",temp);
 
 				display_bmp("/data/pauline_splash_bitmaps/error.bmp");
 			}
@@ -550,7 +551,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			else
 				buffersize = (dump_time_per_track * (((25000000 / 16 /*16 bits shift*/ ) * 4 /*A word is 4 bytes*/) / 1000));
 
-			printf_screen(-1, 46, NULL, "T:%.3d H:%d",i,j);
+			printf_screen(-1, 46, 0x00000000, "T:%.3d H:%d",i,j);
 
 			buffersize += ((4 - (buffersize&3)) & 3);
 
@@ -586,7 +587,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 					i = dump_max_track + 1;
 					j = dump_max_side + 1;
 					fpga->last_dump_offset = fpga->regs->floppy_dump_buffer_size;
-					script_printf(MSG_ERROR,"ERROR : get_next_available_stream_chunk failed !\n");
+					script_printf(MSGTYPE_ERROR,"ERROR : get_next_available_stream_chunk failed !\n");
 					display_bmp("/data/pauline_splash_bitmaps/error.bmp");
 				}
 			}
@@ -599,11 +600,11 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 				temp[strlen(temp) - 36] = '.';
 				temp[strlen(temp) - 35] = '.';
 				temp[strlen(temp) - 34] = '.';
-				script_printf(MSG_INFO_0,"%s done !\n",&temp[strlen(temp) - 36]);
+				script_printf(MSGTYPE_INFO_0,"%s done !\n",&temp[strlen(temp) - 36]);
 			}
 			else
 			{
-				script_printf(MSG_INFO_0,"%s done !\n",temp);
+				script_printf(MSGTYPE_INFO_0,"%s done !\n",temp);
 			}
 
 		}
@@ -630,9 +631,9 @@ readstop:
 
 	if(!spy)
 	{
-		floppy_ctrl_selectbyte(fpga, 0x00);
-		//floppy_ctrl_select_drive(fpga, drive, 0);
-		//floppy_ctrl_motor(fpga, drive, 0);
+		//floppy_ctrl_selectbyte(fpga, 0x00);
+		floppy_ctrl_select_drive(fpga, drive, 0);
+		floppy_ctrl_motor(fpga, drive, 0);
 	}
 
 	if(error)
@@ -641,11 +642,11 @@ readstop:
 		{
 			case PAULINE_INTERNAL_ERROR:
 				display_bmp("/data/pauline_splash_bitmaps/internal_error.bmp");
-				script_printf(MSG_INFO_0,"Internal error !\n");
+				script_printf(MSGTYPE_INFO_0,"Internal error !\n");
 			break;
 			case PAULINE_NOINDEX_ERROR:
 				display_bmp("/data/pauline_splash_bitmaps/no_index.bmp");
-				script_printf(MSG_INFO_0,"No index signal ! Disk in drive ?\n");
+				script_printf(MSGTYPE_INFO_0,"No index signal ! Disk in drive ?\n");
 			break;
 		}
 	}
@@ -653,12 +654,12 @@ readstop:
 	{
 		if(!stop_process)
 		{
-			script_printf(MSG_INFO_0,"Done...\n");
+			script_printf(MSGTYPE_INFO_0,"Done...\n");
 			display_bmp("/data/pauline_splash_bitmaps/done.bmp");
 		}
 		else
 		{
-			script_printf(MSG_INFO_0,"Stopped !!!\n");
+			script_printf(MSGTYPE_INFO_0,"Stopped !!!\n");
 			display_bmp("/data/pauline_splash_bitmaps/stopped.bmp");
 		}
 	}
@@ -756,18 +757,18 @@ int cmd_dump(char * line)
 			rc = pthread_create(&threads_dump, NULL, diskdump_thread, (void *)&thread_dump_cmdline);
 			if(rc)
 			{
-				script_printf(MSG_ERROR,"Error ! Can't Create the thread ! (Error %d)\r\n",rc);
+				script_printf(MSGTYPE_ERROR,"Error ! Can't Create the thread ! (Error %d)\r\n",rc);
 			}
 		}
 		else
 		{
-			script_printf(MSG_ERROR,"Error ! Dump already running !\r\n");
+			script_printf(MSGTYPE_ERROR,"Error ! Dump already running !\r\n");
 		}
 
 		return 1;
 	}
 
-	script_printf(MSG_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+	script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
 
 	return 0;
 
@@ -775,7 +776,7 @@ int cmd_dump(char * line)
 
 int cmd_stop(char * line)
 {
-	script_printf(MSG_INFO_0,"Stopping current dump...\n");
+	script_printf(MSGTYPE_INFO_0,"Stopping current dump...\n");
 
 	stop_process = 1;
 
@@ -786,7 +787,7 @@ int cmd_stop(char * line)
 
 	stop_process = 0;
 
-	script_printf(MSG_INFO_0,"Current dump stopped !\n");
+	script_printf(MSGTYPE_INFO_0,"Current dump stopped !\n");
 
 	return 1;
 }
@@ -797,7 +798,7 @@ int cmd_print(char * line)
 
 	i = get_param_offset(line, 1);
 	if(i>=0)
-		script_printf(MSG_NONE,"%s\n",&line[i]);
+		script_printf(MSGTYPE_NONE,"%s\n",&line[i]);
 
 	return 1;
 }
@@ -815,12 +816,12 @@ int cmd_set_pin_mode(char * line)
 
 	if(i>=0 && j>=0 && k>=0)
 	{
-		script_printf(MSG_INFO_0,"Pin %s mode set to %d\n",pinname,atoi(mode));
+		script_printf(MSGTYPE_INFO_0,"Pin %s mode set to %d\n",pinname,atoi(mode));
 
 		return 1;
 	}
 
-	script_printf(MSG_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+	script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
 
 	return 0;
 }
@@ -828,6 +829,7 @@ int cmd_set_pin_mode(char * line)
 int cmd_headstep(char * line)
 {
 	int i,j,track,dir;
+	int drive;
 	char trackstr[DEFAULT_BUFLEN];
 	char drivestr[DEFAULT_BUFLEN];
 
@@ -837,10 +839,17 @@ int cmd_headstep(char * line)
 	if(i>=0 && j>=0)
 	{
 		track = atoi(trackstr);
-		script_printf(MSG_INFO_0,"Head step : %d\n",track);
+		drive = atoi(drivestr);
 
-		floppy_ctrl_select_drive(fpga, atoi(drivestr), 1);
-		floppy_ctrl_selectbyte(fpga, 0x1F);
+		if( dump_running && (dump_drive != drive))
+		{
+			script_printf(MSGTYPE_ERROR,"Floppy bus busy\n");
+			return 0;
+		}
+
+		script_printf(MSGTYPE_INFO_0,"Head step : %d\n",track);
+
+		floppy_ctrl_select_drive(fpga, drive, 1);
 
 		usleep(1000);
 
@@ -866,20 +875,24 @@ int cmd_headstep(char * line)
 			headpos = 0;
 		}
 
-		//floppy_ctrl_selectbyte(fpga, 0x00);
-		//floppy_ctrl_select_drive(fpga, atoi(drivestr), 0);
+		if( !dump_running )
+		{
+			floppy_ctrl_select_drive(fpga, drive, 0);
+		}
 
 		return 1;
 	}
 
-	script_printf(MSG_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+	script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
 
 	return 0;
 }
 
 int cmd_movehead(char * line)
 {
-	int i,j,track,cur_track,dir;
+	int i,j,track,dir;
+	//int cur_track;
+	int drive;
 	char trackstr[DEFAULT_BUFLEN];
 	char drivestr[DEFAULT_BUFLEN];
 
@@ -889,11 +902,18 @@ int cmd_movehead(char * line)
 	if(i>=0 && j>=0)
 	{
 		track = atoi(trackstr);
-		cur_track = (fpga->regs->floppy_ctrl_curtrack & 0x3FF);
-		script_printf(MSG_INFO_0,"Head move : %d (cur pos: %d)\n",track);
+		drive = atoi(drivestr);
 
-		floppy_ctrl_select_drive(fpga, atoi(drivestr), 1);
-		floppy_ctrl_selectbyte(fpga, 0x1F);
+		if( dump_running && (dump_drive != drive))
+		{
+			script_printf(MSGTYPE_ERROR,"Floppy bus busy\n");
+			return 0;
+		}
+
+		//cur_track = (fpga->regs->floppy_ctrl_curtrack & 0x3FF);
+		script_printf(MSGTYPE_INFO_0,"Head move : %d (cur pos: %d)\n",track);
+
+		floppy_ctrl_select_drive(fpga, drive, 1);
 
 		usleep(12000);
 
@@ -931,9 +951,10 @@ int cmd_movehead(char * line)
 
 		usleep(12000);
 
-		//floppy_ctrl_select_drive(fpga, atoi(drivestr), 0);
-		//floppy_ctrl_selectbyte(fpga, 0x00);
-
+		if( !dump_running )
+		{
+			floppy_ctrl_select_drive(fpga, drive, 0);
+		}
 /*
 		if(track>0)
 		{
@@ -952,14 +973,14 @@ int cmd_movehead(char * line)
 		return 1;
 	}
 
-	script_printf(MSG_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+	script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
 
 	return 0;
 }
 
 int cmd_reset(char * line)
 {
-	script_printf(MSG_INFO_0,"FPGA reset \n");
+	script_printf(MSGTYPE_INFO_0,"FPGA reset \n");
 	reset_fpga(fpga);
 	return 0;
 }
@@ -968,20 +989,22 @@ int cmd_recalibrate(char * line)
 {
 	int i;
 	int ret;
+	int drive;
 	char drivestr[DEFAULT_BUFLEN];
 
 	i = get_param(line, 1,drivestr);
 	if(i>=0)
 	{
-		floppy_ctrl_select_drive(fpga, atoi(drivestr), 1);
-		floppy_ctrl_selectbyte(fpga, 0x1F);
+		drive = atoi(drivestr);
+
+		floppy_ctrl_select_drive(fpga, drive, 1);
 
 		usleep(1000);
 
 		ret = floppy_head_recalibrate(fpga);
 		if(ret < 0)
 		{
-			script_printf(MSG_ERROR,"Head position calibration failed ! (%d)\n",ret);
+			script_printf(MSGTYPE_ERROR,"Head position calibration failed ! (%d)\n",ret);
 
 			floppy_ctrl_select_drive(fpga, atoi(drivestr), 0);
 			return 0;
@@ -989,8 +1012,10 @@ int cmd_recalibrate(char * line)
 
 		headpos = 0;
 
-		//floppy_ctrl_selectbyte(fpga, 0x00);
-		//floppy_ctrl_select_drive(fpga, atoi(drivestr), 0);
+		if( !dump_running )
+		{
+			floppy_ctrl_select_drive(fpga, drive, 0);
+		}
 	}
 
 	return 1;
@@ -1010,14 +1035,14 @@ int cmd_set_motor_src(char * line)
 		drive = atoi(temp);
 		motsrc = atoi(temp2);
 
-		script_printf(MSG_INFO_0,"Drive %d Motor source : %d\n",drive,motsrc);
+		script_printf(MSGTYPE_INFO_0,"Drive %d Motor source : %d\n",drive,motsrc);
 
 		set_motor_src(fpga, drive, motsrc);
 
 		return 1;
 	}
 
-	script_printf(MSG_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+	script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
 
 	return 0;
 }
@@ -1036,14 +1061,14 @@ int cmd_set_select_src(char * line)
 		drive = atoi(temp);
 		selsrc = atoi(temp2);
 
-		script_printf(MSG_INFO_0,"Drive %d select source : %d\n",drive,selsrc);
+		script_printf(MSGTYPE_INFO_0,"Drive %d select source : %d\n",drive,selsrc);
 
 		set_select_src(fpga, drive, selsrc);
 
 		return 1;
 	}
 
-	script_printf(MSG_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+	script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
 
 	return 0;
 }
@@ -1065,12 +1090,12 @@ int cmd_set_dump_time_per_track(char * line)
 		if(dump_time_per_track > 60000)
 			dump_time_per_track = 60000;
 
-		script_printf(MSG_INFO_0,"dump_time_per_track : %d\n",dump_time_per_track);
+		script_printf(MSGTYPE_INFO_0,"dump_time_per_track : %d\n",dump_time_per_track);
 
 		return 1;
 	}
 
-	script_printf(MSG_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+	script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
 
 	return 0;
 }
@@ -1086,12 +1111,12 @@ int cmd_set_index_to_dump_time(char * line)
 	{
 		index_to_dump_delay = atoi(temp);
 
-		script_printf(MSG_INFO_0,"index_to_dump_delay : %d\n",index_to_dump_delay);
+		script_printf(MSGTYPE_INFO_0,"index_to_dump_delay : %d\n",index_to_dump_delay);
 
 		return 1;
 	}
 
-	script_printf(MSG_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+	script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
 
 	return 0;
 }
@@ -1100,7 +1125,7 @@ int cmd_help(char * line);
 
 int cmd_version(char * line)
 {
-	script_printf(MSG_INFO_0,"HxC Streamer version : %s, Date : "__DATE__" "__TIME__"\n","1.0.0.0");
+	script_printf(MSGTYPE_INFO_0,"HxC Streamer version : %s, Date : "__DATE__" "__TIME__"\n","1.0.0.0");
 	return 1;
 }
 
@@ -1111,7 +1136,7 @@ cmd_list cmdlist[] =
 	{"?",						cmd_help},
 	{"version",					cmd_version},
 
-	{"jtag_set_pin_dir",		cmd_set_pin_mode},
+	{"set_pin_dir",		        cmd_set_pin_mode},
 	{"headstep",				cmd_headstep},
 	{"motsrc",					cmd_set_motor_src},
 	{"selsrc",					cmd_set_select_src},
@@ -1176,12 +1201,12 @@ int cmd_help(char * line)
 {
 	int i;
 
-	script_printf(MSG_INFO_0,"Supported Commands :\n\n");
+	script_printf(MSGTYPE_INFO_0,"Supported Commands :\n\n");
 
 	i = 0;
 	while(cmdlist[i].func)
 	{
-		script_printf(MSG_NONE,"%s\n",cmdlist[i].command);
+		script_printf(MSGTYPE_NONE,"%s\n",cmdlist[i].command);
 		i++;
 	}
 
@@ -1198,7 +1223,7 @@ int execute_line(char * line)
 		{
 			if(exec_cmd(command,line) == ERROR_CMD_NOT_FOUND )
 			{
-				script_printf(MSG_ERROR,"Command not found ! : %s\n",line);
+				script_printf(MSGTYPE_ERROR,"Command not found ! : %s\n",line);
 				return 0;
 			}
 		}

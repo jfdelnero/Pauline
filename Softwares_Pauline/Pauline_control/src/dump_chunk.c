@@ -35,6 +35,8 @@
 
 #include <stdint.h>
 
+#include "libhxcfe.h"
+
 #include "streamhfe_format.h"
 #include "fpga.h"
 #include "dump_chunk.h"

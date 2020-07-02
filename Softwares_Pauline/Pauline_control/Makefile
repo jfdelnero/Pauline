@@ -6,13 +6,14 @@ UNAME := $(shell uname)
 INCLUDES = -I./inc
 
 DEBUG ?= 0
+LIBS=
 
 ifeq ($(DEBUG), 1)
 	CFLAGS=-O0 $(INCLUDES) -Wall -g -DDEBUG #-fsanitize=address -fno-omit-frame-pointer
-	LDFLAGS= -lc -lm -ldl -lpthread #-lasan
+	LDFLAGS= -lc -lm -ldl -lpthread ${TARGET_ROOTFS}/lib/libhxcfe.so
 else
 	CFLAGS=-O3 $(INCLUDES) -Wall
-	LDFLAGS= -lc -lm -ldl -lpthread -s
+	LDFLAGS= -lc -lm -ldl -lpthread ${TARGET_ROOTFS}/lib/libhxcfe.so -s
 endif
 
 sources := $(wildcard src/*.c)

@@ -51,6 +51,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+#include "libhxcfe.h"
+
 #include "script.h"
 
 #include "fpga.h"
@@ -210,29 +212,29 @@ int Printf_socket(int MSGTYPE,char * chaine, ...)
 	char textbuf[DEFAULT_BUFLEN];
 	int iSendResult,i,j;
 
-	if(MSGTYPE!=MSG_DEBUG)
+	if(MSGTYPE!=MSGTYPE_DEBUG)
 	{
 		va_list marker;
 		va_start( marker, chaine );
 
 		switch(MSGTYPE)
 		{
-			case MSG_NONE:
+			case MSGTYPE_NONE:
 				textbuf[0] = 0;
 			break;
-			case MSG_INFO_0:
+			case MSGTYPE_INFO_0:
 				sprintf(textbuf,"OK : ");
 			break;
-			case MSG_INFO_1:
+			case MSGTYPE_INFO_1:
 				sprintf(textbuf,"OK : ");
 			break;
-			case MSG_WARNING:
+			case MSGTYPE_WARNING:
 				sprintf(textbuf,"WARNING : ");
 			break;
-			case MSG_ERROR:
+			case MSGTYPE_ERROR:
 				sprintf(textbuf,"ERROR : ");
 			break;
-			case MSG_DEBUG:
+			case MSGTYPE_DEBUG:
 				sprintf(textbuf,"DEBUG : ");
 			break;
 		}
@@ -279,7 +281,7 @@ int print_netif_ips(int x,int y)
 	tmp = addrs;
 
 	i = 0;
-	while (tmp) 
+	while (tmp)
 	{
 		if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET)
 		{
@@ -287,7 +289,7 @@ int print_netif_ips(int x,int y)
 			//printf("%s: %s\n", tmp->ifa_name, inet_ntoa(pAddr->sin_addr));
 			if(!strcmp(tmp->ifa_name,"eth0"))
 			{
-				printf_screen(x, (y - 13), PRINTSCREEN_BLACK_FG, "%s", "IP:");				
+				printf_screen(x, (y - 13), PRINTSCREEN_BLACK_FG, "%s", "IP:");
 				printf_screen(x, y + (i * 13), PRINTSCREEN_BLACK_FG, "%s", inet_ntoa(pAddr->sin_addr));
 				i++;
 			}
@@ -296,7 +298,9 @@ int print_netif_ips(int x,int y)
 		tmp = tmp->ifa_next;
 	}
 
-	freeifaddrs(addrs);	
+	freeifaddrs(addrs);
+
+	return 0;
 }
 
 void *tcp_listener(void *threadid)
