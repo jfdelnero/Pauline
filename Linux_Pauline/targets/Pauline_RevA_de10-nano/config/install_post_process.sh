@@ -24,6 +24,11 @@ make mrproper
 make CC=${TGT_MACH}-gcc HxCFloppyEmulator_cmdline || exit 1
 
 mkdir ${TARGET_HOME}/output_objects/target_hxc_tool
+
+${BASE_DIR}/scripts/fix_bin_paths hxcfe ${TARGET_ROOTFS}
+${BASE_DIR}/scripts/fix_bin_paths libusbhxcfe.so ${TARGET_ROOTFS}
+${BASE_DIR}/scripts/fix_bin_paths libhxcfe.so ${TARGET_ROOTFS}
+
 cp   hxcfe  ${TARGET_HOME}/output_objects/target_hxc_tool/hxcfe || exit 1
 cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
 cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
@@ -46,6 +51,9 @@ cd ${PAULINE_BASE}/Softwares_Pauline/Pauline_control
 make clean
 make mrproper
 make CC=${TGT_MACH}-gcc  || exit 1
+
+${BASE_DIR}/scripts/fix_bin_paths ${PAULINE_BASE}/Softwares_Pauline/Pauline_control/pauline ${TARGET_ROOTFS}
+
 cp ${PAULINE_BASE}/Softwares_Pauline/Pauline_control/pauline ${TARGET_HOME}/output_objects || exit 1
 
 
