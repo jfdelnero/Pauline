@@ -28,6 +28,16 @@ cp   hxcfe  ${TARGET_HOME}/output_objects/target_hxc_tool/hxcfe || exit 1
 cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
 cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
 
+cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
+cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
+
+cp   libusbhxcfe.so  ${TARGET_ROOTFS}/lib/ || exit 1
+cp   libhxcfe.so  ${TARGET_ROOTFS}/lib/ || exit 1
+cp   ${PAULINE_BASE}/../../libhxcfe/trunk/sources/libhxcfe.h  ${TARGET_ROOTFS}/include/ || exit 1
+
+cp   libusbhxcfe.so  ${TARGET_ROOTFS_MIRROR}/lib/ || exit 1
+cp   libhxcfe.so  ${TARGET_ROOTFS_MIRROR}/lib/ || exit 1
+
 #
 # Generate Pauline tools
 #
@@ -209,7 +219,9 @@ sudo cp -ar ${PAULINE_BASE}/Softwares_Pauline/splash_screen/pauline_splash_bitma
 
 sudo mkdir  ${TARGET_HOME}/output_objects/tmp_mount_point/data/Documentations
 sudo mkdir  ${TARGET_HOME}/output_objects/tmp_mount_point/data/Tools
+sudo mkdir  ${TARGET_HOME}/output_objects/tmp_mount_point/data/Settings
 sudo cp -ar ${PAULINE_BASE}/Softwares_Pauline/splash_screen/pauline_splash_bitmaps ${TARGET_HOME}/output_objects/tmp_mount_point/data/ || exit 1
+sudo cp -ar ${PAULINE_BASE}/Softwares_Pauline/Pauline_control/settings/* ${TARGET_HOME}/output_objects/tmp_mount_point/data/Settings || exit 1
 sudo cp -ar ${TARGET_HOME}/output_objects/pc_hxc_tool ${TARGET_HOME}/output_objects/tmp_mount_point/data/Tools/
 
 ###
