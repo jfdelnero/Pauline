@@ -45,10 +45,23 @@
 io_def ios_definition[]=
 {
 	{"FLOPPY_DUMP_DS0",       OUT_OC,   0x23,  0},
+	{"FLOPPY_DUMP_MOTEA",     OUT_OC,   0x23,  0},
+	{"FLOPPY_DUMP_PIN10",     OUT_OC,   0x23,  0},
+
 	{"FLOPPY_DUMP_DS1",       OUT_OC,   0x23,  1},
+	{"FLOPPY_DUMP_DRVSB",     OUT_OC,   0x23,  1},
+	{"FLOPPY_DUMP_PIN12",     OUT_OC,   0x23,  1},
+
 	{"FLOPPY_DUMP_DS2",       OUT_OC,   0x23,  2},
+	{"FLOPPY_DUMP_DRVSA",     OUT_OC,   0x23,  2},
+	{"FLOPPY_DUMP_PIN14",     OUT_OC,   0x23,  2},
+
 	{"FLOPPY_DUMP_DS3",       OUT_OC,   0x23,  3},
+	{"FLOPPY_DUMP_PIN6",      OUT_OC,   0x23,  3},
+
 	{"FLOPPY_DUMP_MOTON",     OUT_OC,   0x23,  4},
+	{"FLOPPY_DUMP_MOTEB",     OUT_OC,   0x23,  4},
+
 	{"FLOPPY_DUMP_SIDE1",     OUT_OC,   0x23,  5},
 
 	{"FLOPPY_DUMP_TRK00",   INPUT_ST,   0x23,  6},
