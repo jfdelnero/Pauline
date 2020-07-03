@@ -2,40 +2,125 @@
 # Pauline drives configuration file
 #
 
+# -----------------------------------------------------------------------------
+#
+# To setup a drive you need to set its "Motor on" and "Select" lines.
+#
+# You can use up to 4 shugart drives or up to 2 PC drives.
+# See the notes if you want to mixup shugart and PC drives on the same bus.
+#
+# --- Shugart Floppy disk drives ---
+#
+# Shugart drives can have 4 differents select lines and 1 motor line.
+# The motor-on is common to all floppy drive on the same bus.
+#
+# Possible shugart select lines (one per drive !) :
+# FLOPPY_DUMP_DS0, FLOPPY_DUMP_DS1 , FLOPPY_DUMP_DS2 , FLOPPY_DUMP_DS3
+#
+# --- PC Floppy disk drives ---
+#
+# PC drives can have 2 differents settings :
+# - Drive "A:"
+# Select Line : FLOPPY_DUMP_DRVSA
+# Motor  Line : FLOPPY_DUMP_MOTEA
+#
+# - Drive "B:"
+# Select Line : FLOPPY_DUMP_DRVSB
+# Motor  Line : FLOPPY_DUMP_MOTEB
+#
+# --- Notes  ---
+# Note 1 :
+# Please note that some pins names are aliased :
+#
+# FLOPPY_DUMP_DS0, FLOPPY_DUMP_MOTEA and FLOPPY_DUMP_PIN10 point to the same pin 10.
+# FLOPPY_DUMP_DS1, FLOPPY_DUMP_DRVSB and FLOPPY_DUMP_PIN12 point to the same pin 12.
+# FLOPPY_DUMP_DS2, FLOPPY_DUMP_DRVSA and FLOPPY_DUMP_PIN14 point to the same pin 14.
+# FLOPPY_DUMP_MOTON, FLOPPY_DUMP_MOTEB and FLOPPY_DUMP_PIN16 point to the same pin 16.
+# FLOPPY_DUMP_DS3 and FLOPPY_DUMP_PIN6 point to the same pin 6.
+#
+# Note 2 :
+# - PC and shugart drives installed on the same floppy bus.
+#
+# You can install shugart and PC drive on the same bus in some conditions to
+# avoid signal conflict :
+#
+# Working case 1 :
+#
+# PC drive as "A:" (FLOPPY_DUMP_DRVSA + FLOPPY_DUMP_MOTEA)
+# Shugart drives can be installed on DS1 (FLOPPY_DUMP_DS1 + FLOPPY_DUMP_MOTON)
+# and on DS3 (FLOPPY_DUMP_DS3 + FLOPPY_DUMP_MOTON).
+#
+# Working case 2 :
+#
+# PC drive as "B:" (FLOPPY_DUMP_DRVSB + FLOPPY_DUMP_MOTEB)
+# Shugart drives can be installed on DS0 (FLOPPY_DUMP_DS0 + FLOPPY_DUMP_MOTON),
+# on DS2 (FLOPPY_DUMP_DS2 + FLOPPY_DUMP_MOTON),
+# and on DS3 (FLOPPY_DUMP_DS3 + FLOPPY_DUMP_MOTON).
+#
+# Note 3 :
+# - Twisted PC floppy ribbon
+#   A twisted PC floppy ribbon exchange the drive A and drive B select
+#   and motor signals.
+#   You can use shugart drives with a twisted PC floppy ribbon but remember
+#   that you may have to "mirror" your settings (DS0 become Motor-on,
+#   DS1 become DS2, Motor-on become DS0)
+#
+# -----------------------------------------------------------------------------
 
 #
 # Drive 0 settings
 #
 
-set DRIVE_0_DESCRIPTION "3.5 Inch EPSON"
+set DRIVE_0_DESCRIPTION "3.5-inch Floppy drive"
 set DRIVE_0_SELECT_LINE FLOPPY_DUMP_DS0
 set DRIVE_0_MOTOR_LINE  FLOPPY_DUMP_MOTON
-set DRIVE_0_MAX_TRACK   80
+set DRIVE_0_MAX_TRACK   82
 
 #
 # Drive 1 settings
 #
 
-set DRIVE_1_DESCRIPTION "3.5 Inch EPSON"
+set DRIVE_1_DESCRIPTION "5.25-inch Floppy drive"
 set DRIVE_1_SELECT_LINE FLOPPY_DUMP_DS1
 set DRIVE_1_MOTOR_LINE  FLOPPY_DUMP_MOTON
-set DRIVE_1_MAX_TRACK   80
+set DRIVE_1_MAX_TRACK   82
 
 #
 # Drive 2 settings
 #
 
-set DRIVE_2_DESCRIPTION "3.5 Inch EPSON"
+set DRIVE_2_DESCRIPTION "5.25-inch Floppy drive"
 set DRIVE_2_SELECT_LINE FLOPPY_DUMP_DS2
 set DRIVE_2_MOTOR_LINE  FLOPPY_DUMP_MOTON
-set DRIVE_2_MAX_TRACK   80
+set DRIVE_2_MAX_TRACK   82
 
 #
 # Drive 3 settings
 #
 
-set DRIVE_3_DESCRIPTION "3.5 Inch EPSON"
+set DRIVE_3_DESCRIPTION "8-inch Floppy drive"
 set DRIVE_3_SELECT_LINE FLOPPY_DUMP_DS3
 set DRIVE_3_MOTOR_LINE  FLOPPY_DUMP_MOTON
-set DRIVE_3_MAX_TRACK   80
+set DRIVE_3_MAX_TRACK   82
 
+#
+# PC drive settings example
+#
+
+#
+# Drive 0 settings
+#
+
+# set DRIVE_0_DESCRIPTION "3.5-inch Floppy drive"
+# set DRIVE_0_SELECT_LINE FLOPPY_DUMP_DRVSA
+# set DRIVE_0_MOTOR_LINE  FLOPPY_DUMP_MOTEA
+# set DRIVE_0_MAX_TRACK   82
+
+#
+# Drive 1 settings
+#
+
+# set DRIVE_1_DESCRIPTION "3.5-inch Floppy drive"
+# set DRIVE_1_SELECT_LINE FLOPPY_DUMP_DRVSB
+# set DRIVE_1_MOTOR_LINE  FLOPPY_DUMP_MOTEB
+# set DRIVE_1_MAX_TRACK   82
