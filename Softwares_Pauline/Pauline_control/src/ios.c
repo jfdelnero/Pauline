@@ -61,6 +61,7 @@ io_def ios_definition[]=
 
 	{"FLOPPY_DUMP_MOTON",     OUT_OC,   0x23,  4},
 	{"FLOPPY_DUMP_MOTEB",     OUT_OC,   0x23,  4},
+	{"FLOPPY_DUMP_PIN16",     OUT_OC,   0x23,  4},
 
 	{"FLOPPY_DUMP_SIDE1",     OUT_OC,   0x23,  5},
 
