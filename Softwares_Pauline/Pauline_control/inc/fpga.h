@@ -257,6 +257,8 @@ typedef struct _fpga_state
 	int drive_mot_reg_number[4];
 	unsigned int drive_mot_bit_mask[4];
 
+	int drive_max_steps[4];
+
 	HXCFE* libhxcfe;
 
 	pthread_mutex_t io_fpga_mutex;

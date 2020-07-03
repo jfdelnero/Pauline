@@ -275,6 +275,9 @@ int main(int argc, char* argv[])
 
 	for(i=0;i<4;i++)
 	{
+		sprintf(temp,"DRIVE_%d_MAX_STEPS",i);
+		fpga->drive_max_steps[i] = hxcfe_getEnvVarValue( fpga->libhxcfe, (char *)temp );
+
 		get_drive_io(fpga, "DRIVE_%d_SELECT_LINE", i, &fpga->drive_sel_reg_number[i], &fpga->drive_sel_bit_mask[i]);
 		get_drive_io(fpga, "DRIVE_%d_MOTOR_LINE", i, &fpga->drive_mot_reg_number[i], &fpga->drive_mot_bit_mask[i]);
 	}
@@ -549,6 +552,12 @@ int main(int argc, char* argv[])
 
 		if(dump_start_track)
 			floppy_ctrl_move_head(fpga, 1, dump_start_track);
+
+		if( dump_max_track > fpga->drive_max_steps[drive] )
+		{
+			printf("Warning : Drive Max step : %d !\n",fpga->drive_max_steps[drive]);
+			dump_max_track = fpga->drive_max_steps[drive];
+		}
 
 		for(i=dump_start_track;i<=dump_max_track;i++)
 		{

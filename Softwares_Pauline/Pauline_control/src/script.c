@@ -72,7 +72,7 @@ volatile int dump_running = 0;
 volatile int dump_drive = 0;
 volatile int stop_process = 0;
 
-volatile int headpos=0;
+volatile int headpos[4] = {0,0,0,0};
 void setOutputFunc( PRINTF_FUNC ext_printf )
 {
 	script_printf = ext_printf;
@@ -481,8 +481,8 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			i = 0;
 			while( !(fpga->regs->floppy_ctrl_control & (0x1<<6)) && i < 160 )
 			{
-				if(headpos)
-					headpos--;
+				if(headpos[drive])
+					headpos[drive]--;
 
 				floppy_ctrl_move_head(fpga, 0, 1);
 				usleep(12000);
@@ -504,14 +504,14 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 				return -1;
 			}
 
-			headpos = 0;
+			headpos[drive] = 0;
 
 			if(dump_start_track)
 			{
 				for(i=0;i<dump_start_track;i++)
 				{
 					floppy_ctrl_move_head(fpga, 1, 1);
-					headpos++;
+					headpos[drive]++;
 				}
 			}
 		}
@@ -527,6 +527,12 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 	{
 		dump_start_track = fpga->regs->floppy_ctrl_curtrack & 0x3FF;
 		dump_max_track = dump_start_track;
+	}
+
+	if( dump_max_track > fpga->drive_max_steps[drive] )
+	{
+		script_printf(MSGTYPE_WARNING,"Warning : Drive Max step : %d !\n",fpga->drive_max_steps[drive]);
+		dump_max_track = fpga->drive_max_steps[drive];
 	}
 
 	for(i=dump_start_track;i<=dump_max_track;i++)
@@ -614,12 +620,12 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			if(doubestep)
 			{
 				floppy_ctrl_move_head(fpga, 1, 2);
-				headpos++;
+				headpos[drive]++;
 			}
 			else
 			{
 				floppy_ctrl_move_head(fpga, 1, 1);
-				headpos++;
+				headpos[drive]++;
 			}
 		}
 	}
@@ -849,6 +855,12 @@ int cmd_headstep(char * line)
 
 		script_printf(MSGTYPE_INFO_0,"Head step : %d\n",track);
 
+		if( (headpos[drive] >= fpga->drive_max_steps[drive]) && (track>0) )
+		{
+			script_printf(MSGTYPE_WARNING,"Warning : Drive Max step : %d !\n",fpga->drive_max_steps[drive]);
+			return 0;
+		}
+
 		floppy_ctrl_select_drive(fpga, drive, 1);
 
 		usleep(1000);
@@ -856,14 +868,14 @@ int cmd_headstep(char * line)
 		if(track < 0)
 		{
 			track = -track;
-			headpos -= track;
-			if(headpos<0)
-				headpos=0;
+			headpos[drive] -= track;
+			if(headpos[drive]<0)
+				headpos[drive]=0;
 			dir = 0;
 		}
 		else
 		{
-			headpos += track;
+			headpos[drive] += track;
 
 			dir = 1;
 		}
@@ -872,7 +884,7 @@ int cmd_headstep(char * line)
 
 		if((fpga->regs->floppy_ctrl_control & (0x1<<6)))
 		{
-			headpos = 0;
+			headpos[drive] = 0;
 		}
 
 		if( !dump_running )
@@ -913,19 +925,26 @@ int cmd_movehead(char * line)
 		//cur_track = (fpga->regs->floppy_ctrl_curtrack & 0x3FF);
 		script_printf(MSGTYPE_INFO_0,"Head move : %d (cur pos: %d)\n",track);
 
+		if( track > fpga->drive_max_steps[drive] )
+		{
+			script_printf(MSGTYPE_WARNING,"Warning : Drive Max step : %d !\n",fpga->drive_max_steps[drive]);
+			track = fpga->drive_max_steps[drive];
+		}
+
+		
 		floppy_ctrl_select_drive(fpga, drive, 1);
 
 		usleep(12000);
 
 
-		if( headpos < track )
+		if( headpos[drive] < track )
 		{
-			track = (track - headpos);
+			track = (track - headpos[drive]);
 			dir = 1;
 		}
 		else
 		{
-			track = headpos - track;
+			track = headpos[drive] - track;
 			dir = 0;
 		}
 
@@ -935,17 +954,17 @@ int cmd_movehead(char * line)
 			usleep(12000);
 			if(!dir)
 			{
-				if(headpos)
-					headpos--;
+				if(headpos[drive])
+					headpos[drive]--;
 			}
 			else
 			{
-				headpos++;
+				headpos[drive]++;
 			}
 
 			if((fpga->regs->floppy_ctrl_control & (0x1<<6)))
 			{
-				headpos = 0;
+				headpos[drive] = 0;
 			}
 		}
 
@@ -1010,7 +1029,7 @@ int cmd_recalibrate(char * line)
 			return 0;
 		}
 
-		headpos = 0;
+		headpos[drive] = 0;
 
 		if( !dump_running )
 		{
