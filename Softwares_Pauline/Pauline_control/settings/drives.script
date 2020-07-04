@@ -15,28 +15,28 @@
 # The motor-on is common to all floppy drive on the same bus.
 #
 # Possible shugart select lines (one per drive !) :
-# FLOPPY_DUMP_DS0, FLOPPY_DUMP_DS1 , FLOPPY_DUMP_DS2 , FLOPPY_DUMP_DS3
+# DRIVES_PORT_DS0, DRIVES_PORT_DS1 , DRIVES_PORT_DS2 , DRIVES_PORT_DS3
 #
 # --- PC Floppy disk drives ---
 #
 # PC drives can have 2 differents settings :
 # - Drive "A:"
-# Select Line : FLOPPY_DUMP_DRVSA
-# Motor  Line : FLOPPY_DUMP_MOTEA
+# Select Line : DRIVES_PORT_DRVSA
+# Motor  Line : DRIVES_PORT_MOTEA
 #
 # - Drive "B:"
-# Select Line : FLOPPY_DUMP_DRVSB
-# Motor  Line : FLOPPY_DUMP_MOTEB
+# Select Line : DRIVES_PORT_DRVSB
+# Motor  Line : DRIVES_PORT_MOTEB
 #
 # --- Notes  ---
 # Note 1 :
 # Please note that some pins names are aliased :
 #
-# FLOPPY_DUMP_DS0, FLOPPY_DUMP_MOTEA and FLOPPY_DUMP_PIN10 point to the same pin 10.
-# FLOPPY_DUMP_DS1, FLOPPY_DUMP_DRVSB and FLOPPY_DUMP_PIN12 point to the same pin 12.
-# FLOPPY_DUMP_DS2, FLOPPY_DUMP_DRVSA and FLOPPY_DUMP_PIN14 point to the same pin 14.
-# FLOPPY_DUMP_MOTON, FLOPPY_DUMP_MOTEB and FLOPPY_DUMP_PIN16 point to the same pin 16.
-# FLOPPY_DUMP_DS3 and FLOPPY_DUMP_PIN6 point to the same pin 6.
+# DRIVES_PORT_DS0, DRIVES_PORT_MOTEA and DRIVES_PORT_PIN10 point to the same pin 10.
+# DRIVES_PORT_DS1, DRIVES_PORT_DRVSB and DRIVES_PORT_PIN12 point to the same pin 12.
+# DRIVES_PORT_DS2, DRIVES_PORT_DRVSA and DRIVES_PORT_PIN14 point to the same pin 14.
+# DRIVES_PORT_MOTON, DRIVES_PORT_MOTEB and DRIVES_PORT_PIN16 point to the same pin 16.
+# DRIVES_PORT_DS3 and DRIVES_PORT_PIN6 point to the same pin 6.
 #
 # Note 2 :
 # - PC and shugart drives installed on the same floppy bus.
@@ -46,16 +46,16 @@
 #
 # Working case 1 :
 #
-# PC drive as "A:" (FLOPPY_DUMP_DRVSA + FLOPPY_DUMP_MOTEA)
-# Shugart drives can be installed on DS1 (FLOPPY_DUMP_DS1 + FLOPPY_DUMP_MOTON)
-# and on DS3 (FLOPPY_DUMP_DS3 + FLOPPY_DUMP_MOTON).
+# PC drive as "A:" (DRIVES_PORT_DRVSA + DRIVES_PORT_MOTEA)
+# Shugart drives can be installed on DS1 (DRIVES_PORT_DS1 + DRIVES_PORT_MOTON)
+# and on DS3 (DRIVES_PORT_DS3 + DRIVES_PORT_MOTON).
 #
 # Working case 2 :
 #
-# PC drive as "B:" (FLOPPY_DUMP_DRVSB + FLOPPY_DUMP_MOTEB)
-# Shugart drives can be installed on DS0 (FLOPPY_DUMP_DS0 + FLOPPY_DUMP_MOTON),
-# on DS2 (FLOPPY_DUMP_DS2 + FLOPPY_DUMP_MOTON),
-# and on DS3 (FLOPPY_DUMP_DS3 + FLOPPY_DUMP_MOTON).
+# PC drive as "B:" (DRIVES_PORT_DRVSB + DRIVES_PORT_MOTEB)
+# Shugart drives can be installed on DS0 (DRIVES_PORT_DS0 + DRIVES_PORT_MOTON),
+# on DS2 (DRIVES_PORT_DS2 + DRIVES_PORT_MOTON),
+# and on DS3 (DRIVES_PORT_DS3 + DRIVES_PORT_MOTON).
 #
 # Note 3 :
 # - Twisted PC floppy ribbon
@@ -72,8 +72,8 @@
 #
 
 set DRIVE_0_DESCRIPTION "3.5-inch Floppy drive"
-set DRIVE_0_SELECT_LINE FLOPPY_DUMP_DS0
-set DRIVE_0_MOTOR_LINE  FLOPPY_DUMP_MOTON
+set DRIVE_0_SELECT_LINE DRIVES_PORT_DS0
+set DRIVE_0_MOTOR_LINE  DRIVES_PORT_MOTON
 set DRIVE_0_MAX_STEPS   82
 
 #
@@ -81,8 +81,8 @@ set DRIVE_0_MAX_STEPS   82
 #
 
 set DRIVE_1_DESCRIPTION "5.25-inch Floppy drive"
-set DRIVE_1_SELECT_LINE FLOPPY_DUMP_DS1
-set DRIVE_1_MOTOR_LINE  FLOPPY_DUMP_MOTON
+set DRIVE_1_SELECT_LINE DRIVES_PORT_DS1
+set DRIVE_1_MOTOR_LINE  DRIVES_PORT_MOTON
 set DRIVE_1_MAX_STEPS   82
 
 #
@@ -90,8 +90,8 @@ set DRIVE_1_MAX_STEPS   82
 #
 
 set DRIVE_2_DESCRIPTION "5.25-inch Floppy drive"
-set DRIVE_2_SELECT_LINE FLOPPY_DUMP_DS2
-set DRIVE_2_MOTOR_LINE  FLOPPY_DUMP_MOTON
+set DRIVE_2_SELECT_LINE DRIVES_PORT_DS2
+set DRIVE_2_MOTOR_LINE  DRIVES_PORT_MOTON
 set DRIVE_2_MAX_STEPS   82
 
 #
@@ -99,8 +99,8 @@ set DRIVE_2_MAX_STEPS   82
 #
 
 set DRIVE_3_DESCRIPTION "8-inch Floppy drive"
-set DRIVE_3_SELECT_LINE FLOPPY_DUMP_DS3
-set DRIVE_3_MOTOR_LINE  FLOPPY_DUMP_MOTON
+set DRIVE_3_SELECT_LINE DRIVES_PORT_DS3
+set DRIVE_3_MOTOR_LINE  DRIVES_PORT_MOTON
 set DRIVE_3_MAX_STEPS   82
 
 #
@@ -112,8 +112,8 @@ set DRIVE_3_MAX_STEPS   82
 #
 
 # set DRIVE_0_DESCRIPTION "3.5-inch Floppy drive"
-# set DRIVE_0_SELECT_LINE FLOPPY_DUMP_DRVSA
-# set DRIVE_0_MOTOR_LINE  FLOPPY_DUMP_MOTEA
+# set DRIVE_0_SELECT_LINE DRIVES_PORT_DRVSA
+# set DRIVE_0_MOTOR_LINE  DRIVES_PORT_MOTEA
 # set DRIVE_0_MAX_STEPS   82
 
 #
@@ -121,6 +121,6 @@ set DRIVE_3_MAX_STEPS   82
 #
 
 # set DRIVE_1_DESCRIPTION "3.5-inch Floppy drive"
-# set DRIVE_1_SELECT_LINE FLOPPY_DUMP_DRVSB
-# set DRIVE_1_MOTOR_LINE  FLOPPY_DUMP_MOTEB
+# set DRIVE_1_SELECT_LINE DRIVES_PORT_DRVSB
+# set DRIVE_1_MOTOR_LINE  DRIVES_PORT_MOTEB
 # set DRIVE_1_MAX_STEPS   82

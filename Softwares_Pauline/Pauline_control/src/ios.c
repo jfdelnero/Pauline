@@ -44,33 +44,33 @@
 
 io_def ios_definition[]=
 {
-	{"FLOPPY_DUMP_DS0",       OUT_OC,   0x23,  0},
-	{"FLOPPY_DUMP_MOTEA",     OUT_OC,   0x23,  0},
-	{"FLOPPY_DUMP_PIN10",     OUT_OC,   0x23,  0},
+	{"DRIVES_PORT_DS0",       OUT_OC,   0x23,  0},
+	{"DRIVES_PORT_MOTEA",     OUT_OC,   0x23,  0},
+	{"DRIVES_PORT_PIN10",     OUT_OC,   0x23,  0},
 
-	{"FLOPPY_DUMP_DS1",       OUT_OC,   0x23,  1},
-	{"FLOPPY_DUMP_DRVSB",     OUT_OC,   0x23,  1},
-	{"FLOPPY_DUMP_PIN12",     OUT_OC,   0x23,  1},
+	{"DRIVES_PORT_DS1",       OUT_OC,   0x23,  1},
+	{"DRIVES_PORT_DRVSB",     OUT_OC,   0x23,  1},
+	{"DRIVES_PORT_PIN12",     OUT_OC,   0x23,  1},
 
-	{"FLOPPY_DUMP_DS2",       OUT_OC,   0x23,  2},
-	{"FLOPPY_DUMP_DRVSA",     OUT_OC,   0x23,  2},
-	{"FLOPPY_DUMP_PIN14",     OUT_OC,   0x23,  2},
+	{"DRIVES_PORT_DS2",       OUT_OC,   0x23,  2},
+	{"DRIVES_PORT_DRVSA",     OUT_OC,   0x23,  2},
+	{"DRIVES_PORT_PIN14",     OUT_OC,   0x23,  2},
 
-	{"FLOPPY_DUMP_DS3",       OUT_OC,   0x23,  3},
-	{"FLOPPY_DUMP_PIN6",      OUT_OC,   0x23,  3},
+	{"DRIVES_PORT_DS3",       OUT_OC,   0x23,  3},
+	{"DRIVES_PORT_PIN6",      OUT_OC,   0x23,  3},
 
-	{"FLOPPY_DUMP_MOTON",     OUT_OC,   0x23,  4},
-	{"FLOPPY_DUMP_MOTEB",     OUT_OC,   0x23,  4},
-	{"FLOPPY_DUMP_PIN16",     OUT_OC,   0x23,  4},
+	{"DRIVES_PORT_MOTON",     OUT_OC,   0x23,  4},
+	{"DRIVES_PORT_MOTEB",     OUT_OC,   0x23,  4},
+	{"DRIVES_PORT_PIN16",     OUT_OC,   0x23,  4},
 
-	{"FLOPPY_DUMP_SIDE1",     OUT_OC,   0x23,  5},
+	{"DRIVES_PORT_SIDE1",     OUT_OC,   0x23,  5},
 
-	{"FLOPPY_DUMP_TRK00",   INPUT_ST,   0x23,  6},
-	{"FLOPPY_DUMP_DATA",    INPUT_ST,   0x23,  7},
-	{"FLOPPY_DUMP_WPT",     INPUT_ST,   0x23,  8},
-	{"FLOPPY_DUMP_INDEX",   INPUT_ST,   0x23,  9},
-	{"FLOPPY_DUMP_PIN02",   INPUT_ST,   0x23,  10},
-	{"FLOPPY_DUMP_PIN34",   INPUT_ST,   0x23,  11},
+	{"DRIVES_PORT_TRK00",   INPUT_ST,   0x23,  6},
+	{"DRIVES_PORT_DATA",    INPUT_ST,   0x23,  7},
+	{"DRIVES_PORT_WPT",     INPUT_ST,   0x23,  8},
+	{"DRIVES_PORT_INDEX",   INPUT_ST,   0x23,  9},
+	{"DRIVES_PORT_PIN02",   INPUT_ST,   0x23,  10},
+	{"DRIVES_PORT_PIN34",   INPUT_ST,   0x23,  11},
 
 	{ NULL,                 INPUT_ST,   0x00,  0},
 };
