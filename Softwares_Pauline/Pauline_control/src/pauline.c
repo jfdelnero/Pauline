@@ -229,6 +229,15 @@ int main(int argc, char* argv[])
 		printhelp(argv);
 	}
 
+	ret = hxcfe_execScriptFile( libhxcfe, "/data/Settings/drives.script" );
+	if( ret < 0)
+	{
+		printf("Error while reading the default init script !\n");
+
+		hxcfe_deinit( libhxcfe );
+		exit(-1);
+	}
+
 	if(isOption(argc,argv,"initscript",(char*)&filename)>0)
 	{
 		ret = hxcfe_execScriptFile( libhxcfe, filename );
@@ -240,10 +249,7 @@ int main(int argc, char* argv[])
 
 	if( ret < 0)
 	{
-		printf("Error while reading the init script !\n");
-
-		hxcfe_deinit( libhxcfe );
-		exit(-1);
+		printf("Error while reading the user init script !\n");
 	}
 
 	if(isOption(argc,argv,"servertst",0)>0)
