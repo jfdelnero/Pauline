@@ -6,15 +6,15 @@
 #
 # To setup a drive you need to set its "Motor on" and "Select" lines.
 #
-# You can use up to 4 shugart drives or up to 2 PC drives.
-# See the notes if you want to mixup shugart and PC drives on the same bus.
+# You can use up to 4 Shugart drives or up to 2 PC drives.
+# See the notes if you want to mixup Shugart and PC drives on the same bus.
 #
 # --- Shugart Floppy disk drives ---
 #
 # Shugart drives can have 4 differents select lines and 1 motor line.
 # The motor-on is common to all floppy drive on the same bus.
 #
-# Possible shugart select lines (one per drive !) :
+# Possible Shugart select lines (one per drive !) :
 # DRIVES_PORT_DS0, DRIVES_PORT_DS1 , DRIVES_PORT_DS2 , DRIVES_PORT_DS3
 #
 # --- PC Floppy disk drives ---
@@ -39,9 +39,9 @@
 # DRIVES_PORT_DS3 and DRIVES_PORT_PIN6 point to the same pin 6.
 #
 # Note 2 :
-# - PC and shugart drives installed on the same floppy bus.
+# - PC and Shugart drives installed on the same floppy bus.
 #
-# You can install shugart and PC drive on the same bus in some conditions to
+# You can install Shugart and PC drive on the same bus in some conditions to
 # avoid signal conflict :
 #
 # Working case 1 :
@@ -61,7 +61,7 @@
 # - Twisted PC floppy ribbon
 #   A twisted PC floppy ribbon exchange the drive A and drive B select
 #   and motor signals.
-#   You can use shugart drives with a twisted PC floppy ribbon but remember
+#   You can use Shugart drives with a twisted PC floppy ribbon but remember
 #   that you may have to "mirror" your settings (DS0 become Motor-on,
 #   DS1 become DS2, Motor-on become DS0)
 #
