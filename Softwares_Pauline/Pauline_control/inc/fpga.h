@@ -25,6 +25,8 @@
 //
 */
 
+#define MAX_DRIVES 4
+
 #define REG_BASE 0xFF200000
 #define REG_BASE_SIZE 4096
 
@@ -251,13 +253,16 @@ typedef struct _fpga_state
 
 	uint16_t * conv_lut;
 
-	int drive_sel_reg_number[4];
-	unsigned int drive_sel_bit_mask[4];
+	int drive_sel_reg_number[MAX_DRIVES];
+	unsigned int drive_sel_bit_mask[MAX_DRIVES];
 
-	int drive_mot_reg_number[4];
-	unsigned int drive_mot_bit_mask[4];
+	int drive_mot_reg_number[MAX_DRIVES];
+	unsigned int drive_mot_bit_mask[MAX_DRIVES];
 
-	int drive_max_steps[4];
+	int drive_X68000_opt_sel_reg_number[MAX_DRIVES];
+	unsigned int drive_X68000_opt_sel_bit_mask[MAX_DRIVES];
+
+	int drive_max_steps[MAX_DRIVES];
 
 	HXCFE* libhxcfe;
 
@@ -291,6 +296,7 @@ void floppy_ctrl_selectbyte(fpga_state * state, unsigned char byte);
 int  floppy_head_recalibrate(fpga_state * state);
 
 void set_extio(fpga_state * state, int io, int oe, int data);
+int  setio(fpga_state * fpga, char * name, int state);
 
 void test_interface(fpga_state * state);
 

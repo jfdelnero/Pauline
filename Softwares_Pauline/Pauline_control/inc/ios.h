@@ -26,8 +26,11 @@
 */
 
 enum {
-    INPUT_ST = 0,
-    OUT_OC
+	INPUT = 0,
+	INPUT_ST,
+	OUT_OC,
+	OUT_PP,
+	CTRL
 };
 
 typedef struct io_def_
@@ -42,3 +45,4 @@ int  get_io_index(char * name);
 int  get_io_reg(int index);
 unsigned int get_io_bitmask(int index);
 void get_io_address(int index, int * regs, unsigned int * bitmask);
+void print_ios_list();

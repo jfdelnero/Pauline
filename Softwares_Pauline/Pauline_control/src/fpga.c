@@ -83,10 +83,36 @@ int get_drive_io(fpga_state * fpga, char * name, int drive, int * regs, unsigned
 	return -1;
 }
 
+int setio(fpga_state * fpga, char * name, int state)
+{
+	int index;
+	int reg;
+	unsigned int bitmask;
+
+	bitmask = 0x00000000;
+	reg = 0x40;
+
+	index = get_io_index(name);
+
+	if(index  >= 0)
+	{
+		get_io_address(index, &reg, &bitmask);
+
+		if(state)
+			*(((volatile uint32_t*)(fpga->regs)) + reg) |= (bitmask);
+		else
+			*(((volatile uint32_t*)(fpga->regs)) + reg) &= ~(bitmask);
+
+		return 0;
+	}
+
+	return -1;
+}
+
 fpga_state * init_fpga()
 {
 	fpga_state *state;
-
+	int i;
 	size_t pagesize;
 	off_t page_base;
 	off_t page_offset;
@@ -125,6 +151,18 @@ fpga_state * init_fpga()
 	state->conv_lut = malloc(64 * 1024 * sizeof(uint16_t));
 
 	prepare_LUT(state->conv_lut);
+
+	for(i=0;i<MAX_DRIVES;i++)
+	{
+		state->drive_sel_reg_number[i] = 0x40;
+		state->drive_sel_bit_mask[i] = 0x00000000;
+
+		state->drive_mot_reg_number[i] = 0x40;
+		state->drive_mot_bit_mask[i] = 0x00000000;
+
+		state->drive_X68000_opt_sel_reg_number[i] = 0x40;
+		state->drive_X68000_opt_sel_bit_mask[i] = 0x00000000;
+	}
 
 	pthread_mutex_init ( &state->io_fpga_mutex, NULL);
 
@@ -296,9 +334,9 @@ void floppy_ctrl_select_drive(fpga_state * state, int drive, int enable)
 	pthread_mutex_lock( &state->io_fpga_mutex );
 
 	if(enable)
-		*(((uint32_t*)(state->regs)) + state->drive_sel_reg_number[drive&3]) |= (state->drive_sel_bit_mask[drive&3]);
+		*(((volatile uint32_t*)(state->regs)) + state->drive_sel_reg_number[drive&3]) |= (state->drive_sel_bit_mask[drive&3]);
 	else
-		*(((uint32_t*)(state->regs)) + state->drive_sel_reg_number[drive&3]) &= ~(state->drive_sel_bit_mask[drive&3]);
+		*(((volatile uint32_t*)(state->regs)) + state->drive_sel_reg_number[drive&3]) &= ~(state->drive_sel_bit_mask[drive&3]);
 
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 
@@ -309,9 +347,9 @@ void floppy_ctrl_motor(fpga_state * state, int drive, int enable)
 	pthread_mutex_lock( &state->io_fpga_mutex );
 
 	if(enable)
-		*(((uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive&3]) |= (state->drive_mot_bit_mask[drive&3]);
+		*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive&3]) |= (state->drive_mot_bit_mask[drive&3]);
 	else
-		*(((uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive&3]) &= ~(state->drive_mot_bit_mask[drive&3]);
+		*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive&3]) &= ~(state->drive_mot_bit_mask[drive&3]);
 
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 

@@ -44,37 +44,138 @@
 
 io_def ios_definition[]=
 {
-	{"DRIVES_PORT_DS0",       OUT_OC,   0x23,  0},
-	{"DRIVES_PORT_MOTEA",     OUT_OC,   0x23,  0},
-	{"DRIVES_PORT_PIN10",     OUT_OC,   0x23,  0},
+	{"DRIVES_PORT_DS0",                    OUT_OC,   0x23,  0},
+	{"DRIVES_PORT_MOTEA",                  OUT_OC,   0x23,  0},
+	{"DRIVES_PORT_PIN10",                  OUT_OC,   0x23,  0},
+	{"DRIVES_PORT_MOTON_TWISTED_RIBBON",   OUT_OC,   0x23,  0},
+	{"DRIVES_PORT_MOTEB_TWISTED_RIBBON",   OUT_OC,   0x23,  0},
+	{"DRIVES_PORT_PIN16_TWISTED_RIBBON",   OUT_OC,   0x23,  0},
 
-	{"DRIVES_PORT_DS1",       OUT_OC,   0x23,  1},
-	{"DRIVES_PORT_DRVSB",     OUT_OC,   0x23,  1},
-	{"DRIVES_PORT_PIN12",     OUT_OC,   0x23,  1},
+	{"DRIVES_PORT_DS1",                    OUT_OC,   0x23,  1},
+	{"DRIVES_PORT_DRVSB",                  OUT_OC,   0x23,  1},
+	{"DRIVES_PORT_PIN12",                  OUT_OC,   0x23,  1},
+	{"DRIVES_PORT_DS2_TWISTED_RIBBON",     OUT_OC,   0x23,  1},
+	{"DRIVES_PORT_DRVSA_TWISTED_RIBBON",   OUT_OC,   0x23,  1},
+	{"DRIVES_PORT_PIN14_TWISTED_RIBBON",   OUT_OC,   0x23,  1},
 
-	{"DRIVES_PORT_DS2",       OUT_OC,   0x23,  2},
-	{"DRIVES_PORT_DRVSA",     OUT_OC,   0x23,  2},
-	{"DRIVES_PORT_PIN14",     OUT_OC,   0x23,  2},
+	{"DRIVES_PORT_DS2",                    OUT_OC,   0x23,  2},
+	{"DRIVES_PORT_DRVSA",                  OUT_OC,   0x23,  2},
+	{"DRIVES_PORT_PIN14",                  OUT_OC,   0x23,  2},
+	{"DRIVES_PORT_DS1_TWISTED_RIBBON",     OUT_OC,   0x23,  2},
+	{"DRIVES_PORT_DRVSB_TWISTED_RIBBON",   OUT_OC,   0x23,  2},
+	{"DRIVES_PORT_PIN12_TWISTED_RIBBON",   OUT_OC,   0x23,  2},
 
-	{"DRIVES_PORT_DS3",       OUT_OC,   0x23,  3},
-	{"DRIVES_PORT_PIN6",      OUT_OC,   0x23,  3},
+	{"DRIVES_PORT_DS3",                    OUT_OC,   0x23,  3},
+	{"DRIVES_PORT_PIN6",                   OUT_OC,   0x23,  3},
 
-	{"DRIVES_PORT_MOTON",     OUT_OC,   0x23,  4},
-	{"DRIVES_PORT_MOTEB",     OUT_OC,   0x23,  4},
-	{"DRIVES_PORT_PIN16",     OUT_OC,   0x23,  4},
+	{"DRIVES_PORT_MOTON",                  OUT_OC,   0x23,  4},
+	{"DRIVES_PORT_MOTEB",                  OUT_OC,   0x23,  4},
+	{"DRIVES_PORT_PIN16",                  OUT_OC,   0x23,  4},
+	{"DRIVES_PORT_DS0_TWISTED_RIBBON",     OUT_OC,   0x23,  4},
+	{"DRIVES_PORT_MOTEA_TWISTED_RIBBON",   OUT_OC,   0x23,  4},
+	{"DRIVES_PORT_PIN10_TWISTED_RIBBON",   OUT_OC,   0x23,  4},
 
-	{"DRIVES_PORT_SIDE1",     OUT_OC,   0x23,  5},
 
-	{"DRIVES_PORT_TRK00",   INPUT_ST,   0x23,  6},
-	{"DRIVES_PORT_DATA",    INPUT_ST,   0x23,  7},
-	{"DRIVES_PORT_WPT",     INPUT_ST,   0x23,  8},
-	{"DRIVES_PORT_INDEX",   INPUT_ST,   0x23,  9},
-	{"DRIVES_PORT_PIN02",   INPUT_ST,   0x23,  10},
-	{"DRIVES_PORT_PIN34",   INPUT_ST,   0x23,  11},
+	{"DRIVES_PORT_SIDE1",                  OUT_OC,   0x23,  5},
 
-	{ NULL,                 INPUT_ST,   0x00,  0},
+	{"DRIVES_PORT_TRK00",                INPUT_ST,   0x23,  6},
+	{"DRIVES_PORT_DATA",                 INPUT_ST,   0x23,  7},
+	{"DRIVES_PORT_WPT",                  INPUT_ST,   0x23,  8},
+	{"DRIVES_PORT_INDEX",                INPUT_ST,   0x23,  9},
+	{"DRIVES_PORT_PIN02",                INPUT_ST,   0x23,  10},
+	{"DRIVES_PORT_PIN34",                INPUT_ST,   0x23,  11},
+
+	{"DRIVES_PORT_PIN02_OUT",              OUT_OC,   0x43,  0},
+	{"DRIVES_PORT_MODESELECT",             OUT_OC,   0x43,  0},
+
+	{"DRIVES_PORT_PIN04_OUT",              OUT_OC,   0x43,  1},
+
+	{"DRIVES_PORT_X68000_OPTIONSEL0_OUT",  OUT_OC,   0x43,  2},
+	{"DRIVES_PORT_PIN01_OUT",              OUT_OC,   0x43,  2},
+
+	{"DRIVES_PORT_X68000_OPTIONSEL1_OUT",  OUT_OC,   0x43,  3},
+	{"DRIVES_PORT_PIN03_OUT",              OUT_OC,   0x43,  3},
+
+	{"DRIVES_PORT_X68000_OPTIONSEL2_OUT",  OUT_OC,   0x43,  4},
+	{"DRIVES_PORT_PIN05_OUT",              OUT_OC,   0x43,  4},
+
+	{"DRIVES_PORT_X68000_OPTIONSEL3_OUT",  OUT_OC,   0x43,  5},
+	{"DRIVES_PORT_PIN07_OUT",              OUT_OC,   0x43,  5},
+
+	{"DRIVES_PORT_X68000_BLINK_OUT",       OUT_OC,   0x43,  6},
+	{"DRIVES_PORT_PIN13_OUT",              OUT_OC,   0x43,  6},
+
+	{"DRIVES_PORT_X68000_LOCK_OUT",        OUT_OC,   0x43,  7},
+	{"DRIVES_PORT_PIN11_OUT",              OUT_OC,   0x43,  7},
+
+	{"DRIVES_PORT_X68000_EJECT_OUT",       OUT_OC,   0x43,  8},
+	{"DRIVES_PORT_PIN09_OUT",              OUT_OC,   0x43,  8},
+
+	{"LED_LED1_OUT",                       OUT_PP,   0x40,  0},
+	{"LED_LED2_OUT",                       OUT_PP,   0x40,  1},
+
+	{"EXPENSION_PORT_TRIS_IO0_PIN07_OUT",  OUT_PP,   0x40,  2},
+	{"EXPENSION_PORT_TRIS_IO1_PIN08_OUT",  OUT_PP,   0x40,  3},
+	{"EXPENSION_PORT_TRIS_IO2_PIN09_OUT",  OUT_PP,   0x40,  4},
+	{"EXPENSION_PORT_TRIS_IO3_PIN10_OUT",  OUT_PP,   0x40,  5},
+	{"EXPENSION_PORT_EXT_IO_OUT",          OUT_OC,   0x40,  6},
+
+	{"EXPENSION_PORT_TRIS_IO0_PIN07_OE",   CTRL,     0x41,  2},
+	{"EXPENSION_PORT_TRIS_IO1_PIN08_OE",   CTRL,     0x41,  3},
+	{"EXPENSION_PORT_TRIS_IO2_PIN09_OE",   CTRL,     0x41,  4},
+	{"EXPENSION_PORT_TRIS_IO3_PIN10_OE",   CTRL,     0x41,  5},
+
+	{"EXPENSION_PORT_TRIS_IO0_PIN07_IN",  INPUT_ST,  0x42,  2},
+	{"EXPENSION_PORT_TRIS_IO1_PIN08_IN",  INPUT_ST,  0x42,  3},
+	{"EXPENSION_PORT_TRIS_IO2_PIN09_IN",  INPUT_ST,  0x42,  4},
+	{"EXPENSION_PORT_TRIS_IO3_PIN10_IN",  INPUT_ST,  0x42,  5},
+	{"EXPENSION_PORT_EXT_IO_IN",          INPUT_ST,  0x42,  6},
+	{"EXPENSION_PORT_EXT_INT_IN",         INPUT_ST,  0x42,  7},
+	{"PUSH_BUTTON_0_IN",                  INPUT,     0x42,  8},
+	{"PUSH_BUTTON_1_IN",                  INPUT,     0x42,  9},
+	{"PUSH_BUTTON_2_IN",                  INPUT,     0x42,  10},
+
+	{ NULL,                               INPUT_ST,  0x00,  0},
 };
 
+void print_ios_list()
+{
+	int i;
+
+	printf("\nIOs List :\n");
+
+	i = 0;
+	while(ios_definition[i].name)
+	{
+		switch(ios_definition[i].type)
+		{
+			case INPUT:
+				printf("INPUT     : ");
+			break;
+			case INPUT_ST:
+				printf("INPUT_ST  : ");
+			break;
+			case OUT_OC:
+				printf("OUTPUT_OC : ");
+			break;
+			case OUT_PP:
+				printf("OUTPUT_PP : ");
+			break;
+			case CTRL:
+				printf("CONTROL   : ");
+			break;
+
+			default:
+			break;
+		}
+
+		printf("%s\n",ios_definition[i].name);
+
+		i++;
+	}
+
+	printf("\n");
+}
 
 int get_io_index(char * name)
 {

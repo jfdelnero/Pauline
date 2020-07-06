@@ -139,8 +139,8 @@ void printhelp(char* argv[])
 	printf("  -help \t\t\t: This help\n");
 	printf("  -license\t\t\t: Print the license\n");
 	printf("  -verbose\t\t\t: Verbose mode\n");
-	printf("  -home_folder:[path]\t\t\t: Set the base folder\n");
-	printf("  -initscript:[path]\t\t\t: Set the init script path\n");
+	printf("  -home_folder:[path]\t\t: Set the base folder\n");
+	printf("  -initscript:[path]\t\t: Set the init script path\n");
 	printf("  -reset\t\t\t: FPGA reset\n");
 	printf("  -drive:[drive nb]\t\t: select the drive number\n");
 	printf("  -load:[filename]\t\t: load the a image\n");
@@ -160,10 +160,13 @@ void printhelp(char* argv[])
 	printf("  -start_side:[side number]\t: Disk dump : first side number (default 0)\n");
 	printf("  -max_side:[side number]\t: Disk dump : last side number (default 1)\n");
 	printf("  -track_rd_time:[time (ms)]\t: Disk dump : track dump duration (ms) (default 800ms)\n");
-	printf("  -after_index_delay:[time (us)]\t: Disk dump : index to track dump delay (us) (default 100000us)\n");
-	printf("  -setiohigh:io number\n");
-	printf("  -setiolow:io number\n");
-	printf("  -setiohz:io number\n");
+	printf("  -after_index_delay:[time (us)]: Disk dump : index to track dump delay (us) (default 100000us)\n");
+	printf("  -set:[io name]\n");
+	printf("  -clear:[io name]\n");
+	printf("  -ioslist\n");
+	printf("  -setiohigh:[io number]\n");
+	printf("  -setiolow:[io number]\n");
+	printf("  -setiohz:[io number]\n");
 	printf("  -test_interface\n");
 	printf("\n");
 }
@@ -286,6 +289,7 @@ int main(int argc, char* argv[])
 
 		get_drive_io(fpga, "DRIVE_%d_SELECT_LINE", i, &fpga->drive_sel_reg_number[i], &fpga->drive_sel_bit_mask[i]);
 		get_drive_io(fpga, "DRIVE_%d_MOTOR_LINE", i, &fpga->drive_mot_reg_number[i], &fpga->drive_mot_bit_mask[i]);
+		get_drive_io(fpga, "DRIVE_%d_X68000_OPTION_SELECT_LINE", i, &fpga->drive_X68000_opt_sel_reg_number[i], &fpga->drive_X68000_opt_sel_bit_mask[i]);
 	}
 
 	if(isOption(argc,argv,"home_folder",(char*)&home_folder)>0)
@@ -457,6 +461,21 @@ int main(int argc, char* argv[])
 	if(isOption(argc,argv,"setiohz",(char*)&temp)>0)
 	{
 		set_extio(fpga, atoi(temp), 0, 0);
+	}
+
+	if(isOption(argc,argv,"set",(char*)&temp)>0)
+	{
+		setio(fpga, (char*)temp, 1);
+	}
+
+	if(isOption(argc,argv,"clear",(char*)&temp)>0)
+	{
+		setio(fpga, (char*)temp, 0);
+	}
+
+	if(isOption(argc,argv,"ioslist",0)>0)
+	{
+		print_ios_list();
 	}
 
 	if(isOption(argc,argv,"enabledrive",0)>0)
@@ -650,6 +669,9 @@ int main(int argc, char* argv[])
 		(isOption(argc,argv,"setiolow",0)<=0 ) &&
 		(isOption(argc,argv,"setiohigh",0)<=0 ) &&
 		(isOption(argc,argv,"setiohz",0)<=0 ) &&
+		(isOption(argc,argv,"set",0)<=0 ) &&
+		(isOption(argc,argv,"clear",0)<=0 ) &&
+		(isOption(argc,argv,"ioslist",0)<=0 ) &&
 		(isOption(argc,argv,"initscript",0)<=0 ) &&
 		(isOption(argc,argv,"reset",0)<=0 )
 
