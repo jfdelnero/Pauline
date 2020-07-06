@@ -931,7 +931,6 @@ int cmd_movehead(char * line)
 			track = fpga->drive_max_steps[drive];
 		}
 
-		
 		floppy_ctrl_select_drive(fpga, drive, 1);
 
 		usleep(12000);
@@ -1092,6 +1091,65 @@ int cmd_set_select_src(char * line)
 	return 0;
 }
 
+int cmd_ejectdisk(char * line)
+{
+	int i;
+	int drive;
+	char drivestr[DEFAULT_BUFLEN];
+
+	i = get_param(line, 1,drivestr);
+	if(i>=0)
+	{
+		drive = atoi(drivestr);
+
+		floppy_ctrl_x68000_eject(fpga, drive);
+	}
+
+	return 1;
+}
+
+int cmd_set_pin(char * line)
+{
+	int i;
+	char temp[DEFAULT_BUFLEN];
+
+	i = get_param(line, 1,temp);
+
+	if(i>=0)
+	{
+		script_printf(MSGTYPE_INFO_0,"set io %s\n",temp);
+
+		setio(fpga, temp, 1);
+
+		return 1;
+	}
+
+	script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+
+	return 0;
+}
+
+int cmd_clear_pin(char * line)
+{
+	int i;
+	char temp[DEFAULT_BUFLEN];
+
+	i = get_param(line, 1,temp);
+
+	if(i>=0)
+	{
+		script_printf(MSGTYPE_INFO_0,"clear io %s\n",temp);
+
+		setio(fpga, temp, 0);
+
+		return 1;
+	}
+
+	script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+
+	return 0;
+}
+
 int cmd_set_dump_time_per_track(char * line)
 {
 	int i;
@@ -1155,7 +1213,7 @@ cmd_list cmdlist[] =
 	{"?",						cmd_help},
 	{"version",					cmd_version},
 
-	{"set_pin_dir",		        cmd_set_pin_mode},
+	{"set_pin_dir",				cmd_set_pin_mode},
 	{"headstep",				cmd_headstep},
 	{"motsrc",					cmd_set_motor_src},
 	{"selsrc",					cmd_set_select_src},
@@ -1166,6 +1224,10 @@ cmd_list cmdlist[] =
 	{"dump",					cmd_dump},
 	{"stop",					cmd_stop},
 	{"movehead",				cmd_movehead},
+	{"ejectdisk",				cmd_ejectdisk},
+
+	{"setio",					cmd_set_pin},
+	{"cleario",					cmd_clear_pin},
 
 	{0 , 0}
 };

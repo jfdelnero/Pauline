@@ -37,9 +37,10 @@
 
 #include "libhxcfe.h"
 
+#include "fpga.h"
+
 #include "ios.h"
 
-#include "fpga.h"
 #include "dump_chunk.h"
 
 io_def ios_definition[]=
@@ -217,6 +218,28 @@ void get_io_address(int index, int * regs, unsigned int * bitmask)
 
 	*regs = ios_definition[index].reg_number;
 	*bitmask = (0x01 << ios_definition[index].bit_number);
+
+	return;
+}
+
+void set_io_name(fpga_state * fpga, char * name, int state)
+{
+	int index;
+	int reg;
+	unsigned int bitmask;
+
+	index = get_io_index(name);
+
+	if(index < 0)
+		return;
+
+	reg = ios_definition[index].reg_number;
+	bitmask = (0x01 << ios_definition[index].bit_number);
+
+	if(state)
+		*(((volatile uint32_t*)(fpga->regs)) + reg) |= (bitmask);
+	else
+		*(((volatile uint32_t*)(fpga->regs)) + reg) &= ~(bitmask);
 
 	return;
 }

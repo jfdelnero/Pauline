@@ -164,6 +164,7 @@ void printhelp(char* argv[])
 	printf("  -set:[io name]\n");
 	printf("  -clear:[io name]\n");
 	printf("  -ioslist\n");
+	printf("  -ejectdisk\n");
 	printf("  -setiohigh:[io number]\n");
 	printf("  -setiolow:[io number]\n");
 	printf("  -setiohz:[io number]\n");
@@ -646,6 +647,13 @@ int main(int argc, char* argv[])
 		print_fpga_regs(fpga);
 	}
 
+	if(isOption(argc,argv,"ejectdisk",0)>0)
+	{
+		printf("Eject disk...\n");
+
+		floppy_ctrl_x68000_eject(fpga, drive);
+	}
+
 	if( (isOption(argc,argv,"help",0)<=0) &&
 		(isOption(argc,argv,"license",0)<=0) &&
 		(isOption(argc,argv,"modulelist",0)<=0) &&
@@ -672,6 +680,7 @@ int main(int argc, char* argv[])
 		(isOption(argc,argv,"set",0)<=0 ) &&
 		(isOption(argc,argv,"clear",0)<=0 ) &&
 		(isOption(argc,argv,"ioslist",0)<=0 ) &&
+		(isOption(argc,argv,"ejectdisk",0)<=0 ) &&
 		(isOption(argc,argv,"initscript",0)<=0 ) &&
 		(isOption(argc,argv,"reset",0)<=0 )
 

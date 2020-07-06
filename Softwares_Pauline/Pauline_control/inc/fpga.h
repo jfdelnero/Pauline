@@ -295,6 +295,9 @@ void floppy_ctrl_side(fpga_state * state, int drive, int side);
 void floppy_ctrl_selectbyte(fpga_state * state, unsigned char byte);
 int  floppy_head_recalibrate(fpga_state * state);
 
+void floppy_ctrl_x68000_option_select_drive(fpga_state * state, int drive, int enable);
+void floppy_ctrl_x68000_eject(fpga_state * state, int drive);
+
 void set_extio(fpga_state * state, int io, int oe, int data);
 int  setio(fpga_state * fpga, char * name, int state);
 

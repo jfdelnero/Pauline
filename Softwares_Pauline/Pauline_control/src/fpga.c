@@ -342,6 +342,34 @@ void floppy_ctrl_select_drive(fpga_state * state, int drive, int enable)
 
 }
 
+void floppy_ctrl_x68000_option_select_drive(fpga_state * state, int drive, int enable)
+{
+	pthread_mutex_lock( &state->io_fpga_mutex );
+
+	if(enable)
+		*(((volatile uint32_t*)(state->regs)) + state->drive_X68000_opt_sel_reg_number[drive&3]) |= (state->drive_X68000_opt_sel_bit_mask[drive&3]);
+	else
+		*(((volatile uint32_t*)(state->regs)) + state->drive_X68000_opt_sel_reg_number[drive&3]) &= ~(state->drive_X68000_opt_sel_bit_mask[drive&3]);
+
+	pthread_mutex_unlock( &state->io_fpga_mutex );
+}
+
+void floppy_ctrl_x68000_eject(fpga_state * state, int drive)
+{
+	set_io_name(state, "DRIVES_PORT_X68000_BLINK_OUT", 0);
+	set_io_name(state, "DRIVES_PORT_X68000_LOCK_OUT", 0);
+	set_io_name(state, "DRIVES_PORT_X68000_EJECT_OUT", 1);
+
+	floppy_ctrl_x68000_option_select_drive(state, drive, 1);
+
+	usleep(50);
+
+	floppy_ctrl_x68000_option_select_drive(state, drive, 0);
+
+	set_io_name(state, "DRIVES_PORT_X68000_EJECT_OUT", 0);
+
+}
+
 void floppy_ctrl_motor(fpga_state * state, int drive, int enable)
 {
 	pthread_mutex_lock( &state->io_fpga_mutex );
