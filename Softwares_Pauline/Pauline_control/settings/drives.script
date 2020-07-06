@@ -29,7 +29,7 @@
 # Motor  Line : DRIVES_PORT_MOTEB
 #
 # --- Notes  ---
-# Note 1 :
+# -> Note 1 :
 # Please note that some pins names are aliased :
 #
 # DRIVES_PORT_DS0, DRIVES_PORT_MOTEA and DRIVES_PORT_PIN10 point to the same pin 10.
@@ -38,7 +38,8 @@
 # DRIVES_PORT_MOTON, DRIVES_PORT_MOTEB and DRIVES_PORT_PIN16 point to the same pin 16.
 # DRIVES_PORT_DS3 and DRIVES_PORT_PIN6 point to the same pin 6.
 #
-# Note 2 :
+# -> Note 2 :
+#
 # - PC and Shugart drives installed on the same floppy bus.
 #
 # You can install Shugart and PC drive on the same bus in some conditions to
@@ -57,13 +58,30 @@
 # on DS2 (DRIVES_PORT_DS2 + DRIVES_PORT_MOTON),
 # and on DS3 (DRIVES_PORT_DS3 + DRIVES_PORT_MOTON).
 #
-# Note 3 :
+# -> Note 3 :
+#
 # - Twisted PC floppy ribbon
 #   A twisted PC floppy ribbon exchange the drive A and drive B select
 #   and motor signals.
 #   You can use Shugart drives with a twisted PC floppy ribbon but remember
 #   that you may have to "mirror" your settings (DS0 become Motor-on,
 #   DS1 become DS2, Motor-on become DS0)
+#   If the drive is behind a twist you can use these aliases to setup it :
+#
+#   Shugart drives:
+#
+#   DRIVES_PORT_DS0_TWISTED_RIBBON
+#   DRIVES_PORT_DS1_TWISTED_RIBBON
+#   DRIVES_PORT_DS2_TWISTED_RIBBON
+#   DRIVES_PORT_MOTON_TWISTED_RIBBON
+#
+#   PC drives:
+#
+#   DRIVES_PORT_DRVSA_TWISTED_RIBBON
+#   DRIVES_PORT_MOTEA_TWISTED_RIBBON
+#
+#   DRIVES_PORT_DRVSB_TWISTED_RIBBON
+#   DRIVES_PORT_MOTEB_TWISTED_RIBBON
 #
 # -----------------------------------------------------------------------------
 
