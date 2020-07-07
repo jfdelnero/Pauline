@@ -1103,9 +1103,13 @@ int cmd_ejectdisk(char * line)
 		drive = atoi(drivestr);
 
 		floppy_ctrl_x68000_eject(fpga, drive);
+
+		script_printf(MSGTYPE_INFO_0,"Drive %d : eject disk\n",drive);
+
+		return 1;
 	}
 
-	return 1;
+	return 0;
 }
 
 int cmd_set_pin(char * line)
