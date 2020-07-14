@@ -268,6 +268,8 @@ typedef struct _fpga_state
 
 	pthread_mutex_t io_fpga_mutex;
 
+	int inotify_fd;
+
 }fpga_state;
 
 
@@ -294,6 +296,7 @@ void floppy_ctrl_motor(fpga_state * state, int drive, int enable);
 void floppy_ctrl_side(fpga_state * state, int drive, int side);
 void floppy_ctrl_selectbyte(fpga_state * state, unsigned char byte);
 int  floppy_head_recalibrate(fpga_state * state);
+int  floppy_head_maxtrack(fpga_state * state, int maxtrack);
 
 void floppy_ctrl_x68000_option_select_drive(fpga_state * state, int drive, int enable);
 void floppy_ctrl_x68000_eject(fpga_state * state, int drive);

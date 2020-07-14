@@ -422,25 +422,27 @@ void floppy_ctrl_move_head(fpga_state * state, int dir, int trk)
 	}
 }
 
+#define STEP_RATE 24000
+
 int floppy_head_recalibrate(fpga_state * state)
 {
 	int i;
 
 	i = 0;
-	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < 160 )
+	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < 100 )
 	{
 		floppy_ctrl_move_head(state, 0, 1);
-		usleep(10000);
+		usleep(STEP_RATE);
 		i++;
 	}
 
-	if(i>=160)
+	if(i>=100)
 		return -1;
 
 	for(i=0;i<4;i++)
 	{
 		floppy_ctrl_move_head(state, 1, 1);
-		usleep(12000);
+		usleep(STEP_RATE);
 	}
 
 	if( (state->regs->floppy_ctrl_control & (0x1<<6)) )
@@ -450,7 +452,7 @@ int floppy_head_recalibrate(fpga_state * state)
 	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < 5 )
 	{
 		floppy_ctrl_move_head(state, 0, 1);
-		usleep(12000);
+		usleep(STEP_RATE);
 		i++;
 	}
 
@@ -458,6 +460,40 @@ int floppy_head_recalibrate(fpga_state * state)
 		return -3;
 
 	return 0;
+}
+
+int floppy_head_maxtrack(fpga_state * state, int maxtrack)
+{
+	int i,ret;
+
+	ret = floppy_head_recalibrate(state);
+
+	if(ret < 0)
+		return ret;
+
+	for(i=0;i < maxtrack;i++)
+	{
+		floppy_ctrl_move_head(state, 1, 1);
+		usleep(STEP_RATE*2);
+	}
+
+	if( (state->regs->floppy_ctrl_control & (0x1<<6)) )
+		return -2;
+
+	i = 0;
+	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < maxtrack )
+	{
+		floppy_ctrl_move_head(state, 0, 1);
+		usleep(STEP_RATE*2);
+		i++;
+	}
+
+	if( (state->regs->floppy_ctrl_control & (0x1<<6)) )
+	{
+		return maxtrack - i;
+	}
+
+	return -3;
 }
 
 void set_select_src(fpga_state * state, int drive, int src)

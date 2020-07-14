@@ -38,6 +38,8 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sys/inotify.h>
+#include <signal.h>
 
 #include "libhxcfe.h"
 #include "utils.h"
@@ -51,6 +53,11 @@
 int verbose;
 fpga_state * fpga;
 char home_folder[512];
+
+#define INOTIFY_RD_BUF_SIZE ( 32*1024 )
+
+#define USER_DRIVES_CFG_FILE "/home/pauline/Settings/drives.script"
+#define DEFAULT_DRIVES_CFG_FILE "/data/Settings/drives.script"
 
 typedef struct gpio_description_
 {
@@ -145,7 +152,8 @@ void printhelp(char* argv[])
 	printf("  -drive:[drive nb]\t\t: select the drive number\n");
 	printf("  -load:[filename]\t\t: load the a image\n");
 	printf("  -save:[filename]\t\t: Save the a image\n");
-	printf("  -headstep:[tracknb]\t\t: move the head\n");
+	printf("  -headrecal\t\t\t: move the head\n");
+	printf("  -headstep:[tracknb]\t\t: recalibrate the head\n");
 	printf("  -selsrc:[id]\t\t\t: select source line\n");
 	printf("  -motsrc:[id]\t\t\t: motor source line\n");
 	printf("  -enabledrive\t\t\t: drive enable\n");
@@ -161,6 +169,8 @@ void printhelp(char* argv[])
 	printf("  -max_side:[side number]\t: Disk dump : last side number (default 1)\n");
 	printf("  -track_rd_time:[time (ms)]\t: Disk dump : track dump duration (ms) (default 800ms)\n");
 	printf("  -after_index_delay:[time (us)]: Disk dump : index to track dump delay (us) (default 100000us)\n");
+	printf("  -autodetect\t\t\t: drives auto-detection\n");
+	printf("  -testmaxtrack\t\t\t: drives max track auto-detection\n");
 	printf("  -set:[io name]\n");
 	printf("  -clear:[io name]\n");
 	printf("  -ioslist\n");
@@ -171,6 +181,98 @@ void printhelp(char* argv[])
 	printf("  -test_interface\n");
 	printf("\n");
 }
+
+void *inotify_gotsig(int sig, siginfo_t *info, void *ucontext)
+{
+	return NULL;
+}
+
+void* inotify_thread(void* arg)
+{
+	fpga_state * ctx;
+	int i,length;
+	uint32_t handle[3];
+	char inotify_buffer[INOTIFY_RD_BUF_SIZE] __attribute__ ((aligned(__alignof__(struct inotify_event))));
+	const struct inotify_event *event;
+	struct sigaction sa;
+
+	ctx = (fpga_state *)arg;
+
+	sa.sa_handler = NULL;
+	sa.sa_sigaction =  (void *)inotify_gotsig;
+	sa.sa_flags = SA_SIGINFO;
+	sigemptyset(&sa.sa_mask);
+
+	if (sigaction(SIGUSR1, &sa, NULL) < 0)
+	{
+		return (void *)-1;
+	}
+
+	for (;;)
+	{
+		memset(inotify_buffer,0,sizeof(inotify_buffer));
+		length = read(ctx->inotify_fd, inotify_buffer, sizeof(inotify_buffer));
+
+		if ( length >= 0 )
+		{
+			i = 0;
+			while ( i < length && i < INOTIFY_RD_BUF_SIZE )
+			{
+
+				event = ( struct inotify_event * ) &inotify_buffer[ i ];
+
+				// Sanity check to prevent possible buffer overrun/overflow.
+				if ( event->len && (i + (( sizeof (struct inotify_event) ) + event->len) < sizeof(inotify_buffer)) )
+				{
+					if ( event->mask & IN_CREATE )
+					{
+
+					}
+
+					if ( event->mask & IN_MODIFY )
+					{
+						hxcfe_execScriptFile( ctx->libhxcfe, DEFAULT_DRIVES_CFG_FILE );
+						hxcfe_execScriptFile( ctx->libhxcfe, USER_DRIVES_CFG_FILE );
+					}
+
+					if ( event->mask & IN_DELETE )
+					{
+
+					}
+
+				}
+
+				i +=  (( sizeof (struct inotify_event) ) + event->len);
+			}
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+}
+
+int inotify_handler_addwatch( fpga_state * ctx, char * path )
+{
+	if( ctx->inotify_fd != -1 )
+	{
+		return inotify_add_watch( ctx->inotify_fd, path, /*IN_CREATE | IN_DELETE |*/ IN_MODIFY );
+	}
+
+	return -1;
+}
+
+int inotify_handler_rmwatch( fpga_state * ctx, int wd )
+{
+	if( ctx->inotify_fd != -1 && wd != -1 )
+	{
+		return inotify_rm_watch( ctx->inotify_fd, wd );
+	}
+
+	return -1;
+}
+
+int testmaxtrack[]={ 10, 20, 36, 40, 41, 42, 43, 44, 45, 46, 50, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, -1};
 
 int main(int argc, char* argv[])
 {
@@ -233,7 +335,7 @@ int main(int argc, char* argv[])
 		printhelp(argv);
 	}
 
-	ret = hxcfe_execScriptFile( libhxcfe, "/data/Settings/drives.script" );
+	ret = hxcfe_execScriptFile( libhxcfe, DEFAULT_DRIVES_CFG_FILE );
 	if( ret < 0)
 	{
 		printf("Error while reading the default init script !\n");
@@ -248,7 +350,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		ret = hxcfe_execScriptFile( libhxcfe, "/home/pauline/Settings/drives.script" );
+		ret = hxcfe_execScriptFile( libhxcfe, USER_DRIVES_CFG_FILE );
 	}
 
 	if( ret < 0)
@@ -310,6 +412,10 @@ int main(int argc, char* argv[])
 		{
 			printf("Error ! Can't Create the listener thread !\n");
 		}
+
+		fpga->inotify_fd = inotify_init1(0x00);
+
+		inotify_handler_addwatch(fpga, USER_DRIVES_CFG_FILE);
 
 		for(;;)
 		{
@@ -408,11 +514,33 @@ int main(int argc, char* argv[])
 			printf("FPGA Init failed !\n");
 	}*/
 
+	if(isOption(argc,argv,"headrecal",0)>0)
+	{
+		printf("Head recalibration\n");
+
+		floppy_ctrl_select_drive(fpga, drive, 1);
+
+		ret = floppy_head_recalibrate(fpga);
+
+		if(ret < 0)
+			printf("Head calibration failed !\n");
+
+		floppy_ctrl_select_drive(fpga, drive, 0);
+	}
 
 	if(isOption(argc,argv,"headstep",(char*)&temp)>0)
 	{
 		track = atoi(temp);
 		printf("Head step : %d\n",track);
+
+		if( track > fpga->drive_max_steps[drive] )
+		{
+			printf("Warning : Drive Max step : %d !\n",fpga->drive_max_steps[drive]);
+			track = fpga->drive_max_steps[drive];
+		}
+
+		floppy_ctrl_select_drive(fpga, drive, 1);
+
 		if(track < 0)
 		{
 			track = -track;
@@ -425,6 +553,9 @@ int main(int argc, char* argv[])
 
 		fflush(stdout);
 		floppy_ctrl_move_head(fpga, dir, track);
+
+		floppy_ctrl_select_drive(fpga, drive, 0);
+
 	}
 
 	if(isOption(argc,argv,"save",(char*)&ofilename)>0)
@@ -552,6 +683,135 @@ int main(int argc, char* argv[])
 		test_interface(fpga);
 	}
 
+	if(isOption(argc,argv,"autodetect",0)>0)
+	{
+		printf("Drives auto-detection...\n");
+
+		setio(fpga, (char*)"DRIVES_PORT_PIN10", 0);
+		setio(fpga, (char*)"DRIVES_PORT_PIN12", 0);
+		setio(fpga, (char*)"DRIVES_PORT_PIN14", 0);
+		setio(fpga, (char*)"DRIVES_PORT_PIN6", 0);
+
+		setio(fpga, (char*)"DRIVES_PORT_PIN16", 0);
+
+		sleep(1);
+
+		printf("Testing PIN10/DS0/MOTA... : ");
+		fflush(stdout);
+		setio(fpga, (char*)"DRIVES_PORT_PIN10", 1);
+		usleep(1000);
+		ret = floppy_head_recalibrate(fpga);
+		if(ret >= 0)
+			printf("Drive on PIN10/DS0/MOTA Found !!!\n");
+		else
+			printf("No drive\n");
+
+		setio(fpga, (char*)"DRIVES_PORT_PIN10", 0);
+
+		sleep(1);
+
+		printf("Testing PIN12/DS1/DRVSB... : ");
+		fflush(stdout);
+		setio(fpga, (char*)"DRIVES_PORT_PIN12", 1);
+		usleep(1000);
+		ret = floppy_head_recalibrate(fpga);
+		if(ret >= 0)
+			printf("Drive on PIN12/DS1/DRVSB found !!!\n");
+		else
+			printf("No drive\n");
+
+		setio(fpga, (char*)"DRIVES_PORT_PIN12", 0);
+
+		sleep(1);
+
+		printf("Testing PIN14/DS2/DRVSA... : ");
+		fflush(stdout);
+		setio(fpga, (char*)"DRIVES_PORT_PIN14", 1);
+		usleep(1000);
+		ret = floppy_head_recalibrate(fpga);
+		if(ret >= 0)
+			printf("Drive on PIN14/DS2/DRVSA found !!!\n");
+		else
+			printf("No drive\n");
+
+		setio(fpga, (char*)"DRIVES_PORT_PIN14", 0);
+
+		sleep(1);
+
+		printf("Testing PIN6/DS3... : ");
+		fflush(stdout);
+		setio(fpga, (char*)"DRIVES_PORT_PIN6", 1);
+		usleep(1000);
+		ret = floppy_head_recalibrate(fpga);
+		if(ret >= 0)
+			printf("Drive on PIN6/DS3 found !!!\n");
+		else
+			printf("No drive\n");
+
+		setio(fpga, (char*)"DRIVES_PORT_PIN6", 0);
+
+		sleep(1);
+
+		printf("Testing PIN16/MOTON/MOTEB... : ");
+		fflush(stdout);
+		setio(fpga, (char*)"DRIVES_PORT_PIN16", 1);
+		usleep(1000);
+		ret = floppy_head_recalibrate(fpga);
+		if(ret >= 0)
+			printf("Drive on PIN16/MOTON/MOTEB found !!! (Shugart drive on twisted ribbon ?)\n");
+		else
+			printf("No drive\n");
+
+		setio(fpga, (char*)"DRIVES_PORT_PIN16", 0);
+
+		setio(fpga, (char*)"DRIVES_PORT_PIN10", 0);
+		setio(fpga, (char*)"DRIVES_PORT_PIN12", 0);
+		setio(fpga, (char*)"DRIVES_PORT_PIN14", 0);
+		setio(fpga, (char*)"DRIVES_PORT_PIN6", 0);
+
+		setio(fpga, (char*)"DRIVES_PORT_PIN16", 0);
+
+	}
+
+	if(isOption(argc,argv,"testmaxtrack",0)>0)
+	{
+		printf("Test Drive %d max track...\n",drive);
+
+		floppy_ctrl_select_drive(fpga, drive, 1);
+
+		i=0;
+		while(testmaxtrack[i]>=0)
+		{
+			printf("Max track %d ... : ",testmaxtrack[i]);
+			fflush(stdout);
+
+			ret = floppy_head_maxtrack(fpga, testmaxtrack[i]);
+
+			if( ret >= 0)
+			{
+				if(ret>0)
+				{
+					printf("Track seeking error (%d track(s))\n",ret);
+					printf("Safe max track value found for this drive : %d\n",testmaxtrack[i] - ret);
+					break;
+				}
+				else
+				{
+					printf("Ok !\n");
+				}
+			}
+			else
+			{
+				printf("Unexpected error while seeking...\n");
+				break;
+			}
+
+			i++;
+		}
+
+		floppy_ctrl_select_drive(fpga, drive, 0);
+	}
+
 	if(isOption(argc,argv,"readdsk",0)>0)
 	{
 		printf("Start disk reading...\nTrack(s): %d <-> %d, Side(s): %d <-> %d, Time: %dms, %s\n",dump_start_track,dump_max_track,dump_start_side,dump_max_side,dump_time_per_track,high_res_mode?"50Mhz":"25Mhz");
@@ -658,6 +918,7 @@ int main(int argc, char* argv[])
 		(isOption(argc,argv,"license",0)<=0) &&
 		(isOption(argc,argv,"modulelist",0)<=0) &&
 		(isOption(argc,argv,"interfacelist",0)<=0) &&
+		(isOption(argc,argv,"headrecal",0)<=0) &&
 		(isOption(argc,argv,"headstep",0)<=0) &&
 		(isOption(argc,argv,"drive",0)<=0) &&
 		(isOption(argc,argv,"load",0)<=0) &&
@@ -682,8 +943,9 @@ int main(int argc, char* argv[])
 		(isOption(argc,argv,"ioslist",0)<=0 ) &&
 		(isOption(argc,argv,"ejectdisk",0)<=0 ) &&
 		(isOption(argc,argv,"initscript",0)<=0 ) &&
+		(isOption(argc,argv,"autodetect",0)<=0 ) &&
+		(isOption(argc,argv,"testmaxtrack",0)<=0 ) &&
 		(isOption(argc,argv,"reset",0)<=0 )
-
 		)
 	{
 		printhelp(argv);
