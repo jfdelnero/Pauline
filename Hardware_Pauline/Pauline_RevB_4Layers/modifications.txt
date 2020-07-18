@@ -1,0 +1,42 @@
+------------------------------
+--     4 Layers Pauline     --
+--  Hardware modifications  --
+------------------------------
+
+1 March 2020 :
+
+	- Rev A : First/initial run (prototype).
+
+24 April 2020 :
+
+	- Rev B Release
+		- Fix the OLED screen pinout.
+		- Fix the D4 position.
+		- First public release.
+
+15 June 2020 :
+
+	- Switch license to CC BY-SA 4.0
+
+18 July 2020 :
+
+	- Nexperia 5V 74LVC06 buffers replaced by standard TTL 74LS06 buffers :
+
+		From the Nexperia 74LVC06 datasheet it appears that these buffers have a too high
+		Vih input threshold (0.7*5V = 3.5V) for the FPGA 3.3V logic level when powered at
+		5V. Using a classic 74LS06 fix this possible issue since the TTL Vih threshold is
+		at 2.0V and this also bring a higher current driving capability (40mA vs 30mA).
+
+		A question you may ask :
+
+		<<I already have a Pauline with Nexperia 74LVC06 drivers, should i replace them ?>>
+
+		I did some tests and measurements and it appears that Nexperia 74LVC06's real
+		threshold value is lower than the value stated in the datasheet: with VCC at 5V
+		it appears to be at 2.8V and with VCC at 5.5V it appears to be at 3.0V.
+		The DE10 FPGA output level is a good 3.3V voltage. The margin is not huge, but
+		it is large enough to perform reliable operations within the DE10 normal operating
+		voltage range (4.75V <> 5.25V).
+		Until now no issue was reported or detected with the Paulines with Nexperia
+		74LVC06 drivers.
+		To sum up : I don't think that Paulines with Nexperia 74LVC06 need to be modified.
