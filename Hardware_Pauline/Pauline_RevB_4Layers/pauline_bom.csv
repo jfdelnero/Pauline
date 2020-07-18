@@ -146,15 +146,15 @@ Item;Qty;Reference(s);Value;LibPart;Footprint;Datasheet;NC;Remarks
 ;;SW1;Schurter 693-1301.9302;Switch:SW_Push_Dual;Button_Switch_THT:SW_PUSH_6mm;~
 ;;SW2;Schurter 693-1301.9302;Switch:SW_Push_Dual;Button_Switch_THT:SW_PUSH_6mm;~
 ;;SW3;Schurter 693-1301.9302;Switch:SW_Push_Dual;Button_Switch_THT:SW_PUSH_6mm;~
-;;U1;74LVC06AD;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf
+;;U1;SN74LS06D;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.ti.com/lit/ds/symlink/sn74ls06.pdf
 ;;U2;MC74LVX14DR2G;74xx:74HC14;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF
-;;U3;74LVC06AD;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf
+;;U3;SN74LS06D;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.ti.com/lit/ds/symlink/sn74ls06.pdf
 ;;U4;MC74LVX14DR2G;74xx:74HC14;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF
-;;U5;74LVC06AD;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf
+;;U5;SN74LS06D;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.ti.com/lit/ds/symlink/sn74ls06.pdf
 ;;U6;MC74LVX14DR2G;74xx:74HC14;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF
-;;U7;74LVC06AD;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf
+;;U7;SN74LS06D;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.ti.com/lit/ds/symlink/sn74ls06.pdf
 ;;U8;MC74LVX14DR2G;74xx:74HC14;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF
-;;U9;74LVC06AD;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf
+;;U9;SN74LS06D;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.ti.com/lit/ds/symlink/sn74ls06.pdf
 ;;U10;MC74LVX14DR2G;74xx:74HC14;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF
 ;;U11;74LCX125MX;74xx:74LVC125;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.ti.com/lit/ds/symlink/sn74lvc125a.pdf
 ;;U12;MC74LVX14DR2G;74xx:74HC14;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF
@@ -185,7 +185,7 @@ Item;Qty;Reference(s);Value;LibPart;Footprint;Datasheet;NC;Remarks
 18;2;R87, R88;150R;Device:R;Resistor_SMD:R_0603_1608Metric;~;;
 19;2;R94, R96;0R;Device:R;Resistor_SMD:R_0603_1608Metric;~;;
 20;3;SW1, SW2, SW3;Schurter 693-1301.9302;Switch:SW_Push_Dual;Button_Switch_THT:SW_PUSH_6mm;~;;
-21;5;U1, U3, U5, U7, U9;74LVC06AD;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf;;
+21;5;U1, U3, U5, U7, U9;SN74LS06D;74xx:74LS06;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.ti.com/lit/ds/symlink/sn74ls06.pdf;;
 22;6;U2, U4, U6, U8, U10, U12;MC74LVX14DR2G;74xx:74HC14;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.onsemi.com/pub/Collateral/MC74LVX14-D.PDF;;
 23;1;U11;74LCX125MX;74xx:74LVC125;Package_SO:SOIC-14_3.9x8.7mm_P1.27mm;https://www.ti.com/lit/ds/symlink/sn74lvc125a.pdf;;
 24;1;U14;PCA9306;Interface:PCA9306;Package_SO:TSSOP-8_3x3mm_P0.65mm;http://www.ti.com/lit/ds/symlink/pca9306.pdf;;

@@ -5,8 +5,8 @@ $Descr User 23654 12205
 encoding utf-8
 Sheet 1 1
 Title "Pauline (Floppy disk reader/writer and simulator)"
-Date "2020-02-15"
-Rev "V1.0"
+Date "2020-07-18"
+Rev "V1.1"
 Comp "(c) 2020 - HxC2001 / La Ludothèque Française / GPS / MO5.COM"
 Comment1 "(c) 2020 - Designed by Jean-François DEL NERO (CC BY-SA 4.0)"
 Comment2 ""
@@ -760,9 +760,9 @@ L 74xx:74LS06 U1
 U 4 1 5E79A22C
 P 5900 1000
 F 0 "U1" H 6150 1100 50  0000 C CNN
-F 1 "74LVC06AD" H 6300 900 50  0000 C CNN
+F 1 "SN74LS06D" H 6300 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 1000 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 1000 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 5900 1000 50  0001 C CNN
 	4    5900 1000
 	1    0    0    -1  
 $EndComp
@@ -775,9 +775,9 @@ L 74xx:74LS06 U1
 U 3 1 5E8A0215
 P 5900 1950
 F 0 "U1" H 6150 2050 50  0000 C CNN
-F 1 "74LVC06AD" H 6300 1850 50  0000 C CNN
+F 1 "SN74LS06D" H 6300 1850 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 1950 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 1950 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 5900 1950 50  0001 C CNN
 	3    5900 1950
 	1    0    0    -1  
 $EndComp
@@ -794,9 +794,9 @@ L 74xx:74LS06 U1
 U 5 1 5E8DF80E
 P 5900 2900
 F 0 "U1" H 6150 3000 50  0000 C CNN
-F 1 "74LVC06AD" H 6300 2800 50  0000 C CNN
+F 1 "SN74LS06D" H 6300 2800 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 2900 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 2900 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 5900 2900 50  0001 C CNN
 	5    5900 2900
 	1    0    0    -1  
 $EndComp
@@ -813,9 +813,9 @@ L 74xx:74LS06 U1
 U 2 1 5E8FAF4D
 P 5900 3800
 F 0 "U1" H 6150 3900 50  0000 C CNN
-F 1 "74LVC06AD" H 6300 3700 50  0000 C CNN
+F 1 "SN74LS06D" H 6300 3700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 3800 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 3800 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 5900 3800 50  0001 C CNN
 	2    5900 3800
 	1    0    0    -1  
 $EndComp
@@ -840,9 +840,9 @@ L 74xx:74LS06 U1
 U 1 1 5E926CFF
 P 5900 5650
 F 0 "U1" H 6150 5750 50  0000 C CNN
-F 1 "74LVC06AD" H 6300 5550 50  0000 C CNN
+F 1 "SN74LS06D" H 6300 5550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 5650 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 5650 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 5900 5650 50  0001 C CNN
 	1    5900 5650
 	1    0    0    -1  
 $EndComp
@@ -859,9 +859,9 @@ L 74xx:74LS06 U1
 U 6 1 5E91541F
 P 5900 4700
 F 0 "U1" H 6150 4800 50  0000 C CNN
-F 1 "74LVC06AD" H 6300 4600 50  0000 C CNN
+F 1 "SN74LS06D" H 6300 4600 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 4700 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5900 4700 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 5900 4700 50  0001 C CNN
 	6    5900 4700
 	1    0    0    -1  
 $EndComp
@@ -925,9 +925,9 @@ L 74xx:74LS06 U3
 U 4 1 5E9E1D16
 P 8750 1000
 F 0 "U3" H 9000 1100 50  0000 C CNN
-F 1 "74LVC06AD" H 9150 900 50  0000 C CNN
+F 1 "SN74LS06D" H 9150 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 1000 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 1000 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 8750 1000 50  0001 C CNN
 	4    8750 1000
 	1    0    0    -1  
 $EndComp
@@ -944,9 +944,9 @@ L 74xx:74LS06 U3
 U 3 1 5E9E1D27
 P 8750 1950
 F 0 "U3" H 9000 2050 50  0000 C CNN
-F 1 "74LVC06AD" H 9150 1850 50  0000 C CNN
+F 1 "SN74LS06D" H 9150 1850 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 1950 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 1950 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 8750 1950 50  0001 C CNN
 	3    8750 1950
 	1    0    0    -1  
 $EndComp
@@ -963,9 +963,9 @@ L 74xx:74LS06 U3
 U 5 1 5E9E1D38
 P 8750 2900
 F 0 "U3" H 9000 3000 50  0000 C CNN
-F 1 "74LVC06AD" H 9150 2800 50  0000 C CNN
+F 1 "SN74LS06D" H 9150 2800 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 2900 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 2900 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 8750 2900 50  0001 C CNN
 	5    8750 2900
 	1    0    0    -1  
 $EndComp
@@ -982,9 +982,9 @@ L 74xx:74LS06 U3
 U 2 1 5E9E1D49
 P 8750 3800
 F 0 "U3" H 9000 3900 50  0000 C CNN
-F 1 "74LVC06AD" H 9150 3700 50  0000 C CNN
+F 1 "SN74LS06D" H 9150 3700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 3800 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 3800 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 8750 3800 50  0001 C CNN
 	2    8750 3800
 	1    0    0    -1  
 $EndComp
@@ -1009,9 +1009,9 @@ L 74xx:74LS06 U3
 U 1 1 5E9E1D65
 P 8750 5650
 F 0 "U3" H 9000 5750 50  0000 C CNN
-F 1 "74LVC06AD" H 9150 5550 50  0000 C CNN
+F 1 "SN74LS06D" H 9150 5550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 5650 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 5650 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 8750 5650 50  0001 C CNN
 	1    8750 5650
 	1    0    0    -1  
 $EndComp
@@ -1026,9 +1026,9 @@ L 74xx:74LS06 U3
 U 6 1 5E9E1D76
 P 8750 4700
 F 0 "U3" H 9000 4800 50  0000 C CNN
-F 1 "74LVC06AD" H 9150 4600 50  0000 C CNN
+F 1 "SN74LS06D" H 9150 4600 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8750 4700 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8750 4700 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 8750 4700 50  0001 C CNN
 	6    8750 4700
 	1    0    0    -1  
 $EndComp
@@ -1103,9 +1103,9 @@ L 74xx:74LS06 U5
 U 4 1 5EB0FB1C
 P 11550 1000
 F 0 "U5" H 11750 1100 50  0000 C CNN
-F 1 "74LVC06AD" H 11900 900 50  0000 C CNN
+F 1 "SN74LS06D" H 11900 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 1000 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 1000 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 11550 1000 50  0001 C CNN
 	4    11550 1000
 	1    0    0    -1  
 $EndComp
@@ -1122,9 +1122,9 @@ L 74xx:74LS06 U5
 U 3 1 5EB0FB2D
 P 11550 1950
 F 0 "U5" H 11800 2050 50  0000 C CNN
-F 1 "74LVC06AD" H 11950 1850 50  0000 C CNN
+F 1 "SN74LS06D" H 11950 1850 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 1950 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 1950 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 11550 1950 50  0001 C CNN
 	3    11550 1950
 	1    0    0    -1  
 $EndComp
@@ -1141,9 +1141,9 @@ L 74xx:74LS06 U5
 U 5 1 5EB0FB3E
 P 11550 2900
 F 0 "U5" H 11800 3000 50  0000 C CNN
-F 1 "74LVC06AD" H 11950 2800 50  0000 C CNN
+F 1 "SN74LS06D" H 11950 2800 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 2900 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 2900 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 11550 2900 50  0001 C CNN
 	5    11550 2900
 	1    0    0    -1  
 $EndComp
@@ -1160,9 +1160,9 @@ L 74xx:74LS06 U5
 U 2 1 5EB0FB4F
 P 11550 3800
 F 0 "U5" H 11800 3900 50  0000 C CNN
-F 1 "74LVC06AD" H 11950 3700 50  0000 C CNN
+F 1 "SN74LS06D" H 11950 3700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 3800 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 3800 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 11550 3800 50  0001 C CNN
 	2    11550 3800
 	1    0    0    -1  
 $EndComp
@@ -1187,9 +1187,9 @@ L 74xx:74LS06 U5
 U 1 1 5EB0FB6B
 P 11550 5650
 F 0 "U5" H 11800 5750 50  0000 C CNN
-F 1 "74LVC06AD" H 11950 5550 50  0000 C CNN
+F 1 "SN74LS06D" H 11950 5550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 5650 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 5650 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 11550 5650 50  0001 C CNN
 	1    11550 5650
 	1    0    0    -1  
 $EndComp
@@ -1206,9 +1206,9 @@ L 74xx:74LS06 U5
 U 6 1 5EB0FB7C
 P 11550 4700
 F 0 "U5" H 11800 4800 50  0000 C CNN
-F 1 "74LVC06AD" H 11950 4600 50  0000 C CNN
+F 1 "SN74LS06D" H 11950 4600 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11550 4700 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11550 4700 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 11550 4700 50  0001 C CNN
 	6    11550 4700
 	1    0    0    -1  
 $EndComp
@@ -1289,9 +1289,9 @@ L 74xx:74LS06 U7
 U 3 1 5ED10B0C
 P 14300 1950
 F 0 "U7" H 14550 2050 50  0000 C CNN
-F 1 "74LVC06AD" H 14700 1850 50  0000 C CNN
+F 1 "SN74LS06D" H 14700 1850 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 1950 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 1950 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 14300 1950 50  0001 C CNN
 	3    14300 1950
 	1    0    0    -1  
 $EndComp
@@ -1326,9 +1326,9 @@ L 74xx:74LS06 U7
 U 1 1 5ED10B47
 P 14300 5650
 F 0 "U7" H 14550 5750 50  0000 C CNN
-F 1 "74LVC06AD" H 14700 5550 50  0000 C CNN
+F 1 "SN74LS06D" H 14700 5550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 5650 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 5650 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 14300 5650 50  0001 C CNN
 	1    14300 5650
 	1    0    0    -1  
 $EndComp
@@ -1415,9 +1415,9 @@ L 74xx:74LS06 U7
 U 2 1 5ED10B58
 P 14300 4700
 F 0 "U7" H 14550 4800 50  0000 C CNN
-F 1 "74LVC06AD" H 14700 4600 50  0000 C CNN
+F 1 "SN74LS06D" H 14700 4600 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 4700 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 4700 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 14300 4700 50  0001 C CNN
 	2    14300 4700
 	1    0    0    -1  
 $EndComp
@@ -1426,9 +1426,9 @@ L 74xx:74LS06 U7
 U 5 1 5ED10B1A
 P 14300 2900
 F 0 "U7" H 14550 3000 50  0000 C CNN
-F 1 "74LVC06AD" H 14700 2800 50  0000 C CNN
+F 1 "SN74LS06D" H 14700 2800 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 2900 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 2900 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 14300 2900 50  0001 C CNN
 	5    14300 2900
 	1    0    0    -1  
 $EndComp
@@ -1437,9 +1437,9 @@ L 74xx:74LS06 U7
 U 6 1 5ED10B2B
 P 14300 3800
 F 0 "U7" H 14550 3900 50  0000 C CNN
-F 1 "74LVC06AD" H 14700 3700 50  0000 C CNN
+F 1 "SN74LS06D" H 14700 3700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 3800 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 3800 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 14300 3800 50  0001 C CNN
 	6    14300 3800
 	1    0    0    -1  
 $EndComp
@@ -1492,9 +1492,9 @@ L 74xx:74LS06 U3
 U 7 1 5F4D98EB
 P 8500 7100
 F 0 "U3" H 8350 7450 50  0000 C CNN
-F 1 "74LVC06AD" H 8750 6650 50  0000 C CNN
+F 1 "SN74LS06D" H 8750 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8500 7100 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 8500 7100 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 8500 7100 50  0001 C CNN
 	7    8500 7100
 	1    0    0    -1  
 $EndComp
@@ -1558,9 +1558,9 @@ L 74xx:74LS06 U5
 U 7 1 5F508257
 P 11200 7100
 F 0 "U5" H 11050 7450 50  0000 C CNN
-F 1 "74LVC06AD" H 11450 6650 50  0000 C CNN
+F 1 "SN74LS06D" H 11450 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 11200 7100 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 11200 7100 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 11200 7100 50  0001 C CNN
 	7    11200 7100
 	1    0    0    -1  
 $EndComp
@@ -1613,9 +1613,9 @@ L 74xx:74LS06 U7
 U 7 1 5F536235
 P 14100 7100
 F 0 "U7" H 13950 7450 50  0000 C CNN
-F 1 "74LVC06AD" H 14350 6650 50  0000 C CNN
+F 1 "SN74LS06D" H 14350 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14100 7100 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14100 7100 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 14100 7100 50  0001 C CNN
 	7    14100 7100
 	1    0    0    -1  
 $EndComp
@@ -1710,9 +1710,9 @@ L 74xx:74LS06 U7
 U 4 1 5ED10AFE
 P 14300 1000
 F 0 "U7" H 14550 1100 50  0000 C CNN
-F 1 "74LVC06AD" H 14700 900 50  0000 C CNN
+F 1 "SN74LS06D" H 14700 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 14300 1000 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 14300 1000 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 14300 1000 50  0001 C CNN
 	4    14300 1000
 	1    0    0    -1  
 $EndComp
@@ -2544,9 +2544,9 @@ L 74xx:74LS06 U1
 U 7 1 5F11BE14
 P 5600 7100
 F 0 "U1" H 5450 7450 50  0000 C CNN
-F 1 "74LVC06AD" H 5850 6650 50  0000 C CNN
+F 1 "SN74LS06D" H 5850 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5600 7100 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 5600 7100 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 5600 7100 50  0001 C CNN
 	7    5600 7100
 	1    0    0    -1  
 $EndComp
@@ -2808,9 +2808,9 @@ L 74xx:74LS06 U9
 U 3 1 6053F71C
 P 17150 1950
 F 0 "U9" H 17400 2050 50  0000 C CNN
-F 1 "74LVC06AD" H 17550 1850 50  0000 C CNN
+F 1 "SN74LS06D" H 17550 1850 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 1950 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 1950 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 17150 1950 50  0001 C CNN
 	3    17150 1950
 	1    0    0    -1  
 $EndComp
@@ -2841,9 +2841,9 @@ L 74xx:74LS06 U9
 U 1 1 6053F72F
 P 17150 5650
 F 0 "U9" H 17400 5750 50  0000 C CNN
-F 1 "74LVC06AD" H 17550 5550 50  0000 C CNN
+F 1 "SN74LS06D" H 17550 5550 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 5650 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 5650 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 17150 5650 50  0001 C CNN
 	1    17150 5650
 	1    0    0    -1  
 $EndComp
@@ -2926,9 +2926,9 @@ L 74xx:74LS06 U9
 U 2 1 6053F75F
 P 17150 4700
 F 0 "U9" H 17400 4800 50  0000 C CNN
-F 1 "74LVC06AD" H 17550 4600 50  0000 C CNN
+F 1 "SN74LS06D" H 17550 4600 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 4700 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 4700 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 17150 4700 50  0001 C CNN
 	2    17150 4700
 	1    0    0    -1  
 $EndComp
@@ -2937,9 +2937,9 @@ L 74xx:74LS06 U9
 U 5 1 6053F765
 P 17150 2900
 F 0 "U9" H 17400 3000 50  0000 C CNN
-F 1 "74LVC06AD" H 17550 2800 50  0000 C CNN
+F 1 "SN74LS06D" H 17550 2800 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 2900 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 2900 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 17150 2900 50  0001 C CNN
 	5    17150 2900
 	1    0    0    -1  
 $EndComp
@@ -2948,9 +2948,9 @@ L 74xx:74LS06 U9
 U 6 1 6053F76B
 P 17150 3800
 F 0 "U9" H 17400 3900 50  0000 C CNN
-F 1 "74LVC06AD" H 17550 3700 50  0000 C CNN
+F 1 "SN74LS06D" H 17550 3700 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 3800 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 3800 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 17150 3800 50  0001 C CNN
 	6    17150 3800
 	1    0    0    -1  
 $EndComp
@@ -2959,9 +2959,9 @@ L 74xx:74LS06 U9
 U 7 1 6053F771
 P 16950 7100
 F 0 "U9" H 16800 7450 50  0000 C CNN
-F 1 "74LVC06AD" H 17200 6650 50  0000 C CNN
+F 1 "SN74LS06D" H 17200 6650 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 16950 7100 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 16950 7100 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 16950 7100 50  0001 C CNN
 	7    16950 7100
 	1    0    0    -1  
 $EndComp
@@ -3056,9 +3056,9 @@ L 74xx:74LS06 U9
 U 4 1 6053F7A6
 P 17150 1000
 F 0 "U9" H 17400 1100 50  0000 C CNN
-F 1 "74LVC06AD" H 17550 900 50  0000 C CNN
+F 1 "SN74LS06D" H 17550 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 17150 1000 50  0001 C CNN
-F 3 "https://assets.nexperia.com/documents/data-sheet/74LVC06A.pdf" H 17150 1000 50  0001 C CNN
+F 3 "https://www.ti.com/lit/ds/symlink/sn74ls06.pdf" H 17150 1000 50  0001 C CNN
 	4    17150 1000
 	1    0    0    -1  
 $EndComp
