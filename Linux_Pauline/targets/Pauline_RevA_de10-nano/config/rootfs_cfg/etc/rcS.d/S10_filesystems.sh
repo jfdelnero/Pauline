@@ -134,7 +134,7 @@ fi
 
 if [ ! -d "/home/pauline/Drives_Simulation" ] ; then
 	mkdir "/home/pauline/Drives_Simulation"
-	cp -ar /data/Settings/* /home/pauline/Settings
+	cp -ar /data/Drives_Simulation/* /home/pauline/Drives_Simulation
 fi
 
 if [ ! -d "/home/pauline/Tools" ] ; then
