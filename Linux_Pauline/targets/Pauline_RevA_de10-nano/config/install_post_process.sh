@@ -19,33 +19,44 @@ mkdir ${TARGET_HOME}/output_objects
 # Build the cross compiled hxc tool
 #
 
-cd ${PAULINE_BASE}/../../build
-make mrproper
-make CC=${TGT_MACH}-gcc HxCFloppyEmulator_cmdline || exit 1
+if [ ! -d ${TARGET_HOME}/output_objects/target_hxc_tool ]
+then
+(
+	cd ${PAULINE_BASE}/../../build
+	make mrproper
+	make CC=${TGT_MACH}-gcc HxCFloppyEmulator_cmdline || exit 1
 
-mkdir ${TARGET_HOME}/output_objects/target_hxc_tool
+	mkdir ${TARGET_HOME}/output_objects/target_hxc_tool
 
-${BASE_DIR}/scripts/fix_bin_paths hxcfe ${TARGET_ROOTFS}
-${BASE_DIR}/scripts/fix_bin_paths libusbhxcfe.so ${TARGET_ROOTFS}
-${BASE_DIR}/scripts/fix_bin_paths libhxcfe.so ${TARGET_ROOTFS}
+	${BASE_DIR}/scripts/fix_bin_paths hxcfe ${TARGET_ROOTFS}
+	${BASE_DIR}/scripts/fix_bin_paths libusbhxcfe.so ${TARGET_ROOTFS}
+	${BASE_DIR}/scripts/fix_bin_paths libhxcfe.so ${TARGET_ROOTFS}
 
-cp   hxcfe  ${TARGET_HOME}/output_objects/target_hxc_tool/hxcfe || exit 1
-cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
-cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
+	cp   hxcfe  ${TARGET_HOME}/output_objects/target_hxc_tool/hxcfe || exit 1
+	cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
+	cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
 
-cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
-cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
+	cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1	
+	cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
 
-cp   libusbhxcfe.so  ${TARGET_ROOTFS}/lib/ || exit 1
-cp   libhxcfe.so  ${TARGET_ROOTFS}/lib/ || exit 1
-cp   ${PAULINE_BASE}/../../libhxcfe/trunk/sources/libhxcfe.h  ${TARGET_ROOTFS}/include/ || exit 1
+	cp   libusbhxcfe.so  ${TARGET_ROOTFS}/lib/ || exit 1
+	cp   libhxcfe.so  ${TARGET_ROOTFS}/lib/ || exit 1
+	cp   ${PAULINE_BASE}/../../libhxcfe/trunk/sources/libhxcfe.h  ${TARGET_ROOTFS}/include/ || exit 1
 
-cp   libusbhxcfe.so  ${TARGET_ROOTFS_MIRROR}/lib/ || exit 1
-cp   libhxcfe.so  ${TARGET_ROOTFS_MIRROR}/lib/ || exit 1
+	cp   libusbhxcfe.so  ${TARGET_ROOTFS_MIRROR}/lib/ || exit 1
+	cp   libhxcfe.so  ${TARGET_ROOTFS_MIRROR}/lib/ || exit 1
+
+) || exit 1
+fi
 
 #
 # Generate Pauline tools
 #
+
+cd ${PAULINE_BASE}/Softwares_Pauline/wsServer
+make clean
+make mrproper
+make CC=${TGT_MACH}-gcc all || exit 1
 
 cd ${PAULINE_BASE}/Softwares_Pauline/Pauline_control
 make clean
@@ -70,15 +81,20 @@ cp   ${PAULINE_BASE}/Softwares_Pauline/splash_screen/splash_screen  ${TARGET_HOM
 # Build the pc hxc tool
 #
 
-#cd ${PAULINE_BASE}/../../build
-#make mrproper
-#make TARGET=mingw32 || exit 1
+if [ ! -d ${TARGET_HOME}/output_objects/pc_hxc_tool ]
+then
+(
+	cd ${PAULINE_BASE}/../../build
+	make mrproper
+	make TARGET=mingw32 || exit 1
 
-#mkdir ${TARGET_HOME}/output_objects/pc_hxc_tool
-#cp   HxCFloppyEmulator.exe  ${TARGET_HOME}/output_objects/pc_hxc_tool/HxCFloppyEmulator.exe || exit 1
-#cp   hxcfe.exe  ${TARGET_HOME}/output_objects/pc_hxc_tool/hxcfe.exe || exit 1
-#cp   libusbhxcfe.dll  ${TARGET_HOME}/output_objects/pc_hxc_tool/libusbhxcfe.dll || exit 1
-#cp   libhxcfe.dll  ${TARGET_HOME}/output_objects/pc_hxc_tool/libhxcfe.dll || exit 1
+	mkdir ${TARGET_HOME}/output_objects/pc_hxc_tool
+	cp   HxCFloppyEmulator.exe  ${TARGET_HOME}/output_objects/pc_hxc_tool/HxCFloppyEmulator.exe || exit 1
+	cp   hxcfe.exe  ${TARGET_HOME}/output_objects/pc_hxc_tool/hxcfe.exe || exit 1
+	cp   libusbhxcfe.dll  ${TARGET_HOME}/output_objects/pc_hxc_tool/libusbhxcfe.dll || exit 1
+	cp   libhxcfe.dll  ${TARGET_HOME}/output_objects/pc_hxc_tool/libhxcfe.dll || exit 1
+) || exit 1
+fi
 
 #
 # Generate the dts and build the dtb
@@ -109,20 +125,26 @@ cd ${FPGA_GHRD_FOLDER}/software/spl_bsp
 # build the preloader
 #
 
-echo --- build the preloader ---
+if [ ! -f ${TARGET_HOME}/output_objects/preloader-mkpimage.bin ]
+then
+(
+	echo --- build the preloader ---
 
-cd ${FPGA_GHRD_FOLDER}/software/spl_bsp || exit 1
-cp Makefile_old Makefile
+	cd ${FPGA_GHRD_FOLDER}/software/spl_bsp || exit 1
+	cp Makefile_old Makefile
 
-rm -rf uboot-socfpga
-tar -xvJf old-uboot-socfpga-2013-01-01.tar.xz
+	rm -rf uboot-socfpga
+	tar -xvJf old-uboot-socfpga-2013-01-01.tar.xz
 
-cp -rfv ${FPGA_GHRD_FOLDER}/software/spl_bsp/generated/* ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/board/altera/socfpga
+	cp -rfv ${FPGA_GHRD_FOLDER}/software/spl_bsp/generated/* ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/board/altera/socfpga
 
-make clean  || exit 1
-make  || exit 1
+	make clean  || exit 1
+	make  || exit 1
 
-cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/preloader-mkpimage.bin ${TARGET_HOME}/output_objects/  || exit 1
+	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/preloader-mkpimage.bin ${TARGET_HOME}/output_objects/  || exit 1
+
+) || exit 1
+fi
 
 #############################################################################"
 
@@ -160,6 +182,22 @@ cp ${TARGET_SOURCES}/linux-kernel/arch/arm/boot/zImage ${TARGET_HOME}/output_obj
 
 ${ALTERA_TOOLS_ROOT}/quartus/bin/quartus_cpf -c -o bitstream_compression=on ${FPGA_GHRD_FOLDER}/output_files/FPGA_Pauline_Rev_A.sof ${TARGET_HOME}/output_objects/soc_system.rbf || exit 1
 ${ALTERA_TOOLS_ROOT}/quartus/bin/quartus_cpf -c -o bitstream_compression=off ${FPGA_GHRD_FOLDER}/output_files/FPGA_Pauline_Rev_A.sof ${TARGET_HOME}/output_objects/soc_system_unpacked.rbf || exit 1
+
+############################################################################################
+# Create the update ramdisk image
+
+export TARGET_UPDATE_RD_ROOTFS=${TARGET_HOME}/update_ramdisk
+
+rm -Rf ${TARGET_UPDATE_RD_ROOTFS}
+
+mkdir  ${TARGET_UPDATE_RD_ROOTFS}
+cd     ${TARGET_UPDATE_RD_ROOTFS}
+
+cp -av ${TARGET_ROOTFS_MIRROR}/* .
+
+rm -rf boot home/www include libexec media opt share usr/arm-hardfloat-linux-gnueabi usr/lib usr/bin usr/local usr/share www etc/fonts etc/libnl etc/lighttpd etc/netword etc/share etc/ssh etc/ssl etc/umtprd bin/smbclient bin/smbd bin/mu-mh lib/audit lib/cmake lib/engines lib/gconv lib/libffi-3.2 lib/libnl lib/mailutils lib/*.a lib/*.o lib/modules  usr/include usr/libexec var/db
+
+find . | cpio --dereference -H newc -o | gzip -9 > ${TARGET_HOME}/output_objects/update_rd.img
 
 ############################################################################################
 # Create SD Card image
