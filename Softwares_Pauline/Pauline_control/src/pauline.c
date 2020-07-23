@@ -46,6 +46,7 @@
 #include "fpga.h"
 #include "stream_hfe.h"
 #include "network.h"
+#include "websocket.h"
 #include "script.h"
 #include "bmp_file.h"
 #include "screen.h"
@@ -301,6 +302,7 @@ int main(int argc, char* argv[])
 	HXCFE* libhxcfe;
 
 	pthread_t listener_thread;
+	pthread_t websocket_thread;
 
 	fpga = NULL;
 
@@ -411,6 +413,11 @@ int main(int argc, char* argv[])
 		if(pthread_create(&listener_thread, NULL, tcp_listener, (void*)0x1))
 		{
 			printf("Error ! Can't Create the listener thread !\n");
+		}
+
+		if(pthread_create(&websocket_thread, NULL, websocket_listener, NULL))
+		{
+			printf("Error ! Can't Create the websocket listener thread !\n");
 		}
 
 		fpga->inotify_fd = inotify_init1(0x00);
