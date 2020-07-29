@@ -98,7 +98,30 @@ void init_srv_msg()
 	}
 }
 
-int add_client()
+int handle_to_index(uint32_t handle)
+{
+	int i;
+
+	i = 0;
+
+	if(!msg_context)
+		return -1;
+
+	i = 0;
+	do
+	{
+		if(msg_context->clients_out_buffer[i].enabled && (msg_context->handle_to_index[i] == handle))
+		{
+			return i;
+		}
+
+		i++;
+	}while(i<MAX_NB_CLIENTS);
+
+	return -1;
+}
+
+int add_client(uint32_t handle)
 {
 	int i;
 
@@ -109,13 +132,15 @@ int add_client()
 
 	pthread_mutex_lock(&msg_context->msg_ctx_mutex);
 
-	while(!msg_context->clients_out_buffer[i].enabled && i < MAX_NB_CLIENTS)
+	while(msg_context->clients_out_buffer[i].enabled && i < MAX_NB_CLIENTS)
 	{
 		i++;
 	}
 
 	if(i<MAX_NB_CLIENTS)
 	{
+		msg_context->handle_to_index[i] = handle;
+
 		msg_context->clients_out_buffer[i].out_index = 0;
 		msg_context->clients_out_buffer[i].in_index = 0;
 
@@ -178,14 +203,31 @@ void msg_printf(char * msg)
 	}
 }
 
-void msg_out_wait(int client_id, char * outbuf)
+void exitwait(int client_id)
+{
+	if(!msg_context)
+		return;
+
+	if(client_id < 0)
+		return;
+
+	msg_context->clients_out_buffer[client_id].in_index = 0;
+	msg_context->clients_out_buffer[client_id].out_index = 0;
+	sendEvent(&msg_context->clients_out_buffer[client_id].event);
+
+	msg_context->in_buffer.in_index = 0;
+	msg_context->in_buffer.out_index = 0;
+	sendEvent(&msg_context->in_event);
+}
+
+int msg_out_wait(int client_id, char * outbuf)
 {
 	char * ptr;
 
 	if(!msg_context || (client_id > (MAX_NB_CLIENTS - 1)))
 	{
 		outbuf[0] = 0;
-		return;
+		return  -1;
 	}
 
 	waitEvent(&msg_context->clients_out_buffer[client_id].event);
@@ -195,13 +237,15 @@ void msg_out_wait(int client_id, char * outbuf)
 		ptr = (char*)&msg_context->clients_out_buffer[client_id].messages[msg_context->clients_out_buffer[client_id].out_index];
 		strncpy(outbuf, ptr, MAX_MESSAGES_SIZE - 1);
 		msg_context->clients_out_buffer[client_id].out_index = (msg_context->clients_out_buffer[client_id].out_index + 1) & (MAX_NB_MESSAGES - 1);
+
+		return 1;
 	}
 	else
 	{
 		outbuf[0] = 0;
 	}
 
-	return;
+	return 0;
 }
 
 // clients -> "stdin"
@@ -221,18 +265,18 @@ void msg_push_in_msg(int client_id, char * msg)
 			msg_context->in_buffer.out_index = (msg_context->in_buffer.out_index + 1) & (MAX_NB_MESSAGES - 1);
 		}
 
-		pthread_mutex_lock(&msg_context->new_in_message_mutex);
+		pthread_mutex_unlock(&msg_context->new_in_message_mutex);
 	}
 }
 
-void msg_in_wait(char * outbuf)
+int msg_in_wait(char * outbuf)
 {
 	char * ptr;
 
 	if(!msg_context)
 	{
 		outbuf[0] = 0;
-		return;
+		return -1;
 	}
 
 	waitEvent(&msg_context->in_event);
@@ -242,11 +286,16 @@ void msg_in_wait(char * outbuf)
 		ptr = (char*)&msg_context->in_buffer.messages[msg_context->in_buffer.out_index];
 		strncpy(outbuf, ptr, MAX_MESSAGES_SIZE - 1);
 		msg_context->in_buffer.out_index = (msg_context->in_buffer.out_index + 1) & (MAX_NB_MESSAGES - 1);
+
+		return 1;
 	}
 	else
 	{
 		outbuf[0] = 0;
+
+		return 0;
 	}
+
 
 }
 

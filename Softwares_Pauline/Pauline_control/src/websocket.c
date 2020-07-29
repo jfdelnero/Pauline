@@ -61,23 +61,64 @@
 #include "fpga.h"
 #include "dump_chunk.h"
 #include "network.h"
-#include "script.h"
 
 #include "bmp_file.h"
 #include "screen.h"
 
+#include "messages.h"
+
+pthread_t ws_thread[MAX_NB_CLIENTS];
+
+void *websocket_txthread(void *threadid)
+{
+	int fd;
+	char msg[MAX_MESSAGES_SIZE];
+
+	pthread_detach(pthread_self());
+
+	fd = (int) threadid;
+
+	printf("websocket_txthread : handle %d, index %d\n",fd,handle_to_index(fd));
+	
+	while( msg_out_wait(handle_to_index(fd), (char*)&msg) > 0 )
+	{
+		ws_sendframe(fd, (char *)msg, true);
+	}
+
+	pthread_exit(NULL);
+}
+
 void onopen(int fd)
 {
 	char *cli;
+	int index;
 	cli = ws_getaddress(fd);
-	printf("Connection opened, client: %d | addr: %s\n", fd, cli);
+
+	index = add_client(fd);
+
+	printf("Connection opened, client: %d | addr: %s, index : %d\n", fd, cli,index);
+
+	if(index >= 0)
+	{
+		pthread_create(&ws_thread[index], NULL, websocket_txthread, (void*)fd);
+	}
+
 	free(cli);
 }
 
 void onclose(int fd)
 {
 	char *cli;
+	int index;
+
 	cli = ws_getaddress(fd);
+
+	index = handle_to_index(fd);
+
+	exitwait(index);
+
+	remove_client(index);
+
 	printf("Connection closed, client: %d | addr: %s\n", fd, cli);
 	free(cli);
 }
@@ -85,11 +126,21 @@ void onclose(int fd)
 void onmessage(int fd, const unsigned char *msg)
 {
 	char *cli;
+
 	cli = ws_getaddress(fd);
-	printf("I receive a message: %s, from: %s/%d\n", msg, cli, fd);
-	ws_sendframe(fd, (char *)msg, true);
+
+	if(cli)
+	{
+		printf("I receive a message: %s, from: %s/%d\n", msg, cli, fd);
+
+		msg_push_in_msg(handle_to_index(fd), (char*)msg);
+	}
+	
+	//msg_printf(" Hello ! :) ");
+
 	free(cli);
 }
+
 
 void *websocket_listener(void *threadid)
 {
@@ -101,6 +152,6 @@ void *websocket_listener(void *threadid)
 	evs.onclose   = &onclose;
 	evs.onmessage = &onmessage;
 	ws_socket(&evs, 8080);
-	
+
 	pthread_exit(NULL);
 }

@@ -58,7 +58,6 @@
 #include "fpga.h"
 #include "dump_chunk.h"
 #include "network.h"
-#include "script.h"
 
 #define SOCKET_ERROR        -1
 #define QUEUE_SIZE          5
@@ -167,7 +166,7 @@ void *connection_thread(void *threadid)
 						}
 						else
 						{
-							execute_line(fullline);
+							execute_line(NULL,fullline);
 							line_index = 0;
 						}
 						i++;
@@ -343,7 +342,7 @@ void *tcp_listener(void *threadid)
 	}
 	else
 	{
-		setOutputFunc( Printf_socket );
+		//setOutputFunc( NULL, Printf_socket );
 		threads_cmd = malloc(sizeof(pthread_t) * MAXCONNECTION);
 		memset(threads_cmd,0,sizeof(pthread_t) * MAXCONNECTION);
 
