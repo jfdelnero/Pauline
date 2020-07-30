@@ -16,9 +16,10 @@
 		<meta name="dc.language" content="fr">
 		<meta name="robots" content="index, follow">
 		<meta name="viewport" content="width=device-width, initial-scale=0.6">
+		<script type="text/javascript" src="pauline.js"></script>
 	</head>
 
-	<body>
+	<body onload="PaulineConnection()">
 		<table class="topmenu">
 			<tbody>
 				<tr>
@@ -68,6 +69,18 @@
 		<div class="hxc2001">
 			<div style="text-align: center;"><embed src="img/pauline_logo.png"></div>
 			<br>
+
+			<div id="header">
+				<!-- Server: <input type="text" id="txtServer" value="ws://127.1.0.1:8080"> -->
+				<!-- <input type="button" id="btConn" name="btConn" value="Connect!"><br /><br /> -->
+
+				Command : <input type="text" id="txtMsg" value="">
+				<input type="button" id="btMsg" name="btMsg" value="Send"><br /><br />
+
+				<textarea rows="30" cols="70" id="taLog" name="taLog"></textarea><br /><br />
+				<input type="button" id="btReboot" name="btReboot" value="Reboot"> <input type="button" id="btHalt" name="btHalt" value="Halt"><br /><br />
+			</div>
+
 			<b><u>Under construction</u></b><br>
 			<br>
 			
