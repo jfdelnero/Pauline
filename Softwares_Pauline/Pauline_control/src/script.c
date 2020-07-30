@@ -1100,7 +1100,7 @@ int cmd_set_select_src(script_ctx * ctx, char * line)
 	char temp2[DEFAULT_BUFLEN];
 
 	i = get_param(line, 1,temp);
-	j = get_param(line, 2,temp);
+	j = get_param(line, 2,temp2);
 
 	if(i>=0 && j>=0)
 	{
@@ -1238,6 +1238,32 @@ int cmd_version(script_ctx * ctx, char * line)
 	return 1;
 }
 
+int cmd_system(script_ctx * ctx, char * line)
+{
+	int i,ret;
+	char temp[DEFAULT_BUFLEN];
+	char temp2[DEFAULT_BUFLEN];
+
+	memset(temp2,0,sizeof(temp2));
+
+	for(i=1;i<32;i++)
+	{
+		temp[0] = 0;
+		get_param(line, i,temp);
+		if(strlen(temp))
+		{
+			strcat(temp2," ");
+			strcat(temp2,temp);
+		}
+	}
+
+	ret = system(temp2);
+
+	ctx->script_printf(MSGTYPE_ERROR,"system() return : %d\n",ret);
+
+	return 0;
+}
+
 cmd_list cmdlist[] =
 {
 	{"print",					cmd_print},
@@ -1260,6 +1286,8 @@ cmd_list cmdlist[] =
 
 	{"setio",					cmd_set_pin},
 	{"cleario",					cmd_clear_pin},
+
+	{"system",					cmd_system},
 
 	{0 , 0}
 };
