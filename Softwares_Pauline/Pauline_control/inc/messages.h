@@ -5,8 +5,9 @@
 typedef struct _wait_event_ctx
 {
 	int signalled;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
+	int cancelled;
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
 }wait_event_ctx;
 
 typedef struct _msg_buffer
@@ -48,7 +49,8 @@ int  add_client(uint32_t handle);
 void remove_client(int client_id);
 
 // stdout -> clients
-void msg_printf(char * msg);
+int  msg_printf(int MSGTYPE,char * chaine, ...);
+
 int  msg_out_wait(int client_id, char * outbuf);
 
 // clients -> "stdin"
@@ -61,5 +63,6 @@ void exitwait(int client_id);
 
 void eventInit(wait_event_ctx * ctx);
 void eventDeinit(wait_event_ctx * ctx);
-void waitEvent(wait_event_ctx * ctx);
+int  waitEvent(wait_event_ctx * ctx);
 void sendEvent(wait_event_ctx * ctx);
+void cancelEvent(wait_event_ctx * ctx);

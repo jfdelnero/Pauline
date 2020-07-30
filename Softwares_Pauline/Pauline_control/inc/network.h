@@ -51,3 +51,6 @@ void *ConnectionThread(void *threadid);
 void *tcp_listener(void *threadid);
 int senddatapacket(unsigned char * buffer,int size);
 int print_netif_ips(int x,int y);
+
+void *server_script_thread(void *threadid);
+

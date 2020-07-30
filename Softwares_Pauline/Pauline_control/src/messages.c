@@ -42,12 +42,15 @@
 #include <signal.h>
 
 #include "messages.h"
+#include "script.h"
 
 msg_ctx * msg_context = NULL;
 
 void eventInit(wait_event_ctx * ctx)
 {
 	ctx->signalled = 0;
+	ctx->cancelled = 0;
+
 	pthread_mutex_init(&ctx->mutex, NULL);
 	pthread_cond_init(&ctx->cond, NULL);
 }
@@ -58,21 +61,40 @@ void eventDeinit(wait_event_ctx * ctx)
 	pthread_cond_destroy(&ctx->cond);
 }
 
-void waitEvent(wait_event_ctx * ctx)
+int waitEvent(wait_event_ctx * ctx)
 {
+	int ret;
+
 	pthread_mutex_lock(&ctx->mutex);
-	while (!ctx->signalled)
+	while (!ctx->signalled && !ctx->cancelled)
 	{
 		pthread_cond_wait(&ctx->cond, &ctx->mutex);
 	}
+
 	ctx->signalled = 0;
+
+	if(ctx->cancelled)
+		ret = 0;
+	else
+		ret = 1;
+
 	pthread_mutex_unlock(&ctx->mutex);
+
+	return ret;
 }
 
 void sendEvent(wait_event_ctx * ctx)
 {
 	pthread_mutex_lock(&ctx->mutex);
 	ctx->signalled = 1;
+	pthread_mutex_unlock(&ctx->mutex);
+	pthread_cond_signal(&ctx->cond);
+}
+
+void cancelEvent(wait_event_ctx * ctx)
+{
+	pthread_mutex_lock(&ctx->mutex);
+	ctx->cancelled = 1;
 	pthread_mutex_unlock(&ctx->mutex);
 	pthread_cond_signal(&ctx->cond);
 }
@@ -180,7 +202,7 @@ void remove_client(int client_id)
 }
 
 // stdout -> clients
-void msg_printf(char * msg)
+void msg_print(char * msg)
 {
 	int i;
 
@@ -203,6 +225,66 @@ void msg_printf(char * msg)
 	}
 }
 
+int msg_printf(int MSGTYPE,char * chaine, ...)
+{
+	char temp[MAX_MESSAGES_SIZE];
+	char textbuf[MAX_MESSAGES_SIZE];
+	int iSendResult,i,j;
+
+	if(MSGTYPE!=MSGTYPE_DEBUG)
+	{
+		va_list marker;
+		va_start( marker, chaine );
+
+		switch(MSGTYPE)
+		{
+			case MSGTYPE_NONE:
+				textbuf[0] = 0;
+			break;
+			case MSGTYPE_INFO_0:
+				sprintf(textbuf,"OK : ");
+			break;
+			case MSGTYPE_INFO_1:
+				sprintf(textbuf,"OK : ");
+			break;
+			case MSGTYPE_WARNING:
+				sprintf(textbuf,"WARNING : ");
+			break;
+			case MSGTYPE_ERROR:
+				sprintf(textbuf,"ERROR : ");
+			break;
+			case MSGTYPE_DEBUG:
+				sprintf(textbuf,"DEBUG : ");
+			break;
+		}
+
+		vsprintf(temp,chaine,marker);
+		//strcat(textbuf,"\n");
+
+		j = strlen(textbuf);
+		i = 0;
+		while(temp[i])
+		{
+
+			if(temp[i]=='\n')
+			{
+				textbuf[j++] = '\r';
+				textbuf[j++] = '\n';
+			}
+			else
+				textbuf[j++] = temp[i];
+
+			i++;
+		}
+		textbuf[j] = 0;
+
+		msg_print(textbuf);
+
+		va_end( marker );
+	}
+	return 0;
+}
+
 void exitwait(int client_id)
 {
 	if(!msg_context)
@@ -213,11 +295,11 @@ void exitwait(int client_id)
 
 	msg_context->clients_out_buffer[client_id].in_index = 0;
 	msg_context->clients_out_buffer[client_id].out_index = 0;
-	sendEvent(&msg_context->clients_out_buffer[client_id].event);
+	cancelEvent(&msg_context->clients_out_buffer[client_id].event);
 
-	msg_context->in_buffer.in_index = 0;
+	/*msg_context->in_buffer.in_index = 0;
 	msg_context->in_buffer.out_index = 0;
-	sendEvent(&msg_context->in_event);
+	sendEvent(&msg_context->in_event);*/
 }
 
 int msg_out_wait(int client_id, char * outbuf)
@@ -230,7 +312,13 @@ int msg_out_wait(int client_id, char * outbuf)
 		return  -1;
 	}
 
-	waitEvent(&msg_context->clients_out_buffer[client_id].event);
+	while (msg_context->clients_out_buffer[client_id].out_index == msg_context->clients_out_buffer[client_id].in_index)
+	{
+		if( !waitEvent(&msg_context->clients_out_buffer[client_id].event) )
+		{
+			return 0;
+		}
+	}
 
 	if(msg_context->clients_out_buffer[client_id].out_index != msg_context->clients_out_buffer[client_id].in_index)
 	{
@@ -245,7 +333,7 @@ int msg_out_wait(int client_id, char * outbuf)
 		outbuf[0] = 0;
 	}
 
-	return 0;
+	return 1;
 }
 
 // clients -> "stdin"
@@ -266,6 +354,8 @@ void msg_push_in_msg(int client_id, char * msg)
 		}
 
 		pthread_mutex_unlock(&msg_context->new_in_message_mutex);
+
+		sendEvent(&msg_context->in_event);
 	}
 }
 
@@ -279,7 +369,17 @@ int msg_in_wait(char * outbuf)
 		return -1;
 	}
 
-	waitEvent(&msg_context->in_event);
+	pthread_mutex_lock(&msg_context->new_in_message_mutex);
+
+	if(msg_context->in_buffer.out_index == msg_context->in_buffer.in_index)
+	{
+		pthread_mutex_unlock(&msg_context->new_in_message_mutex);
+
+		waitEvent(&msg_context->in_event);
+
+		pthread_mutex_lock(&msg_context->new_in_message_mutex);
+
+	}
 
 	if(msg_context->in_buffer.out_index != msg_context->in_buffer.in_index)
 	{
@@ -287,10 +387,14 @@ int msg_in_wait(char * outbuf)
 		strncpy(outbuf, ptr, MAX_MESSAGES_SIZE - 1);
 		msg_context->in_buffer.out_index = (msg_context->in_buffer.out_index + 1) & (MAX_NB_MESSAGES - 1);
 
+		pthread_mutex_unlock(&msg_context->new_in_message_mutex);
+
 		return 1;
 	}
 	else
 	{
+		pthread_mutex_unlock(&msg_context->new_in_message_mutex);
+
 		outbuf[0] = 0;
 
 		return 0;

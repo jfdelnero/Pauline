@@ -65,6 +65,8 @@
 #include "bmp_file.h"
 #include "screen.h"
 
+#include "messages.h"
+
 pthread_t     * threads_data;
 thread_params * threadparams_data[MAXCONNECTION];
 
@@ -536,6 +538,74 @@ void *tcp_listener(void *threadid)
 			close(hSocket);
 		}
 	}
+
+	pthread_exit(NULL);
+}
+
+void *server_script_thread(void *threadid)
+{
+	thread_params * tp;
+	int i;
+	int iResult;
+	char recvbuf[MAX_MESSAGES_SIZE];
+	char fullline[MAX_LINE_SIZE];
+	int line_index;
+	int recvbuflen = DEFAULT_BUFLEN;
+	//struct timeval tv;
+	script_ctx * ctx;
+
+	tp = (thread_params*)threadid;
+
+	pthread_detach(pthread_self());
+	ctx = init_script();
+
+	//tv.tv_sec = 20;
+	//tv.tv_usec = 0;
+	//setsockopt(hSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
+
+	line_index = 0;
+	// Receive until the peer shuts down the connection
+	do {
+
+		iResult = msg_in_wait((char*)&recvbuf);
+		if (iResult>0) {
+
+			i = 0;
+			do
+			{
+				while( recvbuf[i]!='\n' && recvbuf[i] && i < MAX_MESSAGES_SIZE)
+				{
+					if(line_index<MAX_LINE_SIZE)
+					{
+						fullline[line_index] = recvbuf[i];
+						line_index++;
+					}
+					i++;
+				}
+
+				if( 1 ) //recvbuf[i] == '\n' )
+				{
+					fullline[line_index] = 0;
+
+					if( !strncmp( fullline, "kill_server", 11 ) )
+					{
+						//printf("Exiting !\n");
+
+						//display_bmp("/data/pauline_splash_bitmaps/disconnected.bmp");
+
+						//pthread_exit(NULL);
+					}
+					else
+					{
+						execute_line(ctx,fullline);
+						line_index = 0;
+					}
+					i++;
+				}
+			}while(recvbuf[i] && i < MAX_MESSAGES_SIZE);
+		}
+
+	} while (1);
 
 	pthread_exit(NULL);
 }

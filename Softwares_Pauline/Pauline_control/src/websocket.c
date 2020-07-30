@@ -79,10 +79,10 @@ void *websocket_txthread(void *threadid)
 	fd = (int) threadid;
 
 	printf("websocket_txthread : handle %d, index %d\n",fd,handle_to_index(fd));
-	
+
 	while( msg_out_wait(handle_to_index(fd), (char*)&msg) > 0 )
 	{
-		ws_sendframe(fd, (char *)msg, true);
+		ws_sendframe(fd, (char *)msg, false);
 	}
 
 	pthread_exit(NULL);
@@ -135,7 +135,7 @@ void onmessage(int fd, const unsigned char *msg)
 
 		msg_push_in_msg(handle_to_index(fd), (char*)msg);
 	}
-	
+
 	//msg_printf(" Hello ! :) ");
 
 	free(cli);
