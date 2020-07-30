@@ -35,6 +35,7 @@ typedef struct thread_params_
 	int tid;
 	char clientname[2048];
 	char clientip[24];
+	int connection_id;
 }thread_params;
 
 extern thread_params * threadparams_data[MAXCONNECTION];
@@ -53,4 +54,5 @@ int senddatapacket(unsigned char * buffer,int size);
 int print_netif_ips(int x,int y);
 
 void *server_script_thread(void *threadid);
+void *network_txthread(void *threadid);
 

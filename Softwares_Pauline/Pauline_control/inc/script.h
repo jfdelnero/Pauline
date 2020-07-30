@@ -28,9 +28,19 @@
 #define MAX_LINE_SIZE 2048
 #define DEFAULT_BUFLEN 512
 
-int execute_script(char * filename);
-int execute_line(char * line);
-int savepinstate_script(char * filename);
+typedef int (* PRINTF_FUNC)(int MSGTYPE, char * string, ... );
+
+typedef struct _script_ctx
+{
+	PRINTF_FUNC script_printf;
+} script_ctx;
+
+script_ctx * init_script();
+int execute_script( script_ctx * ctx, char * filename );
+int execute_line( script_ctx * ctx, char * line );
+void setOutputFunc( script_ctx * ctx, PRINTF_FUNC ext_printf );
+script_ctx * deinit_script(script_ctx * ctx);
+
 
 // Output Message level
 #define MSGTYPE_NONE                         0
@@ -39,7 +49,3 @@ int savepinstate_script(char * filename);
 #define MSGTYPE_WARNING                      3
 #define MSGTYPE_ERROR                        4
 #define MSGTYPE_DEBUG                        5
-
-typedef int (* PRINTF_FUNC)(int MSGTYPE, char * string, ... );
-
-void setOutputFunc( PRINTF_FUNC ext_printf );

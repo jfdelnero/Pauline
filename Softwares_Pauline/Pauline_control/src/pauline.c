@@ -51,6 +51,8 @@
 #include "bmp_file.h"
 #include "screen.h"
 
+#include "messages.h"
+
 int verbose;
 fpga_state * fpga;
 char home_folder[512];
@@ -303,8 +305,11 @@ int main(int argc, char* argv[])
 
 	pthread_t listener_thread;
 	pthread_t websocket_thread;
+	pthread_t script_thread;
 
 	fpga = NULL;
+
+	init_srv_msg();
 
 	verbose = 0;
 	drive = 0;
@@ -418,6 +423,11 @@ int main(int argc, char* argv[])
 		if(pthread_create(&websocket_thread, NULL, websocket_listener, NULL))
 		{
 			printf("Error ! Can't Create the websocket listener thread !\n");
+		}
+
+		if(pthread_create(&script_thread, NULL, server_script_thread, NULL))
+		{
+			printf("Error ! Can't Create the script thread !\n");
 		}
 
 		fpga->inotify_fd = inotify_init1(0x00);

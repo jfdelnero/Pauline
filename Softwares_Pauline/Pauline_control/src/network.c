@@ -120,6 +120,7 @@ void *connection_thread(void *threadid)
 	int line_index;
 	int recvbuflen = DEFAULT_BUFLEN;
 	//struct timeval tv;
+	pthread_t tx_thread;
 
 	tp = (thread_params*)threadid;
 
@@ -128,6 +129,8 @@ void *connection_thread(void *threadid)
 	//tv.tv_sec = 20;
 	//tv.tv_usec = 0;
 	//setsockopt(hSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
+
+	pthread_create(&tx_thread, NULL, network_txthread, (void*)(tp->connection_id | 0x80000000));
 
 	if(!tp->mode)
 	{
@@ -160,6 +163,9 @@ void *connection_thread(void *threadid)
 						if( !strncmp( fullline, "kill_server", 11 ) )
 						{
 							printf("Exiting !\n");
+
+							exitwait(handle_to_index(tp->connection_id | 0x80000000));
+
 							close(threadparams_cmd[tp->index]->hSocket);
 
 							display_bmp("/data/pauline_splash_bitmaps/disconnected.bmp");
@@ -168,7 +174,7 @@ void *connection_thread(void *threadid)
 						}
 						else
 						{
-							execute_line(NULL,fullline);
+							msg_push_in_msg(handle_to_index(tp->connection_id | 0x80000000), fullline);
 							line_index = 0;
 						}
 						i++;
@@ -177,6 +183,8 @@ void *connection_thread(void *threadid)
 			}
 
 		} while (iResult > 0);
+
+		exitwait(handle_to_index(tp->connection_id | 0x80000000));
 
 		close(threadparams_cmd[tp->index]->hSocket);
 
@@ -207,69 +215,39 @@ void *connection_thread(void *threadid)
 	pthread_exit(NULL);
 }
 
-int Printf_socket(int MSGTYPE,char * chaine, ...)
+int print_socket(int connection,char * str)
 {
 	char temp[DEFAULT_BUFLEN];
 	char textbuf[DEFAULT_BUFLEN];
 	int iSendResult,i,j;
 
-	if(MSGTYPE!=MSGTYPE_DEBUG)
+	strncpy(temp,str,DEFAULT_BUFLEN - 1);
+	memset(textbuf,0,sizeof(textbuf));
+
+	j = 0;
+	i = 0;
+	while(temp[i])
 	{
-		va_list marker;
-		va_start( marker, chaine );
-
-		switch(MSGTYPE)
+		if(temp[i]=='\n')
 		{
-			case MSGTYPE_NONE:
-				textbuf[0] = 0;
-			break;
-			case MSGTYPE_INFO_0:
-				sprintf(textbuf,"OK : ");
-			break;
-			case MSGTYPE_INFO_1:
-				sprintf(textbuf,"OK : ");
-			break;
-			case MSGTYPE_WARNING:
-				sprintf(textbuf,"WARNING : ");
-			break;
-			case MSGTYPE_ERROR:
-				sprintf(textbuf,"ERROR : ");
-			break;
-			case MSGTYPE_DEBUG:
-				sprintf(textbuf,"DEBUG : ");
-			break;
+			textbuf[j++] = '\r';
+			textbuf[j++] = '\n';
 		}
+		else
+			textbuf[j++] = temp[i];
 
-		vsprintf(temp,chaine,marker);
-		//strcat(textbuf,"\n");
-
-		j = strlen(textbuf);
-		i = 0;
-		while(temp[i])
-		{
-
-			if(temp[i]=='\n')
-			{
-				textbuf[j++] = '\r';
-				textbuf[j++] = '\n';
-			}
-			else
-				textbuf[j++] = temp[i];
-
-			i++;
-		}
-		textbuf[j] = 0;
-
-		// Echo the buffer back to the sender
-		iSendResult = sendpacket(threadparams_cmd[cmd_socket_index]->hSocket,(unsigned char*)textbuf, strlen(textbuf));
-		if (iSendResult < 0) {
-			printf("send failed with error:\n");
-//			closesocket(ClientSocket);
-			return 1;
-		}
-
-		va_end( marker );
+		i++;
 	}
+	textbuf[j] = 0;
+
+	// Echo the buffer back to the sender
+	iSendResult = sendpacket(threadparams_cmd[connection]->hSocket,(unsigned char*)textbuf, strlen(textbuf));
+	if (iSendResult < 0) {
+		printf("send failed with error:\n");
+//		closesocket(ClientSocket);
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -318,6 +296,7 @@ void *tcp_listener(void *threadid)
 	char servname[512];
 	int connection;
 	int mode;
+	int index;
 
 	struct sigaction new_actn, old_actn;
 
@@ -503,6 +482,8 @@ void *tcp_listener(void *threadid)
 				  , servname
 				);
 
+				threadparams_data[connection]->connection_id = connection;
+
 				printf("Starting thread... (Index %d)\r\n",connection);
 				rc = pthread_create(&threads_data[connection], NULL, connection_thread, (void *)&tp[connection]);
 				if(rc)
@@ -524,6 +505,10 @@ void *tcp_listener(void *threadid)
 				  , servname
 				);
 
+				index = add_client( 0x80000000 | connection );
+
+				threadparams_cmd[connection]->connection_id = connection;
+
 				printf("Starting thread... (Index %d)\r\n",connection);
 				rc = pthread_create(&threads_cmd[connection], NULL, connection_thread, (void *)&tp[connection]);
 				if(rc)
@@ -537,6 +522,25 @@ void *tcp_listener(void *threadid)
 			printf("Error ! Too many connections!\r\n");
 			close(hSocket);
 		}
+	}
+
+	pthread_exit(NULL);
+}
+
+void *network_txthread(void *threadid)
+{
+	int fd;
+	char msg[MAX_MESSAGES_SIZE];
+
+	pthread_detach(pthread_self());
+
+	fd = (int) threadid;
+
+	printf("netword_txthread : handle %d, index %d\n",fd,handle_to_index(fd));
+
+	while( msg_out_wait(handle_to_index(fd), (char*)&msg) > 0 )
+	{
+		print_socket(fd & (~0x80000000), (char *)msg);
 	}
 
 	pthread_exit(NULL);
