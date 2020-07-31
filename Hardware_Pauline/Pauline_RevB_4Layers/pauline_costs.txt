@@ -1,0 +1,83 @@
+                              ------------------------------
+                              --     4 Layers Pauline     --
+                              --       Hardware cost      --
+                              ------------------------------
+
+                               -- Pauline cost estimation -- 
+
+Use it as indication only. The prices may vary with the batch size, 
+the providers choosed, and the purchase date.
+
+This is probably not the best prices.
+
+-------------------------------------------------------------------------------------------------
+
+                                -- Raw parts and PCB cost -- 
+
+20 Paulines MOUSER BOM cost :
+
+ESQ-120-23-T-D      (2 parts  - Total for 20 Paulines : 40 Parts)   3,6140    = 144,4 Euros
+61203421621         (2 parts  - Total for 20 Paulines : 40 Parts)   1,3240    = 52,8 Euros
+SN74LS06DRE4        (5 parts  - Total for 20 Paulines : 100 Parts)  0,329100  = 32,9 Euros
+HIF3FC-10PA-2.54DSA (1 part   - Total for 20 Paulines : 20 Parts)   1,5720    = 31,4 Euros
+74LVX14DR2G         (6 parts  - Total for 20 Paulines : 120 Parts)  0,196120  = 23,52 Euros
+CPT-9019S-SMT-TR    (1 part   - Total for 20 Paulines : 20 Parts)   1,120     = 22 Euros
+5-534237-2          (1 part   - Total for 20 Paulines : 20 Parts)   1,0820    = 21,6 Euros
+47uF   6.3V 1210    (2 parts  - Total for 20 Paulines : 40 Parts)   0,28540   = 11,4 Euros
+100nF 0805          (14 parts - Total for 20 Paulines : 280 Parts)  0,023280  = 6,44 Euros
+1K  0603            (68 parts - Total for 20 Paulines : 1360 Parts) 0,0041360 = 5,44 Euros
+10129378-908001BLF  (1 part   - Total for 20 Paulines : 20 Parts)   0,21920   = 4,38 Euros
+LED GREEN 0805      (1 part   - Total for 20 Paulines : 20 Parts)   0,15620   = 3,12 Euros
+BC817K-40HVL        (1 part   - Total for 20 Paulines : 20 Parts)   0,15520   = 3,1 Euros
+2K2 0603            (32 parts - Total for 20 Paulines : 640 Parts)  0,005640  = 3,2 Euros
+LED RED 0805        (1 part   - Total for 20 Paulines : 20 Parts)   0,10020   = 2 Euros
+150R 0603           (2 parts  - Total for 20 Paulines : 40 Parts)   0,01440   = 0,56 Euros
+0R 0603             (1 part   - Total for 20 Paulines : 20 Parts)   0,00620   = 0,12 Euros
+1301.9302           (3 parts  - Total for 20 Paulines : 60 Parts)   0,20320   = 4,06 Euros
+
+144,4+6,44+11,4+2+3,12+52,8+31,4+4,38+21,6+22+3,1+3,2+5,44+0,56+0,12+4,06+32,9+23,52 = 372,44
+
+Total MOUSER parts cost without VAT : 372,44 Euros.  (18,622 Euros per Pauline) 
+
+-------------------------------------------------------------------------------------------------
+
+PCB : 4 Layers PCB - 77mm x 64mm size.
+
+-> 20 Pauline PCBs cost at PCBway : 169$ -> 145 Euros without VAT. (7,25 Euros per PCB)
+
+OR
+
+-> 20 Pauline PCBs cost at JLCPCB ( Not tried yet !) : 35,7 Euros without VAT. (1,8 Euros per PCB)   
+
+-------------------------------------------------------------------------------------------------
+
+Cost per unit :
+
+MOUSER parts : (372,44/20) = 18,622 Euros HT per Pauline.
+PCB :  7,25 Euros per PCB (PCBway) or 1,8 Euros per PCB (JLCPCB).
+OLED Screen : ~2,35 Euros.
+
+Total part cost per unit :  18,622 + 7,25 + 2,35 = 28,222 Euros (PCBway)
+Total part cost per unit :  18,622 + 1,8 + 2,35  = 22,772 Euros (JLCPCB)
+
+-------------------------------------------------------------------------------------------------
+
+PCB Assembly :
+
+The PCB assembly cost may vary a lot from a provider to another.
+I recommend to have a look to the PCBway (https://www.pcbway.com/pcb-assembly.html) 
+or to the JLCPCB PCBA services (https://support.jlcpcb.com/article/107-pcb-smt-assembly-from-2).
+
+The PCBway "Turnkey" (All-in-one service : provide parts + pcb + pcb assembly) may be also interesting.
+
+The PCBway PCBA cost estimation is currently 88$ / 20 = 4,4$ = 3,8 Euros HT / Pauline.
+
+I also recommend to mount all the through holes connectors/parts yourself to keep the price low. 
+On a small 20 units batch this easy to solder.
+
+-------------------------------------------------------------------------------------------------
+
+Total estimated raw cost : ~26,572 Euros <> 40 Euros.
+(The price may vary with the customs and delivery costs).
+
+-------------------------------------------------------------------------------------------------
