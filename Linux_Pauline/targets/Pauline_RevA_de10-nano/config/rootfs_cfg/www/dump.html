@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+	<head>
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<title>Pauline Floppy disks dump page</title>
+		<link rel="shortcut icon" href="pofasm.ico" type="image/x-icon">
+		<link rel="icon" href="pofasm.ico" type="image/x-icon">
+		<meta name="description" content="Pauline control page">
+		<meta name="keywords" content="Pauline, floppy, dump, emulator">
+		<meta http-equiv="content-Type" content="text/html; charset=utf-8">
+		<meta name="Author" content="HxC2001 Tech">
+		<meta name="Owner" content="HxC2001 Tech">
+		<meta name="Language" content="FR">
+		<meta name="Identifier-url" content="http://hxc2001.free.fr">
+		<meta name="dc.language" content="fr">
+		<meta name="robots" content="index, follow">
+		<meta name="viewport" content="width=device-width, initial-scale=0.6">
+		<script type="text/javascript" src="pauline.js"></script>
+	</head>
+
+	<body onload="PaulineConnection()">
+		<table class="topmenu">
+			<tbody>
+				<tr>
+					<td>
+						<table class="topmenu_logo">
+							<tbody>
+								<tr>
+									<td>
+										<a href="/"><img alt="HxC2001" src="img/ban1.jpg"></a>
+									</td>
+									<td class="rightalign">
+										<a href="/"><img alt="HxC2001" src="img/ban3.jpg"></a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table class="topmenu_menu">
+							<tbody>
+								<tr>
+									<td><img alt="" src="img/separat.gif"></td>
+									<td><a href="index.html">Home</a></td>
+									<td><img alt="" src="img/separat.gif"></td>
+									<td><a href="status.html">Status</a></td>
+									<td><img alt="" src="img/separat.gif"></td>
+									<td><a href="config.html">Configuration</a></td>
+									<td><img alt="" src="img/separat.gif"></td>
+									<td><a href="dump.html"><i>Floppy disks dump</i></a></td>
+									<td><img alt="" src="img/separat.gif"></td>
+									<td><a href="simulator.html">Drives simulator</a></td>
+									<td><img alt="" src="img/separat.gif"></td>
+									<td><a href="contacts.html" target="_blank">Contacts</a></td>
+									<td><img alt="" src="img/separat.gif"></td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<div class="hxc2001">
+			<h1>Floppy disk dump</h1>
+
+			<h2>Floppy disk identification</h2>
+
+			<div id="DumpIdentification">
+				<table>
+					<tbody>
+						<tr>
+							<td>Name :</td>
+							<td><input type="text" id="txtDumpName" value="untitled"></td>
+						</tr>
+						<tr>
+							<td>Comment :</td>
+							<td><input type="text" id="txtDumpComment" value=""></td>
+						</tr>
+						<tr>
+							<td>Index :</td>
+							<td><input type="text" id="txtDumpStartIndex" value="1"></td>
+							<td><input type="checkbox" id="ckbAutoIndex" checked>Auto index</td>
+						</tr>
+						<tr>
+							<td><input type="button" id="btClearId" name="btClearId" value="Clear"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<h2>Drive selection</h2>
+
+			<div id="DriveSelection">
+				<p>
+					<label for="drive-select">Select a drive:</label>
+
+					<select name="drives" id="drives-select">
+						<option value="0">Drive 0</option>
+						<option value="1">Drive 1</option>
+						<option value="2">Drive 2</option>
+						<option value="3">Drive 3</option>
+						<option value="4">Drive 4</option>
+						<option value="5">Drive 5</option>
+					</select>
+				</p>
+			</div>
+
+			<h2>Track / Side selection</h2>
+
+			<div id="TrackSelection">
+
+				<div class="slidecontainer">
+					<p>Track:
+					<input type="range" min="0" max="90" value="0" class="slider" id="trackselection"><span id="tracknumber"></span>
+					</p>
+					<p>Head:
+					<input type="range" min="0" max="1" value="0" class="slider" id="headselection"><span id="headnumber"></span>
+					</p>
+					<p>
+						<input type="button" id="btRecalibrate" name="btRecalibrate" value="Heads recalibrate"><br>
+						<input type="button" id="btMove" name="btMove" value="Head move"><br>
+						<input type="button" id="btMoveUp" name="btMoveUp" value="+">
+						<input type="button" id="btMoveDown" name="btMoveDown" value="-">
+					</p>
+				</div>
+
+				<script>
+					var trk_slider = document.getElementById("trackselection");
+					var trk_output = document.getElementById("tracknumber");
+					var head_slider = document.getElementById("headselection");
+					var head_output = document.getElementById("headnumber");
+
+					trk_output.innerHTML = trk_slider.value;
+					head_output.innerHTML = head_slider.value;
+
+					trk_slider.oninput = function()
+					{
+						trk_output.innerHTML = this.value;
+					}
+
+					head_slider.oninput = function()
+					{
+						head_output.innerHTML = this.value;
+					}
+				</script>
+			</div>
+
+			<h2>Settings</h2>
+
+			<div id="settings">
+
+				<table>
+					<tbody>
+
+						<tr>
+							<td>
+								<input type="checkbox" id="ckbSIDE0">Side 0
+							</td>
+							<td>
+								<input type="checkbox" id="ckbSIDE1">Side 1
+							</td>
+							<td>
+								<input type="checkbox" id="ckbDOUBLESTEP">Double Step
+							</td>
+							<td>
+								<input type="checkbox" id="ckbIGNOREINDEX">Ignore Index
+							</td>
+						</tr>
+
+						<tr>
+							<td>
+								<input type="checkbox" id="ckb50Mhz">50Mhz dump
+							</td>
+							<td>
+								<input type="checkbox" id="ckbALTRPM">Alternate RPM
+							</td>
+						</tr>
+
+					</tbody>
+				</table>
+
+				<p>
+					Min track : <input type="text" id="txtDumpMinTrack" value="0"><br>
+					Max track : <input type="text" id="txtDumpMaxTrack" value="80"><br>
+				</p>
+
+			</div>
+
+			<h2>Operations</h2>
+
+			<div id="operations">
+
+				<table>
+					<tbody>
+						<tr>
+							<td><input type="button" id="btReadDisk" name="btReadDisk" value="Read Disk"></td>
+							<td><input type="button" id="btReadTrack" name="btReadTrack" value="Read Track"></td>
+							<!-- <td><input type="button" id="btSpyBus" name="btSpyBus" value="Spy Bus"></td> -->
+						</tr>
+
+						<tr>
+							<td><input type="button" id="btStop" name="btStop" value="Stop !"></td>
+							<td><input type="button" id="btEject" name="btEject" value="Eject"></td>
+						</tr>
+
+					</tbody>
+				</table>
+
+			</div>
+
+			<h2>Real time viewer decoders selection</h2>
+
+			<div id="RealTimeViewDecoders">
+				<table>
+					<tbody>
+						<tr>
+							<td>
+								<input type="checkbox" id="ckbISOMFM" checked="checked">ISO MFM
+							</td>
+							<td>
+								 <input type="checkbox" id="ckbISOFM" checked="checked">ISO FM
+							</td>
+							<td>
+								<input type="checkbox" id="ckbAMIGAMFM" checked="checked">Amiga MFM
+							</td>
+							<td>
+								<input type="checkbox" id="ckbAPPLE">APPLE
+							</td>
+						</tr>
+
+						<tr>
+							<td>
+								<input type="checkbox" id="ckbEEMU">E-Emu
+							</td>
+							<td>
+								<input type="checkbox" id="ckbTYCOM">TYCOM
+							</td>
+							<td>
+								<input type="checkbox" id="ckbMEMBRAIN">MEMBRAIN
+							</td>
+							<td>
+								<input type="checkbox" id="ckbARBURG">Arburg
+							</td>
+						</tr>
+
+						<tr>
+							<td>
+								<input type="checkbox" id="ckbAED6200P">AED 6200P
+							</td>
+							<td>
+								<input type="checkbox" id="ckbNORTHSTAR">NORTHSTAR
+							</td>
+							<td>
+								<input type="checkbox" id="ckbHEATHKIT">HEATHKIT
+							</td>
+							<td>
+								<input type="checkbox" id="ckbDECRX02">DEC RX02
+							</td>
+						</tr>
+
+					</tbody>
+				</table>
+
+				<br>
+
+				<table>
+					<tbody>
+						<tr>
+							<td>
+								<input type="checkbox" id="ckbHIGHCONTRAST" checked="checked">High contrast
+							</td>
+							<td>
+								 <input type="checkbox" id="ckbFATDOTS" checked="checked">Fat dots
+							</td>
+						</tr>
+
+					</tbody>
+				</table>
+
+			</div>
+
+			<br>
+
+			<div id="DumpStatus">
+				Status : <textarea rows="1" cols="70" id="taLog" name="taLog"></textarea><br /><br />
+			</div>
+
+				<!-- Comment <input type="button" id="btConn" name="btConn" value="Connect!"><br /><br />-->
+
+				Command : <input type="text" id="txtMsg" value="">
+				<input type="button" id="btMsg" name="btMsg" value="Send"><br /><br />
+
+				<textarea rows="10" cols="70" id="taLog" name="taLog"></textarea><br /><br />
+			</div>
+
+		</div>
+
+		<hr>
+		<p class="rightalign">(C) 2020</p>
+
+	</body>
+
+</html>
+
