@@ -92,18 +92,21 @@ void onopen(int fd)
 {
 	char *cli;
 	int index;
+
 	cli = ws_getaddress(fd);
-
-	index = add_client(fd);
-
-	printf("Connection opened, client: %d | addr: %s, index : %d\n", fd, cli,index);
-
-	if(index >= 0)
+	if(cli)
 	{
-		pthread_create(&ws_thread[index], NULL, websocket_txthread, (void*)fd);
-	}
+		index = add_client(fd);
 
-	free(cli);
+		printf("Connection opened, client: %d | addr: %s, index : %d\n", fd, cli,index);
+
+		if(index >= 0)
+		{
+			pthread_create(&ws_thread[index], NULL, websocket_txthread, (void*)fd);
+		}
+
+		free(cli);
+	}
 }
 
 void onclose(int fd)
@@ -113,14 +116,17 @@ void onclose(int fd)
 
 	cli = ws_getaddress(fd);
 
-	index = handle_to_index(fd);
+	if( cli )
+	{
+		index = handle_to_index(fd);
 
-	exitwait(index);
+		exitwait(index);
 
-	remove_client(index);
+		remove_client(index);
 
-	printf("Connection closed, client: %d | addr: %s\n", fd, cli);
-	free(cli);
+		printf("Connection closed, client: %d | addr: %s\n", fd, cli);
+		free(cli);
+	}
 }
 
 void onmessage(int fd, const unsigned char *msg)
@@ -131,14 +137,14 @@ void onmessage(int fd, const unsigned char *msg)
 
 	if(cli)
 	{
-		printf("I receive a message: %s, from: %s/%d\n", msg, cli, fd);
+		//printf("I receive a message: %s, from: %s/%d\n", msg, cli, fd);
 
 		msg_push_in_msg(handle_to_index(fd), (char*)msg);
+
+		free(cli);
 	}
 
 	//msg_printf(" Hello ! :) ");
-
-	free(cli);
 }
 
 

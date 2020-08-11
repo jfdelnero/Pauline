@@ -213,6 +213,7 @@ void msg_print(char * msg)
 	{
 		if( msg_context->clients_out_buffer[i].enabled )
 		{
+			memset((char*)&msg_context->clients_out_buffer[i].messages[msg_context->clients_out_buffer[i].in_index & (MAX_NB_MESSAGES - 1)], 0, MAX_MESSAGES_SIZE);
 			strncpy((char*)&msg_context->clients_out_buffer[i].messages[msg_context->clients_out_buffer[i].in_index & (MAX_NB_MESSAGES - 1)], msg, MAX_MESSAGES_SIZE - 1);
 			msg_context->clients_out_buffer[i].in_index = (msg_context->clients_out_buffer[i].in_index + 1) & (MAX_NB_MESSAGES - 1);
 			if(msg_context->clients_out_buffer[i].in_index == msg_context->clients_out_buffer[i].out_index)
@@ -346,6 +347,7 @@ void msg_push_in_msg(int client_id, char * msg)
 	{
 		pthread_mutex_lock(&msg_context->new_in_message_mutex);
 
+		memset((char*)&msg_context->in_buffer.messages[msg_context->in_buffer.in_index & (MAX_NB_MESSAGES - 1)],0,MAX_MESSAGES_SIZE);
 		strncpy((char*)&msg_context->in_buffer.messages[msg_context->in_buffer.in_index & (MAX_NB_MESSAGES - 1)], msg, MAX_MESSAGES_SIZE - 1);
 		msg_context->in_buffer.in_index = (msg_context->in_buffer.in_index + 1) & (MAX_NB_MESSAGES - 1);
 		if(msg_context->in_buffer.in_index == msg_context->in_buffer.out_index)
