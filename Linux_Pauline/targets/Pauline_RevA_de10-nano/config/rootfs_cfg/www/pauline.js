@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	{
 		element.onclick = function()
 		{
-			var txt = "system reboot";
+			var txt = "system reboot\n";
 			var log = document.getElementById("taLog").value;
 
 			ws.send(txt);
@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	{
 		element.onclick = function()
 		{
-			var txt = "system halt";
+			var txt = "system halt\n";
 			var log = document.getElementById("taLog").value;
 
 			ws.send(txt);
@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "recalibrate " + document.getElementById("drives-select").value.toString();
+			var txt = "recalibrate " + document.getElementById("drives-select").value.toString() + "\n";
 
 			//alert(txt);
 			ws.send(txt);
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "movehead " + document.getElementById("drives-select").value.toString() + " " + document.getElementById("trackselection").value.toString();
+			var txt = "movehead " + document.getElementById("drives-select").value.toString() + " " + document.getElementById("trackselection").value.toString() + "\n";
 
 			//alert(txt);
 			ws.send(txt);
@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "headstep " + document.getElementById("drives-select").value.toString() + " 1";
+			var txt = "headstep " + document.getElementById("drives-select").value.toString() + " 1\n";
 
 			//alert(txt);
 			ws.send(txt);
@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "headstep " + document.getElementById("drives-select").value.toString() + " -1";
+			var txt = "headstep " + document.getElementById("drives-select").value.toString() + " -1\n";
 
 			//alert(txt);
 			ws.send(txt);
@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "stop";
+			var txt = "stop\n";
 
 			//alert(txt);
 			ws.send(txt);
@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "ejectdisk " + document.getElementById("drives-select").value.toString();
+			var txt = "ejectdisk " + document.getElementById("drives-select").value.toString() + "\n";
 
 			//alert(txt);
 			ws.send(txt);
@@ -214,11 +214,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 			if( document.getElementById("ckbALTRPM").checked )
 			{
-				var txt = "setio DRIVES_PORT_PIN02_OUT";
+				var txt = "setio DRIVES_PORT_PIN02_OUT\n";
 			}
 			else
 			{
-				var txt = "cleario DRIVES_PORT_PIN02_OUT";
+				var txt = "cleario DRIVES_PORT_PIN02_OUT\n";
 			}
 
 			//alert(txt);
@@ -235,19 +235,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "index_to_dump 50";
+			var txt = "index_to_dump 50\n";
 
-			//alert(txt);
-			ws.send(txt);
-
-			document.getElementById("taLog").value += ("Send: " + txt + "\n");
-
-			txt = "dump_time 800";
-
-			//alert(txt);
-			ws.send(txt);
-
-			document.getElementById("taLog").value += ("Send: " + txt + "\n");
+			txt += "dump_time 800\n";
 
 			if( document.getElementById("ckbAutoIndex").checked )
 			{
@@ -261,22 +251,24 @@ document.addEventListener("DOMContentLoaded", function(event)
 				var startindex = document.getElementById("txtDumpStartIndex").value.toString();
 			}
 
-			txt = "dump"  + " " + document.getElementById("drives-select").value.toString() + " -1 -1"
+			txt += "dump"  + " " + document.getElementById("drives-select").value.toString() + " -1 -1"
 						  + " " + document.getElementById("headselection").value.toString()
 						  + " " + document.getElementById("headselection").value.toString()
 						  + " " + (document.getElementById("ckb50Mhz").checked + 0).toString()
 						  + " " + (document.getElementById("ckbDOUBLESTEP").checked + 0).toString()
 						  + " " + (document.getElementById("ckbIGNOREINDEX").checked + 0).toString()
-						  + " " + " 0"
+						  + " " + "0"
 						  + " " + "\"" + document.getElementById("txtDumpName").value.toString() + "\""
 						  + " " + "\"" + document.getElementById("txtDumpComment").value.toString() + "\""
 						  + " " + startindex
-						  + " " + mode;
+						  + " " + mode
+						  + "\n";
 
 			//alert(txt);
+			document.getElementById("taLog").value += ("Send: " + txt + "\n");
+
 			ws.send(txt);
 
-			document.getElementById("taLog").value += ("Send: " + txt + "\n");
 		};
 	};
 
@@ -286,19 +278,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "index_to_dump 50";
+			var txt = "index_to_dump 50\n";
 
-			//alert(txt);
-			ws.send(txt);
-
-			document.getElementById("taLog").value += ("Send: " + txt + "\n");
-
-			txt = "dump_time 800";
-
-			//alert(txt);
-			ws.send(txt);
-
-			document.getElementById("taLog").value += ("Send: " + txt + "\n");
+			txt += "dump_time 800\n";
 
 			if( document.getElementById("ckbAutoIndex").checked )
 			{
@@ -312,7 +294,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 				var startindex = document.getElementById("txtDumpStartIndex").value.toString();
 			}
 
-			txt = "dump"  + " " + document.getElementById("drives-select").value.toString()
+			txt += "dump"  + " " + document.getElementById("drives-select").value.toString()
 						  + " " + document.getElementById("txtDumpMinTrack").value.toString()
 						  + " " + document.getElementById("txtDumpMaxTrack").value.toString()
 						  + " " + ( (document.getElementById("ckbSIDE0").checked + 0) ^ 1).toString()
@@ -324,12 +306,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 						  + " " + "\"" + document.getElementById("txtDumpName").value.toString() + "\""
 						  + " " + "\"" + document.getElementById("txtDumpComment").value.toString() + "\""
 						  + " " + startindex
-						  + " " + mode;
+						  + " " + mode
+						  + "\n";
 
 			//alert(txt);
+			document.getElementById("taLog").value += ("Send: " + txt + "\n");
+
 			ws.send(txt);
 
-			document.getElementById("taLog").value += ("Send: " + txt + "\n");
 		};
 	};
 
