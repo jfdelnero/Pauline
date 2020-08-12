@@ -143,6 +143,23 @@ int handle_to_index(uint32_t handle)
 	return -1;
 }
 
+int count_client()
+{
+	int i,cnt;
+
+	cnt = 0;
+
+	for(i=0;i<MAX_NB_CLIENTS;i++)
+	{
+		if(msg_context->clients_out_buffer[i].enabled)
+		{
+			cnt++;
+		}
+	}
+
+	return cnt;
+}
+
 int add_client(uint32_t handle)
 {
 	int i;

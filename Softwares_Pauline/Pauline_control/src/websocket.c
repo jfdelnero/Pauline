@@ -98,6 +98,8 @@ void onopen(int fd)
 	{
 		index = add_client(fd);
 
+		display_bmp("/data/pauline_splash_bitmaps/connected.bmp");
+
 		printf("Connection opened, client: %d | addr: %s, index : %d\n", fd, cli,index);
 
 		if(index >= 0)

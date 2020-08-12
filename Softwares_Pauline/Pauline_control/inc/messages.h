@@ -66,3 +66,4 @@ void eventDeinit(wait_event_ctx * ctx);
 int  waitEvent(wait_event_ctx * ctx);
 void sendEvent(wait_event_ctx * ctx);
 void cancelEvent(wait_event_ctx * ctx);
+int  count_client();

@@ -436,7 +436,7 @@ int main(int argc, char* argv[])
 
 		for(;;)
 		{
-			if(threadparams_cmd[0] == NULL)
+			if( !count_client() )
 			{
 				display_bmp("/data/pauline_splash_bitmaps/ready.bmp");
 				print_netif_ips(0,64 - 13);
