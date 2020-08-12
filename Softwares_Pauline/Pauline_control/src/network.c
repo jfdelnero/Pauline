@@ -96,15 +96,21 @@ int sendpacket(int hSocket,unsigned char * buffer,int size)
 
 int senddatapacket(unsigned char * buffer,int size)
 {
+	int i;
 	thread_params * tp;
 
 	if(threads_data)
 	{
-		tp = threadparams_data[dat_socket_index];
-		if(tp)
+		for(i=0;i<MAXCONNECTION;i++)
 		{
-			return sendpacket(tp->hSocket,buffer,size);
+			tp = threadparams_data[i];
+			if(tp)
+			{
+				sendpacket(tp->hSocket,buffer,size);
+			}
 		}
+
+		return size;
 	}
 
 	return -1;
@@ -170,6 +176,8 @@ void *connection_thread(void *threadid)
 
 							display_bmp("/data/pauline_splash_bitmaps/disconnected.bmp");
 
+							threadparams_cmd[tp->index] = NULL;
+
 							pthread_exit(NULL);
 						}
 						else
@@ -190,26 +198,27 @@ void *connection_thread(void *threadid)
 
 		display_bmp("/data/pauline_splash_bitmaps/disconnected.bmp");
 
+		threadparams_cmd[tp->index] = NULL;
+
 		printf("Connection closed !\n");
 	}
 	else
 	{
-		/*
-		int sendsize;
-		char testbuffer[512];
-		int hSocket;
+		// Receive until the peer shuts down the connection
+		do {
 
-		hSocket = tp->hSocket;
+			iResult = recv(threadparams_data[tp->index]->hSocket, recvbuf, recvbuflen, 0);
+			if (iResult > 0) {
 
-		i = 0;
-		do
-		{
-			sprintf(testbuffer,"Ligne %d - ABCDEFGHIJKLMNOPQRSTUVW\n",i);
-			i++;
-			sendsize = sendpacket(hSocket,(unsigned char*)testbuffer,strlen(testbuffer));
-			sleep(1);
-		}while(sendsize>0);
-		*/
+			}
+
+		} while (iResult > 0);
+
+
+		close(threadparams_data[tp->index]->hSocket);
+
+		threadparams_data[tp->index] = NULL;
+
 	}
 
 	pthread_exit(NULL);
