@@ -235,9 +235,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "index_to_dump 50\n";
+			var txt = "index_to_dump" + " " + document.getElementById("txtIndexToDumpDelay").value.toString()
+									  + "\n";
 
-			txt += "dump_time 800\n";
+			txt += "dump_time" + " "  + document.getElementById("txtTrackDumpLenght").value.toString()
+									  + "\n";
 
 			if( document.getElementById("ckbAutoIndex").checked )
 			{
@@ -278,15 +280,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "index_to_dump 50\n";
+			var txt = "index_to_dump" + " " + document.getElementById("txtIndexToDumpDelay").value.toString()
+									  + "\n";
 
-			txt += "dump_time 800\n";
+			txt += "dump_time" + " "  + document.getElementById("txtTrackDumpLenght").value.toString()
+									  + "\n";
 
 			if( document.getElementById("ckbAutoIndex").checked )
 			{
 				var mode = "AUTO_INDEX_NAME";
 				var startindex = 1;
-
 			}
 			else
 			{
