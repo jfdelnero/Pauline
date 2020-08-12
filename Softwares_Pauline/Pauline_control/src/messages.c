@@ -168,6 +168,9 @@ int add_client(uint32_t handle)
 
 		memset(&msg_context->clients_out_buffer[i].messages,0,MAX_NB_MESSAGES*MAX_MESSAGES_SIZE);
 
+		msg_context->clients_out_buffer[i].event.cancelled = 0;
+		msg_context->clients_out_buffer[i].event.signalled = 0;
+
 		msg_context->clients_out_buffer[i].enabled = 1;
 
 		pthread_mutex_unlock(&msg_context->msg_ctx_mutex);
