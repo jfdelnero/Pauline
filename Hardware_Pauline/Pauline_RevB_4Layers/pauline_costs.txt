@@ -16,7 +16,7 @@ This is probably not the best prices.
 
 20 Paulines MOUSER BOM cost :
 
-ESQ-120-23-T-D      (2 parts  - Total for 20 Paulines : 40 Parts)   3,6140    = 144,4 Euros
+ESW-120-33-T-D      (2 parts  - Total for 20 Paulines : 40 Parts)   3,25      = 130,0 Euros (Alternate Ref : ESQ-120-33-T-D)
 61203421621         (2 parts  - Total for 20 Paulines : 40 Parts)   1,3240    = 52,8 Euros
 SN74LS06DRE4        (5 parts  - Total for 20 Paulines : 100 Parts)  0,329100  = 32,9 Euros
 HIF3FC-10PA-2.54DSA (1 part   - Total for 20 Paulines : 20 Parts)   1,5720    = 31,4 Euros
@@ -35,9 +35,9 @@ LED RED 0805        (1 part   - Total for 20 Paulines : 20 Parts)   0,10020   = 
 0R 0603             (1 part   - Total for 20 Paulines : 20 Parts)   0,00620   = 0,12 Euros
 1301.9302           (3 parts  - Total for 20 Paulines : 60 Parts)   0,20320   = 4,06 Euros
 
-144,4+6,44+11,4+2+3,12+52,8+31,4+4,38+21,6+22+3,1+3,2+5,44+0,56+0,12+4,06+32,9+23,52 = 372,44
+130+6,44+11,4+2+3,12+52,8+31,4+4,38+21,6+22+3,1+3,2+5,44+0,56+0,12+4,06+32,9+23,52 = 358,04
 
-Total MOUSER parts cost without VAT : 372,44 Euros.  (18,622 Euros per Pauline) 
+Total MOUSER parts cost without VAT : 358,04 Euros.  (17,902 Euros per Pauline) 
 
 -------------------------------------------------------------------------------------------------
 
@@ -57,8 +57,8 @@ MOUSER parts : (372,44/20) = 18,622 Euros HT per Pauline.
 PCB :  7,25 Euros per PCB (PCBway) or 1,8 Euros per PCB (JLCPCB).
 OLED Screen : ~2,35 Euros.
 
-Total part cost per unit :  18,622 + 7,25 + 2,35 = 28,222 Euros (PCBway)
-Total part cost per unit :  18,622 + 1,8 + 2,35  = 22,772 Euros (JLCPCB)
+Total part cost per unit :  17,902 + 7,25 + 2,35 = 27,502 Euros (PCBway)
+Total part cost per unit :  17,902 + 1,8 + 2,35  = 22,052 Euros (JLCPCB)
 
 -------------------------------------------------------------------------------------------------
 
@@ -77,7 +77,7 @@ On a small 20 units batch this easy to solder.
 
 -------------------------------------------------------------------------------------------------
 
-Total estimated raw cost : ~26,572 Euros <> 40 Euros.
+Total estimated raw cost : ~25,852 Euros <> 40 Euros.
 (The price may vary with the customs and delivery costs).
 
 -------------------------------------------------------------------------------------------------

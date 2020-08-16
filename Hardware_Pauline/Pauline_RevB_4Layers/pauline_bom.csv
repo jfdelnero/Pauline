@@ -28,12 +28,12 @@ Item;Qty;Reference(s);Value;LibPart;Footprint;Datasheet;NC;Remarks
 ;;D3;BAS16W;Diode:BAS16W;Package_TO_SOT_SMD:SOT-323_SC-70;https://assets.nexperia.com/documents/data-sheet/BAS16_SER.pdf;NC;
 ;;D4;SMBJ5.0A;Diode:1.5KExxA;Diode_SMD:D_SMB;https://www.vishay.com/docs/88301/15ke.pdf;;Possible placement issue - optional part - Don't mount it.
 ;;F1;Littelfuse 1812L260SLPR;Device:Polyfuse;Fuse:Fuse_1812_4532Metric;~;;optional part.
-;;J1;M20-7832046;Connector_Generic:Conn_02x20_Odd_Even;Connector_PinSocket_2.54mm:PinSocket_2x20_P2.54mm_Vertical;~;;Height issue - To be fixed - Current workaround : Miss at least 1.5 mm. As workaround solder it at 1.5 mm from the PCB. See mounting pictures. 
-;;J2;M20-7832046;Connector_Generic:Conn_02x20_Odd_Even;Connector_PinSocket_2.54mm:PinSocket_2x20_P2.54mm_Vertical;~;;Height issue - To be fixed - Current workaround : Miss at least 1.5 mm. As workaround solder it at 1.5 mm from the PCB. See mounting pictures. 
+;;J1;ESW-120-33-T-D;Connector_Generic:Conn_02x20_Odd_Even;Connector_PinSocket_2.54mm:PinSocket_2x20_P2.54mm_Vertical;~;;
+;;J2;ESW-120-33-T-D;Connector_Generic:Conn_02x20_Odd_Even;Connector_PinSocket_2.54mm:PinSocket_2x20_P2.54mm_Vertical;~;;
 ;;J3;Wurth 61203421621;Connector_Generic:Conn_02x17_Odd_Even;Connector_IDC:IDC-Header_2x17_P2.54mm_Vertical;~;;
 ;;J4;Wurth 61203421621;Connector_Generic:Conn_02x17_Odd_Even;Connector_IDC:IDC-Header_2x17_P2.54mm_Vertical;~;;
 ;;J5;HIF3FC-10PA-2.54DSA;Connector_Generic:Conn_02x05_Odd_Even;Connector_IDC:IDC-Header_2x05_P2.54mm_Vertical;~;;
-;;J6;Amphenol FCI 10129378-908001BLF;Connector:Conn_01x08_Male;Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical;~;;Height issue - To be fixed - Current workaround : Place the housing at the pcb top side and adjust the pin height. See mounting pictures. 
+;;J6;Amphenol FCI 10129378-908001BLF;Connector:Conn_01x08_Male;Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical;~;;
 ;;J7;TE Connectivity 5-534237-2 REC 1X04P;Connector:Conn_01x04_Male;Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical;~;;
 ;;J8;Conn_01x04_Male;Connector:Conn_01x04_Male;Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical;~;;
 ;;LS1;CPT-9019S-SMT-TR;Device:Speaker_Ultrasound;Buzzer_Beeper:Buzzer_CUI_CPT-9019S-SMT;~;;
@@ -172,10 +172,10 @@ Item;Qty;Reference(s);Value;LibPart;Footprint;Datasheet;NC;Remarks
 5;1;D3;BAS16W;Diode:BAS16W;Package_TO_SOT_SMD:SOT-323_SC-70;https://assets.nexperia.com/documents/data-sheet/BAS16_SER.pdf;NC;
 6;1;D4;SMBJ5.0A;Diode:1.5KExxA;Diode_SMD:D_SMB;https://www.vishay.com/docs/88301/15ke.pdf;;Possible placement issue - optional part - Don't mount it.
 7;1;F1;Littelfuse 1812L260SLPR;Device:Polyfuse;Fuse:Fuse_1812_4532Metric;~;;optional part.
-8;2;J1, J2;M20-7832046;Connector_Generic:Conn_02x20_Odd_Even;Connector_PinSocket_2.54mm:PinSocket_2x20_P2.54mm_Vertical;~;;Height issue - To be fixed - Current workaround : Miss at least 1.5 mm. As workaround solder it at 1.5 mm from the PCB. See J1_J2_mounting.jpg mounting picture.
+8;2;J1, J2;ESW-120-33-T-D;Connector_Generic:Conn_02x20_Odd_Even;Connector_PinSocket_2.54mm:PinSocket_2x20_P2.54mm_Vertical;~;;
 9;2;J3, J4;Wurth 61203421621;Connector_Generic:Conn_02x17_Odd_Even;Connector_IDC:IDC-Header_2x17_P2.54mm_Vertical;~;;
 10;1;J5;HIF3FC-10PA-2.54DSA;Connector_Generic:Conn_02x05_Odd_Even;Connector_IDC:IDC-Header_2x05_P2.54mm_Vertical;~;;
-11;1;J6;Amphenol FCI 10129378-908001BLF;Connector:Conn_01x08_Male;Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical;~;;Height issue - To be fixed - Current workaround : Place the housing at the pcb top side and adjust the pin height. See J6_mounting_1.jpg and J6_mounting_2.jpg pictures.
+11;1;J6;Amphenol FCI 10129378-908001BLF;Connector:Conn_01x08_Male;Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical;~;;
 12;1;J7;TE Connectivity 5-534237-2 REC 1X04P;Connector:Conn_01x04_Male;Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical;~;;
 13;1;J8;Conn_01x04_Male;Connector:Conn_01x04_Male;Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical;~;;
 14;1;LS1;CPT-9019S-SMT-TR;Device:Speaker_Ultrasound;Buzzer_Beeper:Buzzer_CUI_CPT-9019S-SMT;~;;
