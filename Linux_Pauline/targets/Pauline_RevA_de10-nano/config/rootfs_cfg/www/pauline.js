@@ -26,20 +26,22 @@
 */
 
 var ws;
+var ws2;
 
 function PaulineConnection()
 {
 	var ip = location.host;
 
 	var addr = "ws://" + ip + ":8080";
+	var addr2 = "ws://" + ip + ":8081";
 
 	/*document.getElementById("txtServer").value = addr;*/
 
-	doConnect(addr);
+	doConnect(addr,addr2);
 }
 
 /* Establish connection. */
-function doConnect(addr)
+function doConnect(addr,addr2)
 {
 	/* Message to be sent. */
 	var msg;
@@ -63,6 +65,32 @@ function doConnect(addr)
 	{
 		document.getElementById("taLog").value += ("Connection closed\n");
 	};
+
+
+	/* Do connection. */
+	ws2 = new WebSocket(addr2);
+
+	/* Register events. */
+	ws2.onopen = function()
+	{
+		//document.getElementById("taLog").value += ("Connection opened\n");
+	};
+
+	/* Deals with messages. */
+	ws2.onmessage = function (evt)
+	{
+		//var img = document.createElement('img');
+		var img = document.getElementById("imageAnalysis");		
+		var urlObject = URL.createObjectURL(evt.data);
+		img.src = urlObject;
+		//document.body.appendChild(img);
+	};
+
+	ws2.onclose = function()
+	{
+		//document.getElementById("taLog").value += ("Connection closed\n");
+	};
+
 }
 
 document.addEventListener("DOMContentLoaded", function(event)
@@ -156,6 +184,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 			//alert(txt);
 			ws.send(txt);
 
+			ws2.send("test\n");
+
 			document.getElementById("taLog").value += ("Send: " + txt + "\n");
 		};
 	};
@@ -228,7 +258,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 		}
 	};
 
-
 	var element = document.getElementById("btReadTrack");
 	if( element )
 	{
@@ -253,7 +282,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 				var startindex = document.getElementById("txtDumpStartIndex").value.toString();
 			}
 
-			txt += "dump"  + " " + document.getElementById("drives-select").value.toString() + " -1 -1"
+			txt += "dump" + " " + document.getElementById("drives-select").value.toString() + " -1 -1"
 						  + " " + document.getElementById("headselection").value.toString()
 						  + " " + document.getElementById("headselection").value.toString()
 						  + " " + (document.getElementById("ckb50Mhz").checked + 0).toString()
@@ -297,7 +326,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 				var startindex = document.getElementById("txtDumpStartIndex").value.toString();
 			}
 
-			txt += "dump"  + " " + document.getElementById("drives-select").value.toString()
+			txt += "dump" + " " + document.getElementById("drives-select").value.toString()
 						  + " " + document.getElementById("txtDumpMinTrack").value.toString()
 						  + " " + document.getElementById("txtDumpMaxTrack").value.toString()
 						  + " " + ( (document.getElementById("ckbSIDE0").checked + 0) ^ 1).toString()
