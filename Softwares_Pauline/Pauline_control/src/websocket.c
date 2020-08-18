@@ -82,7 +82,7 @@ void *websocket_txthread(void *threadid)
 
 	while( msg_out_wait(handle_to_index(fd), (char*)&msg) > 0 )
 	{
-		ws_sendframe(fd, (char *)msg, false);
+		ws_sendframe(fd, (char *)msg, -1, false);
 	}
 
 	pthread_exit(NULL);
@@ -160,6 +160,61 @@ void *websocket_listener(void *threadid)
 	evs.onclose   = &onclose;
 	evs.onmessage = &onmessage;
 	ws_socket(&evs, 8080);
+
+	pthread_exit(NULL);
+}
+
+
+void onopen_img(int fd)
+{
+
+}
+
+void onclose_img(int fd)
+{
+
+}
+
+void onmessage_img(int fd, const unsigned char *msg)
+{
+	FILE *f;
+	int size;
+	unsigned char * ptr;
+
+	f = fopen("/www/img/test_ws.bmp","rb");
+	if(f)
+	{
+		fseek(f,0,SEEK_END);
+		size = ftell(f);
+		fseek(f,0,SEEK_SET);
+
+		if(size>0)
+		{
+			ptr= malloc(size);
+			if(ptr)
+			{
+				fread(ptr,size,1,f);
+
+				ws_sendframe(fd, (char *)ptr, size, false);
+
+				free(ptr);
+			}
+		}
+
+		fclose(f);
+	}
+}
+
+void *websocket_image_listener(void *threadid)
+{
+	struct ws_events evs;
+
+	pthread_detach(pthread_self());
+
+	evs.onopen    = &onopen_img;
+	evs.onclose   = &onclose_img;
+	evs.onmessage = &onmessage_img;
+	ws_socket(&evs, 8081);
 
 	pthread_exit(NULL);
 }

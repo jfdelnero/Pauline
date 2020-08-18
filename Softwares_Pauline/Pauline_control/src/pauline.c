@@ -305,6 +305,7 @@ int main(int argc, char* argv[])
 
 	pthread_t listener_thread;
 	pthread_t websocket_thread;
+	pthread_t websocket_image_thread;
 	pthread_t script_thread;
 
 	fpga = NULL;
@@ -423,6 +424,11 @@ int main(int argc, char* argv[])
 		if(pthread_create(&websocket_thread, NULL, websocket_listener, NULL))
 		{
 			printf("Error ! Can't Create the websocket listener thread !\n");
+		}
+
+		if(pthread_create(&websocket_image_thread, NULL, websocket_image_listener, NULL))
+		{
+			printf("Error ! Can't Create the websocket image listener thread !\n");
 		}
 
 		if(pthread_create(&script_thread, NULL, server_script_thread, NULL))
