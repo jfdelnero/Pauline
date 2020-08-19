@@ -27,6 +27,7 @@
 
 var ws;
 var ws2;
+var imageTimerVar;
 
 function PaulineConnection()
 {
@@ -66,31 +67,32 @@ function doConnect(addr,addr2)
 		document.getElementById("taLog").value += ("Connection closed\n");
 	};
 
-
 	/* Do connection. */
 	ws2 = new WebSocket(addr2);
 
 	/* Register events. */
 	ws2.onopen = function()
 	{
-		//document.getElementById("taLog").value += ("Connection opened\n");
+		imageTimerVar = setInterval(imageTimer, 250);
 	};
 
 	/* Deals with messages. */
 	ws2.onmessage = function (evt)
 	{
-		//var img = document.createElement('img');
 		var img = document.getElementById("imageAnalysis");		
 		var urlObject = URL.createObjectURL(evt.data);
 		img.src = urlObject;
-		//document.body.appendChild(img);
 	};
 
 	ws2.onclose = function()
 	{
-		//document.getElementById("taLog").value += ("Connection closed\n");
+		clearInterval(imageTimerVar);
 	};
 
+}
+
+function imageTimer() {
+	ws2.send("get_image\n");
 }
 
 document.addEventListener("DOMContentLoaded", function(event)
@@ -183,8 +185,6 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 			//alert(txt);
 			ws.send(txt);
-
-			ws2.send("test\n");
 
 			document.getElementById("taLog").value += ("Send: " + txt + "\n");
 		};
