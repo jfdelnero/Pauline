@@ -19,7 +19,7 @@ endif
 sources := $(wildcard src/*.c)
 objects := $(sources:src/%.c=obj/%.o)
 
-LDFLAGS += -Wl,-rpath=. -Wl,-Map,foo.map
+LDFLAGS += -Wl,-rpath=. -Wl,-Map,foo.map -lpng
 
 EXEC=pauline
 

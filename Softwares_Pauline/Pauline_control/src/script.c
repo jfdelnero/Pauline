@@ -54,6 +54,8 @@ extern char home_folder[512];
 extern fpga_state * fpga;
 typedef int (* CMD_FUNC)(script_ctx * ctx, char * line);
 
+extern char file_to_analyse[];
+
 PRINTF_FUNC script_printf;
 
 typedef struct cmd_list_
@@ -627,7 +629,10 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			}
 
 			if(f)
+			{
 				fclose(f);
+				strcpy(file_to_analyse,temp);
+			}
 
 			if(strlen(temp) > 24)
 			{
