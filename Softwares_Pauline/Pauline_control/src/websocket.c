@@ -76,7 +76,7 @@ int    img_connection = 0;
 pthread_t ws_thread[MAX_NB_CLIENTS];
 
 pthread_t Image_thread;
-int ImageGeneratorThreadProc(void* context);
+void * ImageGeneratorThreadProc(void* context);
 
 extern FILE * tmp_file;
 
@@ -261,6 +261,8 @@ void write_png_file(char* file_name, unsigned char * image, int width, int heigh
 	png_infop info_ptr;
 	int number_of_passes;
 	png_bytep * row_pointers;
+	uint32_t * lptr;
+	uint32_t pixel;
 
 	row_pointers = (png_bytep *)malloc(height*sizeof(png_bytep));
 	if(!row_pointers)
@@ -268,13 +270,20 @@ void write_png_file(char* file_name, unsigned char * image, int width, int heigh
 
 	for(i=0;i<height;i++)
 	{
-		if( row_pointers[i+1] != 0xFF || row_pointers[i+2] != 0xFF || row_pointers[i+3] != 0xFF )
-			row_pointers[i] = (png_bytep)(image + (width*4*i));
+		row_pointers[i] = (png_bytep)(image + (width*4*i));
 	}
 
+	lptr = (uint32_t *)image;
 	for(i=0;i<height*width;i++)
 	{
-		image[(i*4) + 3] = 0xFF;
+		pixel = (*lptr) & 0xFFFFFF;
+
+		if( pixel != 0xFFFFFF )
+		{
+			*lptr = (pixel | 0xFF000000);
+		}
+
+		lptr++;
 	}
 
 	/* create file */
@@ -332,7 +341,7 @@ void write_png_file(char* file_name, unsigned char * image, int width, int heigh
 	fclose(fp);
 }
 
-int ImageGeneratorThreadProc(void* context)
+void * ImageGeneratorThreadProc(void* context)
 {
 	int i,nbpixel;
 	HXCFE_TD * td;
@@ -352,8 +361,9 @@ int ImageGeneratorThreadProc(void* context)
 	uint16_t * wavebuf;
 	int snd_stream_index,snd_stream_index_old;
 	HXCFE_TD * td_stream;
-	bitmap_data bmp;
 	int xsize,ysize;
+
+	#define OFFSET_TABLE_SIZE (128*1024)
 
 	buffer = NULL;
 	offset_table = NULL;
@@ -366,11 +376,11 @@ int ImageGeneratorThreadProc(void* context)
 	if(!buffer)
 		goto error;
 
-	offset_table = (unsigned long *)malloc(128*1024);
+	offset_table = (unsigned long *)malloc(OFFSET_TABLE_SIZE);
 	if(!offset_table)
 		goto error;
 
-	memset(offset_table, 0, 128*1024);
+	memset(offset_table, 0, OFFSET_TABLE_SIZE);
 
 	full_track_buffer = (unsigned char*) malloc(1024*1024);
 	if(!full_track_buffer)
@@ -399,7 +409,7 @@ int ImageGeneratorThreadProc(void* context)
 
 			file_offset = 0;
 			offset_table_index = 0;
-			memset(offset_table,0,sizeof(offset_table));
+			memset(offset_table,0,OFFSET_TABLE_SIZE);
 
 			f = fopen(file_to_analyse,"rb");
 			if(f)
@@ -492,11 +502,16 @@ int ImageGeneratorThreadProc(void* context)
 
 												ptr1 = (unsigned char*)hxcfe_td_getframebuffer(td);
 
+												/*
+												bitmap_data bmp;
+
 												bmp.xsize = xsize;
 												bmp.ysize = ysize;
-												bmp.data = ptr1;
+												bmp.data = (uint32_t*)ptr1;
 
-												//bmp16b_write("/tmp/analysis.bmp",&bmp);
+												bmp16b_write("/tmp/analysis.bmp",&bmp);
+												*/
+
 												write_png_file("/tmp/analysis.png", ptr1, xsize, ysize);
 
 												hxcfe_FxStream_FreeStream( fxsa, trkstream );
@@ -538,7 +553,6 @@ int ImageGeneratorThreadProc(void* context)
 
 				fclose(f);
 			}
-
 		}
 		else
 		{
@@ -546,7 +560,7 @@ int ImageGeneratorThreadProc(void* context)
 		}
 	}
 
-	return 0;
+	return NULL;
 
 error:
 
@@ -559,5 +573,5 @@ error:
 	if(full_track_buffer)
 		free(full_track_buffer);
 
-	return -1;
+	return NULL;
 }
