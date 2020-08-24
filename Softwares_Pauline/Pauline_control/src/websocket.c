@@ -276,7 +276,7 @@ void write_png_file(char* file_name, unsigned char * image, int width, int heigh
 	lptr = (uint32_t *)image;
 	for(i=0;i<height*width;i++)
 	{
-		pixel = (*lptr) & 0xFFFFFF;
+		pixel = *lptr;
 
 		if( pixel != 0xFFFFFF )
 		{
