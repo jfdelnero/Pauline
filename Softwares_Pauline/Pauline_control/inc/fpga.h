@@ -286,8 +286,9 @@ typedef struct dump_state_
 	int index_to_dump_delay;
 	int time_per_track;
 	int doublestep;
-
 	int sample_rate_hz;
+	int current_track;
+	int current_side;
 }dump_state;
 
 fpga_state * init_fpga();

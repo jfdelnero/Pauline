@@ -45,6 +45,8 @@
 
 #include "lz4.h"
 
+#include "version.h"
+
 unsigned char * fast_convert_chunk(fpga_state * state, uint16_t *chunk_ptr, uint32_t track_size, unsigned int * tracksize,unsigned int * outbuffersize, unsigned int * number_of_pulses, unsigned int * prev_bitdelta)
 {
 	unsigned int j;
@@ -242,7 +244,7 @@ unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t 
 	unsigned char * convertedchunk;
 	unsigned int total_size;
 	char metadata_line[256];
-	int temp_size;
+	int temp_size,prev_bitdelta;
 	char * meta_data_buffer;
 	chunk_header * cheader;
 	metadata_header * pmetadata_header;
@@ -263,6 +265,7 @@ unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t 
 	packedsize = 0;
 	number_of_pulses = 0;
 
+	prev_bitdelta = *bitdelta;
 	convertedchunk = fast_convert_chunk(state, data_in, chunk_size, &track_size, &stream_track_size, &number_of_pulses, bitdelta);
 	if(!convertedchunk)
 		goto error;
@@ -277,8 +280,8 @@ unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t 
 	meta_data_buffer = (char*)pmetadata_header + sizeof(metadata_header);
 
 	memset(meta_data_buffer,0,METADATA_MAXSIZE);
-
-	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"software_version v1.0.0.0\n");
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"format_version v1.0\n");
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"software_version v"STR_FILE_VERSION2" "STR_DATE"\n");
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"software_buildtime "__DATE__" "__TIME__"\n");
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"chunk_number %d\n",chunk_number);
 
@@ -291,12 +294,22 @@ unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t 
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"dump_comment \"%s\"\n",dstate->dump_comment);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"start_track %d\n",dstate->start_track);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"max_track %d\n",dstate->max_track);
-	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"doublestep %d\n",dstate->doublestep);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"double_step %d\n",dstate->doublestep);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"start_side %d\n",dstate->start_side);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"max_side %d\n",dstate->max_side);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"index_synced %d\n",dstate->index_synced);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"index_to_dump_delay %d\n",dstate->index_to_dump_delay);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"time_per_track %d\n",dstate->time_per_track);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"current_track %d\n",dstate->current_track);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"current_side %d\n",dstate->current_side);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"number_of_data_pulses %d\n",number_of_pulses);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"number_of_data_samples %d\n", (prev_bitdelta + ((chunk_size/4)*16)) - *bitdelta );
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"number_of_ios_samples %d\n", (chunk_size/4) );
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"memory_dump_offset 0x%.8X\n", state->last_dump_offset );
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"io_channel 0 floppy_i_index\n" );
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"io_channel 1 floppy_i_pin02\n" );
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"io_channel 2 floppy_i_pin34\n" );
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"io_channel 5 floppy_i_wpt\n" );
 
 	pmetadata_header->type = HXCSTREAM_CHUNKBLOCK_METADATA_ID;
 	pmetadata_header->payload_size = strlen(meta_data_buffer) + 1;

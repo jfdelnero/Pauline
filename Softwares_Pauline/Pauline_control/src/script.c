@@ -50,6 +50,9 @@
 
 #include "messages.h"
 
+#include "version.h"
+
+
 extern char home_folder[512];
 extern fpga_state * fpga;
 typedef int (* CMD_FUNC)(script_ctx * ctx, char * line);
@@ -629,6 +632,9 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			fpga->chunk_number = 0;
 
 			start_dump(fpga, buffersize, high_res_mode , state.index_to_dump_delay,ignore_index);
+
+			state.current_track = i;
+			state.current_side = j;
 
 			while( fpga->last_dump_offset < fpga->regs->floppy_dump_buffer_size)
 			{
@@ -1272,7 +1278,7 @@ int cmd_help(script_ctx * ctx, char * line);
 
 int cmd_version(script_ctx * ctx, char * line)
 {
-	ctx->script_printf(MSGTYPE_INFO_0,"HxC Streamer version : %s, Date : "__DATE__" "__TIME__"\n","1.0.0.0");
+	ctx->script_printf(MSGTYPE_INFO_0,"HxC Streamer version : %s, Date : "STR_DATE", Build Date : "__DATE__" "__TIME__"\n",STR_FILE_VERSION2);
 	return 1;
 }
 

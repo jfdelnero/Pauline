@@ -53,6 +53,8 @@
 
 #include "messages.h"
 
+#include "version.h"
+
 int verbose;
 fpga_state * fpga;
 char home_folder[512];
