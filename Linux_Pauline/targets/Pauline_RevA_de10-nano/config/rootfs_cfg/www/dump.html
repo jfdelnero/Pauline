@@ -274,6 +274,38 @@
 				<img src="img/analysis.bmp" alt="Real time analysis" id="imageAnalysis">
 				<br>
 
+				<div id="GraphZoom">
+
+					<div class="slidecontainer">
+						<p>X Graph time:
+						<input type="range" min="100" max="3000" value="600" class="slider" id="graphtimexselection"><span id="graphtimex"></span> ms
+						</p>
+						<p>Y Graph time:
+						<input type="range" min="4" max="64" value="16" class="slider" id="graphtimeyselection"><span id="graphtimey"></span> us
+						</p>
+					</div>
+
+					<script>
+						var graphtimex_slider = document.getElementById("graphtimexselection");
+						var graphtimex_output = document.getElementById("graphtimex");
+						var graphtimey_slider = document.getElementById("graphtimeyselection");
+						var graphtimey_output = document.getElementById("graphtimey");
+
+						graphtimex_output.innerHTML = graphtimex_slider.value;
+						graphtimey_output.innerHTML = graphtimey_slider.value;
+
+						graphtimex_slider.oninput = function()
+						{
+							graphtimex_output.innerHTML = this.value;
+						}
+
+						graphtimey_slider.oninput = function()
+						{
+							graphtimey_output.innerHTML = this.value;
+						}
+					</script>
+				</div>
+				
 				<table>
 					<tbody>
 						<tr>
