@@ -598,7 +598,7 @@ void start_dump(fpga_state * state, uint32_t buffersize, int res, int delay, int
 
 #define CHUNCK_MAX_SIZE ((((50000000/16)*4) / 16) & ~3) // a chunk size = 1/16 seconds @ 50Mhz
 
-unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * size)
+unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * size,dump_state * dstate)
 {
 	uint32_t packed_size;
 	unsigned char * ptr;
@@ -630,7 +630,7 @@ unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * s
 
 	if(chunk_size>0)
 	{
-		ptr = generate_chunk(state, (uint16_t*)&state->dump_buffer[state->last_dump_offset/2], (uint32_t)chunk_size, &packed_size, state->chunk_number,samplerate,&state->bitdelta);
+		ptr = generate_chunk(state, (uint16_t*)&state->dump_buffer[state->last_dump_offset/2], (uint32_t)chunk_size, &packed_size, state->chunk_number,&state->bitdelta,dstate);
 		if(ptr)
 		{
 			state->last_dump_offset += chunk_size;

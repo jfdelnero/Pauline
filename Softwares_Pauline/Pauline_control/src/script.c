@@ -476,6 +476,8 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 	unsigned char * tmpptr;
 	uint32_t  buffersize;
 	int error;
+	char * var;
+	dump_state state;
 
 	error = PAULINE_NO_ERROR;
 
@@ -485,6 +487,37 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 	if(!spy)
 	{
 		msg_printf(MSGTYPE_INFO_0,"Start disk reading...\nTrack(s): %d <-> %d, Side(s): %d <-> %d, Ignore index: %d, Time: %dms, %s\n",dump_start_track,dump_max_track,dump_start_side,dump_max_side,ignore_index,dump_time_per_track,high_res_mode?"50Mhz":"25Mhz");
+
+		memset(&state,0,sizeof(dump_state));
+
+		state.drive_number = drive;
+		state.start_track = dump_start_track;
+		state.max_track = dump_max_track;
+		state.start_side = dump_start_side;
+		state.max_side = dump_max_side;
+
+		if(ignore_index)
+			state.index_synced = 0;
+		else
+			state.index_synced = 1;
+
+		state.time_per_track = dump_time_per_track;
+		state.doublestep = doubestep;
+		state.index_to_dump_delay = index_to_dump_delay;
+		strncpy( (char*)&state.dump_name, name, 512 - 1);
+		strncpy( (char*)&state.dump_comment, comment , 512 - 1 );
+
+		sprintf(temp,"DRIVE_%d_DESCRIPTION",drive);
+		var = hxcfe_getEnvVar( fpga->libhxcfe, (char *)temp, NULL );
+		if(var)
+		{
+			strncpy((char*)&state.drive_description,var, 512 - 1);
+		}
+
+		if(high_res_mode)
+			state.sample_rate_hz = 50000000;
+		else
+			state.sample_rate_hz = 25000000;
 
 		display_bmp("/data/pauline_splash_bitmaps/reading_floppy.bmp");
 
@@ -595,11 +628,11 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			fpga->bitdelta = 0;
 			fpga->chunk_number = 0;
 
-			start_dump(fpga, buffersize, high_res_mode , index_to_dump_delay,ignore_index);
+			start_dump(fpga, buffersize, high_res_mode , state.index_to_dump_delay,ignore_index);
 
 			while( fpga->last_dump_offset < fpga->regs->floppy_dump_buffer_size)
 			{
-				tmpptr = get_next_available_stream_chunk(fpga,&buffersize);
+				tmpptr = get_next_available_stream_chunk(fpga,&buffersize,&state);
 				if(tmpptr)
 				{
 					if(f)

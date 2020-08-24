@@ -894,7 +894,7 @@ int main(int argc, char* argv[])
 
 				while( fpga->last_dump_offset < fpga->regs->floppy_dump_buffer_size)
 				{
-					tmpptr = get_next_available_stream_chunk(fpga,&buffersize);
+					tmpptr = NULL ; //get_next_available_stream_chunk(fpga,&buffersize);
 					if(tmpptr)
 					{
 						fwrite(tmpptr,buffersize,1,f);

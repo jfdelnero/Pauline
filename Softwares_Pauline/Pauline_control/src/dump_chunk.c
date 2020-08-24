@@ -32,7 +32,8 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-
+#include <stdarg.h>
+#include <time.h>
 #include <stdint.h>
 
 #include "libhxcfe.h"
@@ -186,7 +187,48 @@ unsigned char * fast_convert_chunk(fpga_state * state, uint16_t *chunk_ptr, uint
 	return start_data_track;
 }
 
-unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t chunk_size, uint32_t * packed_size,int chunk_number,int samplerate,unsigned int * bitdelta)
+int metadata_catprintf(char * metabuffer,int metamaxsize,char * chaine, ...)
+{
+	char temp[512];
+	char textbuf[512];
+	int iSendResult,i,j;
+	int ret;
+
+	ret = 0;
+
+	va_list marker;
+	va_start( marker, chaine );
+
+	textbuf[0] = 0;
+
+	vsprintf(temp,chaine,marker);
+
+	j = 0;
+	i = 0;
+	while(temp[i])
+	{
+		if(temp[i]!='\r')
+			textbuf[j++] = temp[i];
+		i++;
+	}
+
+	textbuf[j] = 0;
+
+	if(strlen(metabuffer) + strlen(textbuf) < metamaxsize )
+	{
+		strcat(metabuffer,textbuf);
+	}
+	else
+	{
+		ret = 1;
+	}
+
+	va_end( marker );
+
+	return ret;
+}
+
+unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t chunk_size, uint32_t * packed_size,int chunk_number,unsigned int * bitdelta, dump_state * dstate)
 {
 	unsigned int i,packedsize,iopackedsize;
 	unsigned char * full_block;
@@ -206,6 +248,9 @@ unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t 
 	metadata_header * pmetadata_header;
 	packed_stream_header * pstream_header;
 	packed_io_header * pio_header;
+	time_t t;
+	struct tm tm;
+	#define METADATA_MAXSIZE (8*1024)
 
 	io_buffer = NULL;
 	full_block = NULL;
@@ -231,13 +276,28 @@ unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t 
 	pmetadata_header = (metadata_header*)&full_block[sizeof(chunk_header)];
 	meta_data_buffer = (char*)pmetadata_header + sizeof(metadata_header);
 
-	memset(meta_data_buffer,0,8*1024);
-	sprintf(metadata_line,"software_version v1.0.0.0\n");
-	strcat(meta_data_buffer,metadata_line);
-	sprintf(metadata_line,"sample_rate_hz %d\n",samplerate);
-	strcat(meta_data_buffer,metadata_line);
-	sprintf(metadata_line,"chunk_number %d\n",chunk_number);
-	strcat(meta_data_buffer,metadata_line);
+	memset(meta_data_buffer,0,METADATA_MAXSIZE);
+
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"software_version v1.0.0.0\n");
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"software_buildtime "__DATE__" "__TIME__"\n");
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"chunk_number %d\n",chunk_number);
+
+	t = time(NULL);
+	tm = *localtime(&t);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"current_time %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"sample_rate_hz %d\n",dstate->sample_rate_hz);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"floppy_drive %d \"%s\"\n",dstate->drive_number,dstate->drive_description);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"dump_name \"%s\"\n",dstate->dump_name);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"dump_comment \"%s\"\n",dstate->dump_comment);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"start_track %d\n",dstate->start_track);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"max_track %d\n",dstate->max_track);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"doublestep %d\n",dstate->doublestep);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"start_side %d\n",dstate->start_side);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"max_side %d\n",dstate->max_side);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"index_synced %d\n",dstate->index_synced);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"index_to_dump_delay %d\n",dstate->index_to_dump_delay);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"time_per_track %d\n",dstate->time_per_track);
+
 	pmetadata_header->type = HXCSTREAM_CHUNKBLOCK_METADATA_ID;
 	pmetadata_header->payload_size = strlen(meta_data_buffer) + 1;
 	pmetadata_header->payload_size += (4 - (pmetadata_header->payload_size & 3)) & 3;

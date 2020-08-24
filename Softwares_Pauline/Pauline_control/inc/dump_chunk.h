@@ -76,4 +76,4 @@ typedef struct _packed_stream_header
 
 #pragma pack()
 
-unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t chunk_size, uint32_t * packed_size,int chunk_number,int samplerate,unsigned int * bitdelta);
+unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t chunk_size, uint32_t * packed_size,int chunk_number,unsigned int * bitdelta, dump_state * dstate);

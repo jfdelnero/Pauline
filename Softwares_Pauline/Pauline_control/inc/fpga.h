@@ -272,6 +272,23 @@ typedef struct _fpga_state
 
 }fpga_state;
 
+typedef struct dump_state_
+{
+	int drive_number;
+	char drive_description[512];
+	char dump_name[512];
+	char dump_comment[512];
+	int start_track;
+	int max_track;
+	int start_side;
+	int max_side;
+	int index_synced;
+	int index_to_dump_delay;
+	int time_per_track;
+	int doublestep;
+
+	int sample_rate_hz;
+}dump_state;
 
 fpga_state * init_fpga();
 void reset_fpga(fpga_state * state);
@@ -286,7 +303,8 @@ void enable_drive(fpga_state * state, int drive, int enable);
 void floppy_ctrl_move_head(fpga_state * state, int dir, int trk);
 
 void start_dump(fpga_state * state, uint32_t buffersize, int res, int delay, int ignore_index);
-unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * size);
+unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * size, dump_state * dstate);
+
 void stop_dump(fpga_state * state);
 
 void print_fpga_regs(fpga_state * state);
