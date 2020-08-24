@@ -596,7 +596,7 @@ void start_dump(fpga_state * state, uint32_t buffersize, int res, int delay, int
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 }
 
-#define CHUNCK_MAX_SIZE ((((50000000/16)*4) / 16) & ~3) // a chunk size = 1/16 seconds @ 50Mhz
+#define CHUNK_MAX_SIZE ((((50000000/16)*4) / 16) & ~3) // a chunk size = 1/16 seconds @ 50Mhz
 
 unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * size,dump_state * dstate)
 {
@@ -605,7 +605,7 @@ unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * s
 	int samplerate;
 	int chunk_size;
 
-	while( ((state->regs->floppy_dump_cur_track_offset - state->last_dump_offset) < CHUNCK_MAX_SIZE) && !(state->regs->floppy_done & ((0x01 << 4) | (0x01 << 5))) )
+	while( ((state->regs->floppy_dump_cur_track_offset - state->last_dump_offset) < CHUNK_MAX_SIZE) && !(state->regs->floppy_done & ((0x01 << 4) | (0x01 << 5))) )
 	{
 		usleep(1000);
 	}
@@ -623,8 +623,8 @@ unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * s
 	else
 		samplerate = 50000000;
 
-	if( state->regs->floppy_dump_buffer_size - state->last_dump_offset > CHUNCK_MAX_SIZE)
-		chunk_size = CHUNCK_MAX_SIZE;
+	if( state->regs->floppy_dump_buffer_size - state->last_dump_offset > CHUNK_MAX_SIZE)
+		chunk_size = CHUNK_MAX_SIZE;
 	else
 		chunk_size = state->regs->floppy_dump_buffer_size - state->last_dump_offset;
 
