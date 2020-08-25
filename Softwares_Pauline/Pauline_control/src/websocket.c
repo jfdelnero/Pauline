@@ -90,20 +90,13 @@ volatile int preview_image_xtime = 600000;
 volatile int preview_image_xoffset = 0;
 volatile int preview_image_ytime = 16;
 
-
-static double adjust_timescale(double slide)
-{
-	if(slide >= 250 * 1000)
-	{
-		slide -= (250 * 1000);
-		slide += 250;
-	}
-	else
-	{
-		slide = (slide * 250) / (double)(250 * 1000);
-	}
-
-	return slide;
+static void hxc_msleep (unsigned int ms) {
+	int microsecs;
+	struct timeval tv;
+	microsecs = ms * 1000;
+	tv.tv_sec  = microsecs / 1000000;
+	tv.tv_usec = microsecs % 1000000;
+	select (0, NULL, NULL, NULL, &tv);
 }
 
 void *websocket_txthread(void *threadid)
@@ -264,19 +257,23 @@ void *websocket_image_listener(void *threadid)
 
 void write_png_file(char* file_name, unsigned char * image, int width, int height)
 {
-	int x, y, i;
+	int i;
 	png_byte color_type;
 	png_byte bit_depth;
 	png_structp png_ptr;
 	png_infop info_ptr;
-	int number_of_passes;
 	png_bytep * row_pointers;
 	uint32_t * lptr;
 	uint32_t pixel;
 
+	png_ptr = NULL;
+	info_ptr = NULL;
+	row_pointers = NULL;
+	lptr = NULL;
+
 	row_pointers = (png_bytep *)malloc(height*sizeof(png_bytep));
 	if(!row_pointers)
-		return;
+		goto error;
 
 	for(i=0;i<height;i++)
 	{
@@ -299,26 +296,26 @@ void write_png_file(char* file_name, unsigned char * image, int width, int heigh
 	/* create file */
 	FILE *fp = fopen(file_name, "wb");
 	if (!fp)
-			return ;
+		goto error;
 
 	/* initialize stuff */
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
 	if (!png_ptr)
-			return;
+		goto error;
 
 	info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr)
-			return;
+		goto error;
 
 	if (setjmp(png_jmpbuf(png_ptr)))
-			return;
+		goto error;
 
 	png_init_io(png_ptr, fp);
 
 	/* write header */
 	if (setjmp(png_jmpbuf(png_ptr)))
-			return;
+		goto error;
 
 	color_type = PNG_COLOR_TYPE_RGB_ALPHA;
 	bit_depth  = 8;
@@ -331,13 +328,13 @@ void write_png_file(char* file_name, unsigned char * image, int width, int heigh
 
 	/* write bytes */
 	if (setjmp(png_jmpbuf(png_ptr)))
-			return;
+		goto error;
 
 	png_write_image(png_ptr, row_pointers);
 
 	/* end write */
 	if (setjmp(png_jmpbuf(png_ptr)))
-			return;
+		goto error;
 
 	png_write_end(png_ptr, NULL);
 
@@ -346,33 +343,43 @@ void write_png_file(char* file_name, unsigned char * image, int width, int heigh
 			free(row_pointers[y]);
 	*/
 
+	png_destroy_write_struct(&png_ptr, &info_ptr);
+
 	free(row_pointers);
 
 	fclose(fp);
+
+	return;
+
+error:
+
+	if(png_ptr && info_ptr)
+	{
+		png_destroy_write_struct(&png_ptr, &info_ptr);
+	}
+
+	free(row_pointers);
+
+	fclose(fp);
+	return;
 }
 
 void * ImageGeneratorThreadProc(void* context)
 {
-	int i,nbpixel;
 	HXCFE_TD * td;
 	unsigned char * ptr1;
-	unsigned char * ptr2;
 	unsigned char * buffer;
 	unsigned char * full_track_buffer;
 	int file_offset,tmp_file_offset,current_file_size;
 	unsigned long * offset_table;
 	int offset_table_index;
 	FILE * f;
-	uint32_t flags;
 	chunk_header * ch;
 	int ret;
 	HXCFE_FXSA * fxsa;
 	HXCFE_TRKSTREAM* trkstream;
-	uint16_t * wavebuf;
-	int snd_stream_index,snd_stream_index_old;
 	HXCFE_TD * td_stream;
 	int xsize,ysize;
-	int temp;
 
 	#define OFFSET_TABLE_SIZE (128*1024)
 
@@ -413,7 +420,6 @@ void * ImageGeneratorThreadProc(void* context)
 	{
 		if(img_connection)
 		{
-
 			file_offset = 0;
 			offset_table_index = 0;
 			memset(offset_table,0,OFFSET_TABLE_SIZE);
@@ -422,7 +428,7 @@ void * ImageGeneratorThreadProc(void* context)
 			while(!file_to_analyse[0])
 			{
 				pthread_mutex_unlock(&script_context->script_mutex);
-				hxc_pause(20);
+				hxc_msleep(20);
 				pthread_mutex_lock(&script_context->script_mutex);
 			};
 
@@ -528,7 +534,7 @@ void * ImageGeneratorThreadProc(void* context)
 									}
 									else
 									{
-										hxc_pause(10);
+										hxc_msleep(10);
 									}
 
 									hxcfe_deinitFxStream( fxsa );
@@ -536,23 +542,23 @@ void * ImageGeneratorThreadProc(void* context)
 								}
 								else
 								{
-									hxc_pause(10);
+									hxc_msleep(10);
 								}
 							}
 							else
 							{
-								hxc_pause(10);
+								hxc_msleep(10);
 							}
 						}
 						else
 						{
 							fseek(f,file_offset,SEEK_SET);
-							hxc_pause(10);
+							hxc_msleep(10);
 						}
 					}
 					else
 					{
-						hxc_pause(50);
+						hxc_msleep(50);
 					}
 
 					fseek(f,file_offset,SEEK_SET);
@@ -565,9 +571,21 @@ void * ImageGeneratorThreadProc(void* context)
 		else
 		{
 			pthread_mutex_unlock(&script_context->script_mutex);
-			hxc_pause(200);
+			hxc_msleep(200);
 		}
 	}
+
+
+	if(buffer)
+		free(buffer);
+
+	if(offset_table)
+		free(offset_table);
+
+	if(full_track_buffer)
+		free(full_track_buffer);
+
+	hxcfe_td_deinit( td_stream );
 
 	return NULL;
 

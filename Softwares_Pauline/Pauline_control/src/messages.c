@@ -250,7 +250,7 @@ int msg_printf(int MSGTYPE,char * chaine, ...)
 {
 	char temp[MAX_MESSAGES_SIZE];
 	char textbuf[MAX_MESSAGES_SIZE];
-	int iSendResult,i,j;
+	int i,j;
 
 	if(MSGTYPE!=MSGTYPE_DEBUG)
 	{

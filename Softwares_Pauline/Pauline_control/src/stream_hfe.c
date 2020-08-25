@@ -63,22 +63,22 @@ void setbit(unsigned char * input_data,int bit_offset,int state)
 
 int decodestream(fpga_state * state, int drive, streamhfe_track_def * trackdef, unsigned char * unpacked_data, int track, int side)
 {
-	unsigned int k,l,p;
-
+	unsigned int k,l;
 	uint16_t *tmp_ptr;
-	uint32_t index_position[16];
 	unsigned char c;
 	uint32_t pulses_count;
-	uint32_t tmp_dword,cumul,r;
+	uint32_t tmp_dword,cumul;
 	uint32_t track_size,trackbase;
+	//uint32_t index_position[16];
+	//unsigned int p;
 
-	index_position[0] = 0;
+	//index_position[0] = 0;
 
 	pulses_count = trackdef->nb_pulses;
 
 	if( pulses_count )
 	{
-		p = 0;
+		//p = 0;
 
 		track_size = state->regs->image_track_size_reg[drive];
 		trackbase = (track_size/sizeof(unsigned short)) * track;
@@ -138,7 +138,7 @@ int decodestream(fpga_state * state, int drive, streamhfe_track_def * trackdef, 
 				l++;
 			}
 
-			index_position[r] = p;
+			//index_position[r] = p;
 		}
 	}
 

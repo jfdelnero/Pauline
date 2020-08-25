@@ -50,6 +50,7 @@
 #include "script.h"
 #include "bmp_file.h"
 #include "screen.h"
+#include "ios.h"
 
 #include "messages.h"
 
@@ -196,7 +197,6 @@ void* inotify_thread(void* arg)
 {
 	fpga_state * ctx;
 	int i,length;
-	uint32_t handle[3];
 	char inotify_buffer[INOTIFY_RD_BUF_SIZE] __attribute__ ((aligned(__alignof__(struct inotify_event))));
 	const struct inotify_event *event;
 	struct sigaction sa;
@@ -285,7 +285,8 @@ int main(int argc, char* argv[])
 	char ofilename[512];
 	char layoutformat[128];
 	char temp[512];
-	int doublestep,drive;
+	//int doublestep;
+	int drive;
 
 	int track,dir;
 	int selsrc, motsrc;
@@ -316,7 +317,7 @@ int main(int argc, char* argv[])
 
 	verbose = 0;
 	drive = 0;
-	doublestep = -1;
+	//doublestep = -1;
 	home_folder[0] = '\0';
 
 	printf("HxC Floppy Emulator : Pauline floppy drive simulator / floppy drive dumper control software v1.0.0.0\n");
@@ -519,6 +520,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	/*
 	if(isOption(argc,argv,"singlestep",0)>0)
 	{
 		doublestep = 0;
@@ -528,6 +530,7 @@ int main(int argc, char* argv[])
 	{
 		doublestep = 0xFF;
 	}
+	*/
 
 /*
 	if(isOption(argc,argv,"init",0)>0)

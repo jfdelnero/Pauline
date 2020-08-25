@@ -51,6 +51,11 @@ int bmp_load(char * file,bitmap_data * bdata)
 	if(f)
 	{
 		ret = fread(&bitmap_header,sizeof(BITMAPFILEHEADER),1,f);
+		if(ret!=1)
+		{
+			fclose(f);
+			return -2;
+		}
 
 		if( bitmap_header.bfType == 19778 )
 		{

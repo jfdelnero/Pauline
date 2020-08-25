@@ -193,7 +193,7 @@ int metadata_catprintf(char * metabuffer,int metamaxsize,char * chaine, ...)
 {
 	char temp[512];
 	char textbuf[512];
-	int iSendResult,i,j;
+	int i,j;
 	int ret;
 
 	ret = 0;
@@ -243,7 +243,6 @@ unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t 
 	uint32_t * long_ptr;
 	unsigned char * convertedchunk;
 	unsigned int total_size;
-	char metadata_line[256];
 	int temp_size,prev_bitdelta;
 	char * meta_data_buffer;
 	chunk_header * cheader;

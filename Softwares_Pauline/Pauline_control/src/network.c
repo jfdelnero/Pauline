@@ -518,7 +518,7 @@ void *tcp_listener(void *threadid)
 
 				threadparams_cmd[connection]->connection_id = connection;
 
-				printf("Starting thread... (Index %d)\r\n",connection);
+				printf("Starting thread... (Index %d, client index %d)\r\n",connection,index);
 				rc = pthread_create(&threads_cmd[connection], NULL, connection_thread, (void *)&tp[connection]);
 				if(rc)
 				{
@@ -557,17 +557,16 @@ void *network_txthread(void *threadid)
 
 void *server_script_thread(void *threadid)
 {
-	thread_params * tp;
+	//thread_params * tp;
 	int i;
 	int iResult;
 	char recvbuf[MAX_MESSAGES_SIZE];
 	char fullline[MAX_LINE_SIZE];
 	int line_index;
-	int recvbuflen = DEFAULT_BUFLEN;
 	//struct timeval tv;
 	script_ctx * script_context;
 
-	tp = (thread_params*)threadid;
+	//tp = (thread_params*)threadid;
 
 	pthread_detach(pthread_self());
 	script_context = init_script();
@@ -577,6 +576,7 @@ void *server_script_thread(void *threadid)
 	//setsockopt(hSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
 
 	line_index = 0;
+
 	// Receive until the peer shuts down the connection
 	do {
 
