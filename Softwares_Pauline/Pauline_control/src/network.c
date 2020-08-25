@@ -565,12 +565,12 @@ void *server_script_thread(void *threadid)
 	int line_index;
 	int recvbuflen = DEFAULT_BUFLEN;
 	//struct timeval tv;
-	script_ctx * ctx;
+	script_ctx * script_context;
 
 	tp = (thread_params*)threadid;
 
 	pthread_detach(pthread_self());
-	ctx = init_script();
+	script_context = init_script();
 
 	//tv.tv_sec = 20;
 	//tv.tv_usec = 0;
@@ -610,7 +610,7 @@ void *server_script_thread(void *threadid)
 					}
 					else
 					{
-						execute_line(ctx,fullline);
+						execute_line(script_context,fullline);
 						line_index = 0;
 					}
 					i++;

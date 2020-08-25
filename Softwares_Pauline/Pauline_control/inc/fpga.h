@@ -278,6 +278,9 @@ typedef struct dump_state_
 	char drive_description[512];
 	char dump_name[512];
 	char dump_comment[512];
+	char dump_comment2[512];
+	char dump_operator[512];
+	char dump_driveref[512];
 	int start_track;
 	int max_track;
 	int start_side;

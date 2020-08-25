@@ -290,8 +290,11 @@ unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t 
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"current_time %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"sample_rate_hz %d\n",dstate->sample_rate_hz);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"floppy_drive %d \"%s\"\n",dstate->drive_number,dstate->drive_description);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"drive_reference \"%s\"\n",dstate->dump_driveref);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"dump_name \"%s\"\n",dstate->dump_name);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"dump_comment \"%s\"\n",dstate->dump_comment);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"dump_comment2 \"%s\"\n",dstate->dump_comment2);
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"operator \"%s\"\n",dstate->dump_operator);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"start_track %d\n",dstate->start_track);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"max_track %d\n",dstate->max_track);
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"double_step %d\n",dstate->doublestep);

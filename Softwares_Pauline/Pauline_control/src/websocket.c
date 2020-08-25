@@ -78,9 +78,18 @@ pthread_t ws_thread[MAX_NB_CLIENTS];
 pthread_t Image_thread;
 void * ImageGeneratorThreadProc(void* context);
 
+extern script_ctx * script_context;
+
 extern FILE * tmp_file;
 
 char file_to_analyse[512];
+char last_file_to_analyse[512];
+
+volatile int preview_image_flags = TD_FLAG_HICONTRAST;
+volatile int preview_image_xtime = 600000;
+volatile int preview_image_xoffset = 0;
+volatile int preview_image_ytime = 16;
+
 
 static double adjust_timescale(double slide)
 {
@@ -241,6 +250,7 @@ void *websocket_image_listener(void *threadid)
 	pthread_detach(pthread_self());
 
 	memset(file_to_analyse,0,sizeof(file_to_analyse));
+	memset(last_file_to_analyse,0,sizeof(last_file_to_analyse));
 
 	pthread_create(&Image_thread, NULL, ImageGeneratorThreadProc, (void*)NULL);
 
@@ -362,6 +372,7 @@ void * ImageGeneratorThreadProc(void* context)
 	int snd_stream_index,snd_stream_index_old;
 	HXCFE_TD * td_stream;
 	int xsize,ysize;
+	int temp;
 
 	#define OFFSET_TABLE_SIZE (128*1024)
 
@@ -402,19 +413,24 @@ void * ImageGeneratorThreadProc(void* context)
 	{
 		if(img_connection)
 		{
-			while(!file_to_analyse[0])
-			{
-				hxc_pause(20);
-			};
 
 			file_offset = 0;
 			offset_table_index = 0;
 			memset(offset_table,0,OFFSET_TABLE_SIZE);
 
+			pthread_mutex_lock(&script_context->script_mutex);
+			while(!file_to_analyse[0])
+			{
+				pthread_mutex_unlock(&script_context->script_mutex);
+				hxc_pause(20);
+				pthread_mutex_lock(&script_context->script_mutex);
+			};
+
 			f = fopen(file_to_analyse,"rb");
 			if(f)
 			{
 				file_to_analyse[0] = 0;
+				pthread_mutex_unlock(&script_context->script_mutex);
 
 				do
 				{
@@ -470,31 +486,23 @@ void * ImageGeneratorThreadProc(void* context)
 
 											td = td_stream;
 
-											hxcfe_td_activate_analyzer(td,ISOIBM_MFM_ENCODING,1);
-											hxcfe_td_activate_analyzer(td,ISOIBM_FM_ENCODING,1);
-											hxcfe_td_activate_analyzer(td,AMIGA_MFM_ENCODING,1);
-											hxcfe_td_activate_analyzer(td,EMU_FM_ENCODING,0);
-											hxcfe_td_activate_analyzer(td,MEMBRAIN_MFM_ENCODING,0);
-											hxcfe_td_activate_analyzer(td,TYCOM_FM_ENCODING,0);
-											hxcfe_td_activate_analyzer(td,APPLEII_GCR1_ENCODING,0);
-											hxcfe_td_activate_analyzer(td,APPLEII_GCR2_ENCODING,0);
-											hxcfe_td_activate_analyzer(td,APPLEMAC_GCR_ENCODING,0);
-											hxcfe_td_activate_analyzer(td,ARBURGDAT_ENCODING,0);
-											hxcfe_td_activate_analyzer(td,ARBURGSYS_ENCODING,0);
+											hxcfe_td_activate_analyzer(td,ISOIBM_MFM_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_ISOIBM_MFM_ENCODING"));
+											hxcfe_td_activate_analyzer(td,ISOIBM_FM_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_ISOIBM_FM_ENCODING"));
+											hxcfe_td_activate_analyzer(td,AMIGA_MFM_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_AMIGA_MFM_ENCODING"));
+											hxcfe_td_activate_analyzer(td,EMU_FM_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_EMU_FM_ENCODING"));
+											hxcfe_td_activate_analyzer(td,MEMBRAIN_MFM_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_MEMBRAIN_MFM_ENCODING"));
+											hxcfe_td_activate_analyzer(td,TYCOM_FM_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_TYCOM_FM_ENCODING"));
+											hxcfe_td_activate_analyzer(td,APPLEII_GCR1_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_APPLEII_GCR1_ENCODING"));
+											hxcfe_td_activate_analyzer(td,APPLEII_GCR2_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_APPLEII_GCR2_ENCODING"));
+											hxcfe_td_activate_analyzer(td,APPLEMAC_GCR_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_APPLEMAC_GCR_ENCODING"));
+											hxcfe_td_activate_analyzer(td,ARBURGDAT_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_ARBURGDAT_ENCODING"));
+											hxcfe_td_activate_analyzer(td,ARBURGSYS_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_ARBURGSYS_ENCODING"));
 											hxcfe_td_activate_analyzer(td,AED6200P_MFM_ENCODING,0);
-											hxcfe_td_activate_analyzer(td,NORTHSTAR_HS_MFM_ENCODING,0);
-											hxcfe_td_activate_analyzer(td,HEATHKIT_HS_FM_ENCODING,0);
-											hxcfe_td_activate_analyzer(td,DEC_RX02_M2FM_ENCODING,0);
+											hxcfe_td_activate_analyzer(td,NORTHSTAR_HS_MFM_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_NORTHSTAR_HS_MFM_ENCODING"));
+											hxcfe_td_activate_analyzer(td,HEATHKIT_HS_FM_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_HEATHKIT_HS_FM_ENCODING"));
+											hxcfe_td_activate_analyzer(td,DEC_RX02_M2FM_ENCODING,hxcfe_getEnvVarValue( fpga->libhxcfe, "BMPEXPORT_ENABLE_DEC_RX02_M2FM_ENCODING"));
 
-											flags = 0;
-
-											if(1)
-												flags |= TD_FLAG_HICONTRAST;
-
-											if(0)
-												flags |= TD_FLAG_BIGDOT;
-
-											hxcfe_td_setparams(td,600000,(int)16,0,flags);
+											hxcfe_td_setparams(td,preview_image_xtime,(int)preview_image_ytime,preview_image_xoffset,preview_image_flags);
 
 											if(trkstream)
 											{
@@ -556,6 +564,7 @@ void * ImageGeneratorThreadProc(void* context)
 		}
 		else
 		{
+			pthread_mutex_unlock(&script_context->script_mutex);
 			hxc_pause(200);
 		}
 	}

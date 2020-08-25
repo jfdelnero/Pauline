@@ -58,6 +58,7 @@ extern fpga_state * fpga;
 typedef int (* CMD_FUNC)(script_ctx * ctx, char * line);
 
 extern char file_to_analyse[];
+extern char last_file_to_analyse[];
 
 PRINTF_FUNC script_printf;
 
@@ -81,6 +82,16 @@ volatile int stop_process = 0;
 
 volatile int headpos[4] = {0,0,0,0};
 
+volatile int preview_image_flags;
+volatile int preview_image_xtime;
+volatile int preview_image_xoffset;
+volatile int preview_image_ytime;
+
+extern char file_to_analyse[512];
+extern char last_file_to_analyse[512];
+
+script_ctx * script_context = NULL;
+
 script_ctx * init_script()
 {
 	script_ctx * ctx;
@@ -91,7 +102,10 @@ script_ctx * init_script()
 	{
 		memset(ctx,0,sizeof(script_ctx));
 		setOutputFunc( ctx, msg_printf );
+		pthread_mutex_init(&ctx->script_mutex, NULL);
 	}
+
+	script_context = ctx;
 
 	return ctx;
 }
@@ -469,7 +483,7 @@ int prepare_folder(char * name, char * comment, int start_index, int mode, char 
 	return ret;
 }
 
-int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_side,int dump_max_side,int high_res_mode,int doubestep,int ignore_index,int spy, char * name, char * comment, int start_index, int incmode )
+int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_side,int dump_max_side,int high_res_mode,int doubestep,int ignore_index,int spy, char * name, char * comment, char * comment2, int start_index, int incmode, char * driveref, char * operator)
 {
 	int i,j;
 	char temp[512];
@@ -509,6 +523,9 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 		state.index_to_dump_delay = index_to_dump_delay;
 		strncpy( (char*)&state.dump_name, name, 512 - 1);
 		strncpy( (char*)&state.dump_comment, comment , 512 - 1 );
+		strncpy( (char*)&state.dump_comment2, comment2 , 512 - 1 );
+		strncpy( (char*)&state.dump_driveref, driveref , 512 - 1 );
+		strncpy( (char*)&state.dump_operator, operator , 512 - 1 );
 
 		sprintf(temp,"DRIVE_%d_DESCRIPTION",drive);
 		var = hxcfe_getEnvVar( fpga->libhxcfe, (char *)temp, NULL );
@@ -670,7 +687,14 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			if(f)
 			{
 				fclose(f);
-				strcpy(file_to_analyse,temp);
+
+				if(script_context)
+				{
+					pthread_mutex_lock(&script_context->script_mutex);
+					strcpy(file_to_analyse,temp);
+					strcpy(last_file_to_analyse,temp);
+					pthread_mutex_unlock(&script_context->script_mutex);
+				}
 			}
 
 			if(strlen(temp) > 24)
@@ -752,6 +776,9 @@ void *diskdump_thread(void *threadid)
 	char tmp[512];
 	char name[512];
 	char comment[512];
+	char comment2[512];
+	char operator[512];
+	char driveref[512];
 
 	char str_index_mode[512];
 	int i,index_mode;
@@ -760,7 +787,7 @@ void *diskdump_thread(void *threadid)
 
 	pthread_detach(pthread_self());
 
-	for(i=0;i<12;i++)
+	for(i=0;i<16;i++)
 	{
 		if(get_param(cmdline, i + 1,tmp)>=0)
 		{
@@ -778,6 +805,21 @@ void *diskdump_thread(void *threadid)
 
 	comment[0] = 0;
 	if(!(get_param(cmdline, 10 + 1,comment)>=0))
+	{
+	}
+
+	driveref[0] = 0;
+	if(!(get_param(cmdline, 13 + 1,driveref)>=0))
+	{
+	}
+
+	operator[0] = 0;
+	if(!(get_param(cmdline, 14 + 1,operator)>=0))
+	{
+	}
+
+	comment2[0] = 0;
+	if(!(get_param(cmdline, 15 + 1,comment2)>=0))
 	{
 	}
 
@@ -806,7 +848,7 @@ void *diskdump_thread(void *threadid)
 		}
 	}
 
-	readdisk(p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8],name,comment,p[11],index_mode);
+	readdisk(p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8],name,comment,comment2,p[11],index_mode,driveref,operator);
 
 	pthread_exit(NULL);
 }
@@ -1274,6 +1316,133 @@ int cmd_set_index_to_dump_time(script_ctx * ctx, char * line)
 	return 0;
 }
 
+int cmd_set_images_settings(script_ctx * ctx, char * line)
+{
+	int i,int_val[5];
+	char temp[DEFAULT_BUFLEN];
+
+	for(i=0;i<5;i++)
+	{
+		int_val[i] = 0;
+		if(get_param(line, i + 1,temp) >= 0)
+		{
+			int_val[i] = atoi(temp);
+		}
+	}
+
+	pthread_mutex_lock(&ctx->script_mutex);
+
+	preview_image_xtime = int_val[0];
+	preview_image_ytime = int_val[1];
+	preview_image_xoffset = int_val[2];
+
+	if(int_val[3])
+		preview_image_flags |= TD_FLAG_HICONTRAST;
+	else
+		preview_image_flags &= (~TD_FLAG_HICONTRAST);
+
+	if(int_val[4])
+		preview_image_flags |= TD_FLAG_BIGDOT;
+	else
+		preview_image_flags &= (~TD_FLAG_BIGDOT);
+
+	strcpy(file_to_analyse,last_file_to_analyse);
+
+	pthread_mutex_unlock(&ctx->script_mutex);
+
+	ctx->script_printf(MSGTYPE_INFO_0,"cmd_set_images_settings : %d %d %d %d %d\n",int_val[0],int_val[1],int_val[2],int_val[3],int_val[4]);
+
+	return 1;
+}
+
+int cmd_set_images_decoders(script_ctx * ctx, char * line)
+{
+	pthread_mutex_lock(&ctx->script_mutex);
+
+	if(strstr(line,"ISOMFM"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_ISOIBM_MFM_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_ISOIBM_MFM_ENCODING", "0" );
+
+	if(strstr(line,"ISOFM"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_ISOIBM_FM_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_ISOIBM_FM_ENCODING", "0" );
+
+	if(strstr(line,"AMIGAMFM"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_AMIGA_MFM_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_AMIGA_MFM_ENCODING", "0" );
+
+	if(strstr(line,"APPLE"))
+	{
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_APPLEII_GCR1_ENCODING", "1" );
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_APPLEII_GCR2_ENCODING", "1" );
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_APPLEMAC_GCR_ENCODING", "1" );
+	}
+	else
+	{
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_APPLEII_GCR1_ENCODING", "0" );
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_APPLEII_GCR2_ENCODING", "0" );
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_APPLEMAC_GCR_ENCODING", "0" );
+	}
+
+	if(strstr(line,"EEMU"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_EMU_FM_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_EMU_FM_ENCODING", "0" );
+
+	if(strstr(line,"TYCOM"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_TYCOM_FM_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_TYCOM_FM_ENCODING", "0" );
+
+	if(strstr(line,"MEMBRAIN"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_MEMBRAIN_MFM_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_MEMBRAIN_MFM_ENCODING", "0" );
+
+	if(strstr(line,"ARBURG"))
+	{
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_ARBURGDAT_ENCODING", "1" );
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_ARBURGSYS_ENCODING", "1" );
+	}
+	else
+	{
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_ARBURGDAT_ENCODING", "0" );
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_ARBURGSYS_ENCODING", "0" );
+	}
+/*
+	if(strstr(line,"AED6200P"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "", "0" );
+*/
+
+	if(strstr(line,"NORTHSTAR"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_NORTHSTAR_HS_MFM_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_NORTHSTAR_HS_MFM_ENCODING", "0" );
+
+	if(strstr(line,"HEATHKIT"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_HEATHKIT_HS_FM_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_HEATHKIT_HS_FM_ENCODING", "0" );
+
+	if(strstr(line,"DECRX02"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_DEC_RX02_M2FM_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_DEC_RX02_M2FM_ENCODING", "0" );
+
+	strcpy(file_to_analyse,last_file_to_analyse);
+
+	pthread_mutex_unlock(&ctx->script_mutex);
+
+	ctx->script_printf(MSGTYPE_INFO_0,"cmd_set_images_settings : %s\n",line);
+
+	return 1;
+}
+
 int cmd_help(script_ctx * ctx, char * line);
 
 int cmd_version(script_ctx * ctx, char * line)
@@ -1330,6 +1499,11 @@ cmd_list cmdlist[] =
 
 	{"setio",					cmd_set_pin},
 	{"cleario",					cmd_clear_pin},
+
+	{"setpreviewimagesettings",	cmd_set_images_settings},
+	{"setpreviewimagedecoders",	cmd_set_images_decoders},
+
+
 
 	{"system",					cmd_system},
 

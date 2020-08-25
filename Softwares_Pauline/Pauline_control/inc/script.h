@@ -33,6 +33,7 @@ typedef int (* PRINTF_FUNC)(int MSGTYPE, char * string, ... );
 typedef struct _script_ctx
 {
 	PRINTF_FUNC script_printf;
+	pthread_mutex_t script_mutex;
 } script_ctx;
 
 script_ctx * init_script();
