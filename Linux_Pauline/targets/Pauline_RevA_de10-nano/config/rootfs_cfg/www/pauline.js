@@ -79,7 +79,7 @@ function doConnect(addr,addr2)
 	/* Deals with messages. */
 	ws2.onmessage = function (evt)
 	{
-		var img = document.getElementById("imageAnalysis");		
+		var img = document.getElementById("imageAnalysis");
 		var urlObject = URL.createObjectURL(evt.data);
 		img.src = urlObject;
 	};
@@ -94,6 +94,98 @@ function doConnect(addr,addr2)
 function imageTimer() {
 	ws2.send("get_image\n");
 }
+
+function updatepreviewsettings()
+{
+	var log = document.getElementById("taLog").value;
+	var txt = "setpreviewimagesettings" + " " + (document.getElementById("graphtimexselection").value * 1000).toString()
+										+ " " + document.getElementById("graphtimeyselection").value.toString()
+										+ " " + (document.getElementById("graphoffsetxselection").value * 1000).toString()
+										+ " " + (document.getElementById("ckbHIGHCONTRAST").checked + 0).toString()
+										+ " " + (document.getElementById("ckbFATDOTS").checked + 0).toString()
+										+ "\n";
+	//alert(txt);
+	if (typeof ws !== 'undefined')
+	{
+		ws.send(txt);
+		document.getElementById("taLog").value += ("Send: " + txt + "\n");
+	}
+};
+
+function updatedecoders()
+{
+	var log = document.getElementById("taLog").value;
+	var txt = "setpreviewimagedecoders" + " ";
+
+	if(document.getElementById("ckbISOMFM").checked)
+	{
+		txt += " ISOMFM";
+	}
+
+	if(document.getElementById("ckbISOFM").checked)
+	{
+		txt += " ISOFM";
+	}
+
+	if(document.getElementById("ckbAMIGAMFM").checked)
+	{
+		txt += " AMIGAMFM";
+	}
+
+	if(document.getElementById("ckbAPPLE").checked)
+	{
+		txt += " APPLE";
+	}
+
+	if(document.getElementById("ckbEEMU").checked)
+	{
+		txt += " EEMU";
+	}
+
+	if(document.getElementById("ckbTYCOM").checked)
+	{
+		txt += " TYCOM";
+	}
+
+	if(document.getElementById("ckbMEMBRAIN").checked)
+	{
+		txt += " MEMBRAIN";
+	}
+
+	if(document.getElementById("ckbARBURG").checked)
+	{
+		txt += " ARBURG";
+	}
+
+	if(document.getElementById("ckbAED6200P").checked)
+	{
+		txt += " AED6200P";
+	}
+
+	if(document.getElementById("ckbNORTHSTAR").checked)
+	{
+		txt += " NORTHSTAR";
+	}
+
+	if(document.getElementById("ckbHEATHKIT").checked)
+	{
+		txt += " HEATHKIT";
+	}
+
+	if(document.getElementById("ckbDECRX02").checked)
+	{
+		txt += " DECRX02";
+	}
+
+	txt += "\n";
+
+	//alert(txt);
+	if (typeof ws !== 'undefined')
+	{
+		ws.send(txt);
+		document.getElementById("taLog").value += ("Send: " + txt + "\n");
+	}
+};
 
 document.addEventListener("DOMContentLoaded", function(event)
 {
@@ -255,7 +347,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 			ws.send(txt);
 
 			document.getElementById("taLog").value += ("Send: " + txt + "\n");
-		}
+		};
 	};
 
 	var element = document.getElementById("btReadTrack");
@@ -293,6 +385,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 						  + " " + "\"" + document.getElementById("txtDumpComment").value.toString() + "\""
 						  + " " + startindex
 						  + " " + mode
+						  + " " + "\"" + document.getElementById("txtDriveInfos").value.toString() + "\""
+						  + " " + "\"" + document.getElementById("txtDumpOperator").value.toString() + "\""
+						  + " " + "\"" + document.getElementById("txtDumpComment2").value.toString() + "\""
 						  + "\n";
 
 			//alert(txt);
@@ -300,6 +395,171 @@ document.addEventListener("DOMContentLoaded", function(event)
 
 			ws.send(txt);
 
+		};
+	};
+
+	var element = document.getElementById("graphtimexselection");
+	if( element )
+	{
+		element.onmouseup = function()
+		{
+			updatepreviewsettings();
+		};
+		element.ontouchend = function()
+		{
+			updatepreviewsettings();
+		};
+	};
+
+	var element = document.getElementById("graphoffsetxselection");
+	if( element )
+	{
+		element.onmouseup = function()
+		{
+			updatepreviewsettings();
+		};
+		element.ontouchend = function()
+		{
+			updatepreviewsettings();
+		};
+	};
+
+	var element = document.getElementById("graphtimeyselection");
+	if( element )
+	{
+		element.onmouseup = function()
+		{
+			updatepreviewsettings();
+		};
+		element.ontouchend = function()
+		{
+			updatepreviewsettings();
+		};
+	};
+
+	var element = document.getElementById("ckbHIGHCONTRAST");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatepreviewsettings();
+		};
+	};
+
+	var element = document.getElementById("ckbISOMFM");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbISOFM");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbAMIGAMFM");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbAPPLE");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbEEMU");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbTYCOM");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbMEMBRAIN");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbARBURG");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbAED6200P");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbNORTHSTAR");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbHEATHKIT");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbDECRX02");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatedecoders();
+		};
+	};
+
+	var element = document.getElementById("ckbFATDOTS");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			updatepreviewsettings();
 		};
 	};
 
@@ -334,11 +594,14 @@ document.addEventListener("DOMContentLoaded", function(event)
 						  + " " + (document.getElementById("ckb50Mhz").checked + 0).toString()
 						  + " " + (document.getElementById("ckbDOUBLESTEP").checked + 0).toString()
 						  + " " + (document.getElementById("ckbIGNOREINDEX").checked + 0).toString()
-						  + " " + " 0"
+						  + " " + "0"
 						  + " " + "\"" + document.getElementById("txtDumpName").value.toString() + "\""
 						  + " " + "\"" + document.getElementById("txtDumpComment").value.toString() + "\""
 						  + " " + startindex
 						  + " " + mode
+						  + " " + "\"" + document.getElementById("txtDriveInfos").value.toString() + "\""
+						  + " " + "\"" + document.getElementById("txtDumpOperator").value.toString() + "\""
+						  + " " + "\"" + document.getElementById("txtDumpComment2").value.toString() + "\""
 						  + "\n";
 
 			//alert(txt);

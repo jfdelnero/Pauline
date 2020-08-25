@@ -77,8 +77,20 @@
 							<td><input type="text" id="txtDumpName" value="untitled"></td>
 						</tr>
 						<tr>
-							<td>Comment :</td>
+							<td>Comments :</td>
 							<td><input type="text" id="txtDumpComment" value=""></td>
+						</tr>
+						<tr>
+							<td>Additional comments :</td>
+							<td><input type="text" id="txtDumpComment2" value=""></td>
+						</tr>
+						<tr>
+							<td>Drive informations :</td>
+							<td><input type="text" id="txtDriveInfos" value=""></td>
+						</tr>
+						<tr>
+							<td>Operator name :</td>
+							<td><input type="text" id="txtDumpOperator" value=""></td>
 						</tr>
 						<tr>
 							<td>Index :</td>
@@ -280,6 +292,9 @@
 						<p>X Graph time:
 						<input type="range" min="100" max="3000" value="600" class="slider" id="graphtimexselection"><span id="graphtimex"></span> ms
 						</p>
+						<p>X Graph offset:
+						<input type="range" min="0" max="3000" value="0" class="slider" id="graphoffsetxselection"><span id="graphoffsetx"></span> ms
+						</p>
 						<p>Y Graph time:
 						<input type="range" min="4" max="64" value="16" class="slider" id="graphtimeyselection"><span id="graphtimey"></span> us
 						</p>
@@ -290,9 +305,12 @@
 						var graphtimex_output = document.getElementById("graphtimex");
 						var graphtimey_slider = document.getElementById("graphtimeyselection");
 						var graphtimey_output = document.getElementById("graphtimey");
+						var graphoffsetx_slider = document.getElementById("graphoffsetxselection");
+						var graphoffsetx_output = document.getElementById("graphoffsetx");
 
 						graphtimex_output.innerHTML = graphtimex_slider.value;
 						graphtimey_output.innerHTML = graphtimey_slider.value;
+						graphoffsetx_output.innerHTML = graphoffsetx_slider.value;
 
 						graphtimex_slider.oninput = function()
 						{
@@ -303,9 +321,14 @@
 						{
 							graphtimey_output.innerHTML = this.value;
 						}
+
+						graphoffsetx_slider.oninput = function()
+						{
+							graphoffsetx_output.innerHTML = this.value;
+						}
 					</script>
 				</div>
-				
+
 				<table>
 					<tbody>
 						<tr>
@@ -313,7 +336,7 @@
 								<input type="checkbox" id="ckbHIGHCONTRAST" checked="checked">High contrast
 							</td>
 							<td>
-								 <input type="checkbox" id="ckbFATDOTS" checked="checked">Fat dots
+								 <input type="checkbox" id="ckbFATDOTS">Fat dots
 							</td>
 						</tr>
 
