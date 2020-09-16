@@ -512,7 +512,7 @@ void * ImageGeneratorThreadProc(void* context)
 
 											if(trkstream)
 											{
-												hxcfe_td_draw_stream_track( td, trkstream );
+												hxcfe_td_draw_trkstream( td, trkstream );
 
 												ptr1 = (unsigned char*)hxcfe_td_getframebuffer(td);
 
