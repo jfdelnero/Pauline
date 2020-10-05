@@ -167,7 +167,7 @@ void printhelp(char* argv[])
 	printf("  -finput:[filename]\t\t: Input file image \n");
 	printf("  -foutput:[filename]\t\t: Output file image \n");
 	printf("  -readdsk\t\t\t: Read a Disk\n");
-	printf("  -readdsk\t\t\t: Write a Disk\n");
+	printf("  -writedsk\t\t\t: Write a Disk\n");
 	printf("  -highres\t\t\t: High sampling rate (50Mhz/20ns instead of 25Mhz/40ns)\n");
 	printf("  -start_track:[side number]\t: Disk dump : first track number (default 0)\n");
 	printf("  -max_track:[side number]\t: Disk dump : last track number (default 79)\n");
@@ -185,6 +185,17 @@ void printhelp(char* argv[])
 	printf("  -setiolow:[io number]\n");
 	printf("  -setiohz:[io number]\n");
 	printf("  -test_interface\n");
+	printf("\n");
+	printf("Drive Simulation select lines ID (-selsrc & -motsrc ID):\n");
+	printf("  0 : Always deasserted\n");
+	printf("  1 : Always asserted\n");
+	printf("  8 : SEL0/MOTEA  (Pin 10)\n");
+	printf("  9 : SEL1/DRVSB  (Pin 12)\n");
+	printf("  10: SEL2/DRVSA  (Pin 14)\n");
+	printf("  11: SEL3        (Pin 6)\n");
+	printf("  12: MTRON/MOTEB (Pin 16)\n");
+	printf("\n");
+
 	printf("\n");
 }
 
