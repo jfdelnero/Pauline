@@ -48,7 +48,6 @@ ws_connection client_socks[MAX_CLIENTS];
 int port_index = 0;
 ws_port ports[MAX_PORTS];
 
-
 /* Global mutex. */
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -88,6 +87,7 @@ char* ws_getaddress(int fd)
  *
  * @param fd        Target to be send.
  * @param msg       Message to be send.
+ * @param size      Binary message size (set it <0 for text message)
  * @param broadcast Enable/disable broadcast.
  *
  * @return Returns the number of bytes written.
@@ -102,15 +102,17 @@ int ws_sendframe(int fd, const char *msg, int size, bool broadcast)
 	int output;               /* Bytes sent.     */
 	int sock;                 /* File Descript.  */
 	int i;                    /* Loop index.     */
+	int cur_port_index;       /* Current port index */
 
-	/* Text data. */
 	if(size < 0)
 	{
+		/* Text data. */
 		length = strlen( (const char *) msg);
 		frame[0] = (WS_FIN | WS_FR_OP_TXT);
 	}
 	else
 	{
+		/* Binary data. */
 		length = size;
 		frame[0] = (WS_FIN | WS_FR_OP_BIN);
 	}
@@ -166,11 +168,22 @@ int ws_sendframe(int fd, const char *msg, int size, bool broadcast)
 	output = write(fd, response, idx_response);
 	if (broadcast)
 	{
+		cur_port_index = - 1;
+		for (i = 0; i < MAX_CLIENTS; i++)
+		{
+			sock = client_socks[i].client_sock;
+			if( sock == fd )
+			{
+				cur_port_index = client_socks[i].port_index;
+				break;
+			}
+		}
+
 		pthread_mutex_lock(&mutex);
 			for (i = 0; i < MAX_CLIENTS; i++)
 			{
 				sock = client_socks[i].client_sock;
-				if ((sock > -1) && (sock != fd))
+				if ((sock > -1) && (sock != fd) && ( client_socks[i].port_index == cur_port_index ) )
 					output += write(sock, response, idx_response);
 			}
 		pthread_mutex_unlock(&mutex);
