@@ -26,31 +26,62 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include <ws.h>
 
-typedef struct _ws_port
+/**
+ * @dir src/
+ * @brief wsServer source code
+ *
+ * @file ws.c
+ * @brief wsServer main routines.
+ */
+
+/**
+ * @brief Opened ports.
+ */
+int port_index;
+
+/**
+ * @brief Port entry in @ref ws_port structure.
+ *
+ * This defines the port number and events for a single
+ * call to @ref ws_socket. This allows that multiples threads
+ * can call @ref ws_socket, configuring different ports and
+ * events for each call.
+ */
+struct ws_port
 {
-	int port_number;
-	struct ws_events events;
+	int port_number;         /**< Port number.      */
+	struct ws_events events; /**< Websocket events. */
+};
 
-	int sock;
-}ws_port;
+/**
+ * @brief Ports list.
+ */
+struct ws_port ports[MAX_PORTS];
 
-typedef struct _ws_connection
+/**
+ * @brief Client socks.
+ */
+struct ws_connection
 {
-	int client_sock;
+	int client_sock; /**< Client socket FD.        */
+	int port_index;  /**< Index in the port list.  */
+};
 
-	int port_index;
-}ws_connection;
+/**
+ * @brief Clients list.
+ */
+struct ws_connection client_socks[MAX_CLIENTS];
 
-/* Client socks. */
-ws_connection client_socks[MAX_CLIENTS];
-
-/* opened ports */
-int port_index = 0;
-ws_port ports[MAX_PORTS];
-
-/* Global mutex. */
+/**
+ * @brief Global mutex.
+ */
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+/**
+ * @brief Issues an error message and aborts the program.
+ *
+ * @param s Error message.
+ */
 #define panic(s)     \
 do                   \
 {                    \
@@ -59,8 +90,8 @@ do                   \
 } while (0);
 
 /**
- * Gets the IP address relative to a
- * file descriptor opened by the server.
+ * @brief Gets the IP address relative to a file descriptor opened
+ * by the server.
  *
  * @param fd File descriptor target.
  *
@@ -82,8 +113,7 @@ char* ws_getaddress(int fd)
 }
 
 /**
- * Creates and send an WebSocket frame
- * with some text message.
+ * @brief Creates and send an WebSocket frame with some text message.
  *
  * @param fd        Target to be send.
  * @param msg       Message to be send.
@@ -91,6 +121,9 @@ char* ws_getaddress(int fd)
  * @param broadcast Enable/disable broadcast.
  *
  * @return Returns the number of bytes written.
+ *
+ * @note If @p size is -1, it is assumed that a text frame is being sent,
+ * otherwise, a binary frame. In the later case, the @p size is used.
  */
 int ws_sendframe(int fd, const char *msg, int size, bool broadcast)
 {
@@ -99,7 +132,7 @@ int ws_sendframe(int fd, const char *msg, int size, bool broadcast)
 	uint8_t idx_first_rData;  /* Index data.     */
 	uint64_t length;          /* Message length. */
 	int idx_response;         /* Index response. */
-	int output;               /* Bytes sent.     */
+	ssize_t output;           /* Bytes sent.     */
 	int sock;                 /* File Descript.  */
 	int i;                    /* Loop index.     */
 	int cur_port_index;       /* Current port index */
@@ -168,40 +201,37 @@ int ws_sendframe(int fd, const char *msg, int size, bool broadcast)
 	output = write(fd, response, idx_response);
 	if (broadcast)
 	{
-		cur_port_index = - 1;
-		for (i = 0; i < MAX_CLIENTS; i++)
-		{
-			sock = client_socks[i].client_sock;
-			if( sock == fd )
-			{
-				cur_port_index = client_socks[i].port_index;
-				break;
-			}
-		}
-
 		pthread_mutex_lock(&mutex);
+			cur_port_index = - 1;
+			for (i = 0; i < MAX_CLIENTS; i++)
+				if (client_socks[i].client_sock == fd)
+					cur_port_index = client_socks[i].port_index, i = MAX_CLIENTS;
+
 			for (i = 0; i < MAX_CLIENTS; i++)
 			{
 				sock = client_socks[i].client_sock;
-				if ((sock > -1) && (sock != fd) && ( client_socks[i].port_index == cur_port_index ) )
+				if ((sock > -1) && (sock != fd) &&(client_socks[i].port_index == cur_port_index))
 					output += write(sock, response, idx_response);
 			}
 		pthread_mutex_unlock(&mutex);
 	}
 
 	free(response);
-	return (output);
+	return ((int)output);
 }
 
 /**
- * Receives a text frame, parse and decodes it.
+ * @brief Receives a text frame, parse and decodes it.
  *
  * @param frame  WebSocket frame to be parsed.
  * @param length Frame length.
- * @param type   Frame type.
+ * @param type   Frame type pointer.
  *
  * @return Returns a dynamic null-terminated string that contains
  * a pointer to the received frame.
+ *
+ * @attention This is part of the internal API and is documented just
+ * for completeness.
  */
 static unsigned char* ws_receiveframe(unsigned char *frame, size_t length, int *type)
 {
@@ -217,7 +247,8 @@ static unsigned char* ws_receiveframe(unsigned char *frame, size_t length, int *
 	msg = NULL;
 
 	/* Checks the frame type and parse the frame. */
-	if (frame[0] == (WS_FIN | WS_FR_OP_TXT) )
+	if (frame[0] == (WS_FIN | WS_FR_OP_TXT) || 
+		frame[0] == (WS_FIN | WS_FR_OP_BIN) )
 	{
 		*type = WS_FR_OP_TXT;
 		idx_first_mask = 2;
@@ -256,20 +287,23 @@ static unsigned char* ws_receiveframe(unsigned char *frame, size_t length, int *
 }
 
 /**
- * Establishes to connection with the client and trigger
+ * @brief Establishes to connection with the client and trigger
  * events when occurs one.
  *
- * @param vsock Client file descriptor.
+ * @param vsock Client connection index.
  *
- * @return Returns vsock if success and a negative
+ * @return Returns @p vsock if success and a negative
  * number otherwise.
  *
  * @note This will be run on a different thread.
+ *
+ * @attention This is part of the internal API and is documented just
+ * for completeness.
  */
 static void* ws_establishconnection(void *vsock)
 {
 	int sock;                           /* File descriptor.               */
-	size_t n;                           /* Number of bytes sent/received. */
+	ssize_t n;                          /* Number of bytes sent/received. */
 	unsigned char frm[MESSAGE_LENGTH];  /* Frame.                         */
 	unsigned char *msg;                 /* Message.                       */
 	char *response;                     /* Response frame.                */
@@ -283,7 +317,6 @@ static void* ws_establishconnection(void *vsock)
 	handshaked = 0;
 
 	connection_index = (int)(intptr_t)vsock;
-
 	sock = client_socks[connection_index].client_sock;
 	p_index = client_socks[connection_index].port_index;
 
@@ -293,7 +326,7 @@ static void* ws_establishconnection(void *vsock)
 		/* If not handshaked yet. */
 		if (!handshaked)
 		{
-			ret = getHSresponse( (char *) frm, &response);
+			ret = get_handshake_response( (char *) frm, &response);
 			if (ret < 0)
 				goto closed;
 
@@ -354,18 +387,23 @@ closed:
 			}
 		}
 	pthread_mutex_unlock(&mutex);
-	close(sock);
 
+	close(sock);
 	return (vsock);
 }
 
 /**
- * Main loop for the server,
+ * @brief Main loop for the server.
  *
  * @param evs  Events structure.
  * @param port Server port.
  *
  * @return This function never returns.
+ *
+ * @note Note that this function can be called multiples times,
+ * from multiples different threads (depending on the @ref MAX_PORTS)
+ * value. Each call _should_ have a different port and can have
+ * differents events configured.
  */
 int ws_socket(struct ws_events *evs, uint16_t port)
 {
@@ -384,16 +422,13 @@ int ws_socket(struct ws_events *evs, uint16_t port)
 		panic("Invalid event list!");
 
 	pthread_mutex_lock(&mutex);
-
-	if(port_index >= MAX_PORTS)
-	{
-		pthread_mutex_unlock(&mutex);
-		panic("too much websocket ports opened !");
-	}
-
-	p_index = port_index;
-	port_index++;
-
+		if (port_index >= MAX_PORTS)
+		{
+			pthread_mutex_unlock(&mutex);
+			panic("too much websocket ports opened !");
+		}
+		p_index = port_index;
+		port_index++;
 	pthread_mutex_unlock(&mutex);
 
 	/* Copy events. */
@@ -447,7 +482,6 @@ int ws_socket(struct ws_events *evs, uint16_t port)
 					break;
 				}
 			}
-
 		pthread_mutex_unlock(&mutex);
 
 		if (pthread_create(&client_thread, NULL, ws_establishconnection, (void*)(intptr_t) connection_index) < 0)
