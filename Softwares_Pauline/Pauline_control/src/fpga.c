@@ -924,3 +924,12 @@ void sound(fpga_state * state,int freq, int duration)
 
 	state->regs->sound_period = 0;
 }
+
+void error_sound(fpga_state * state)
+{
+	sound(state,300, 250);
+	sound(state,0, 50);
+	sound(state,300, 250);
+	sound(state,0, 50);
+	sound(state,300, 250);
+}

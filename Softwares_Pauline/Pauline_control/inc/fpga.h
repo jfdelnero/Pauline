@@ -386,3 +386,4 @@ void test_interface(fpga_state * state);
 int get_drive_io(fpga_state * fpga, char * name, int drive, int * regs, unsigned int * bitmask);
 
 void sound(fpga_state * state,int freq, int duration);
+void error_sound(fpga_state * state);
