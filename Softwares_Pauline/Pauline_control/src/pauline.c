@@ -333,7 +333,7 @@ int main(int argc, char* argv[])
 	//doublestep = -1;
 	home_folder[0] = '\0';
 
-	printf("HxC Floppy Emulator : Pauline floppy drive simulator / floppy drive dumper control software v1.0.0.0\n");
+	printf("HxC Floppy Emulator : Pauline floppy drive simulator / floppy drive dumper control software v1.1.0.0\n");
 	printf("Copyright (C) 2006-2020 Jean-Francois DEL NERO\n");
 	printf("This program comes with ABSOLUTELY NO WARRANTY\n");
 	printf("This is free software, and you are welcome to redistribute it\n");
