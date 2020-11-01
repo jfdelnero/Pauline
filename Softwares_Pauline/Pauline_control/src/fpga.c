@@ -180,6 +180,8 @@ void reset_fpga(fpga_state * state)
 
 	state->regs->control_reg = 0x00008000;
 
+	state->regs->sound_period = 0;
+
 	state->regs->image_base_address_reg[0] = DRV0_IMAGE_BASE;
 	state->regs->image_base_address_reg[1] = DRV1_IMAGE_BASE;
 	state->regs->image_base_address_reg[2] = DRV2_IMAGE_BASE;
@@ -203,6 +205,21 @@ void reset_fpga(fpga_state * state)
 
 	state->regs->in_signal_polarity_reg = 0x00000000;
 	state->regs->out_signal_polarity_reg = 0x00000000;
+
+	state->regs->dump_in_mux_sel_3_0 =   ( (DUMP_MUX_SEL_FLOPPY_O_STEP<<(8*3)) | (DUMP_MUX_SEL_FLOPPY_I_PIN34<<(8*2)) | (DUMP_MUX_SEL_FLOPPY_I_PIN02<<(8*1)) | (DUMP_MUX_SEL_FLOPPY_I_INDEX<<(8*0)));
+	state->regs->dump_in_mux_sel_7_4 =   ( (DUMP_MUX_SEL_FLOPPY_O_SEL0<<(8*3)) | (DUMP_MUX_SEL_FLOPPY_O_SIDE1<<(8*2)) | (DUMP_MUX_SEL_FLOPPY_I_WPT<<(8*1))   | (DUMP_MUX_SEL_FLOPPY_O_DIR<<(8*0)));
+	state->regs->dump_in_mux_sel_11_8 =  ( (DUMP_MUX_SEL_NONE<<(8*3))          | (DUMP_MUX_SEL_NONE<<(8*2))           | (DUMP_MUX_SEL_NONE<<(8*1))           | (DUMP_MUX_SEL_FLOPPY_O_MTON<<(8*0)));
+	state->regs->dump_in_mux_sel_15_12 = ( (DUMP_MUX_SEL_NONE<<(8*3))          | (DUMP_MUX_SEL_NONE<<(8*2))           | (DUMP_MUX_SEL_NONE<<(8*1))           | (DUMP_MUX_SEL_NONE<<(8*0)));
+	state->regs->dump_in_mux_sel_19_16 = ( (DUMP_MUX_SEL_NONE<<(8*3))          | (DUMP_MUX_SEL_NONE<<(8*2))           | (DUMP_MUX_SEL_FLOPPY_I_INDEX<<(8*1)) | (DUMP_MUX_SEL_FLOPPY_I_DATA<<(8*0)));
+
+	// 80ns glitch filter @ 50Mhz
+	state->regs->floppy_port_glitch_filter = 4;
+	state->regs->host_port_glitch_filter = 4;
+	state->regs->io_port_glitch_filter = 4;
+
+	state->regs->invert_io_conf = 0;
+
+	sound(state, 1000, 100);
 
 	printf("drive_config[0] = 0x%.8X\n",state->regs->drive_config[0]);
 }
@@ -894,4 +911,16 @@ void test_interface(fpga_state * state)
 		}
 
 	}
+}
+
+void sound(fpga_state * state,int freq, int duration)
+{
+	if( freq )
+		state->regs->sound_period = ((50000000 / freq) / 2);
+	else
+		state->regs->sound_period = 0;
+
+	usleep(1000*duration);
+
+	state->regs->sound_period = 0;
 }

@@ -425,6 +425,9 @@ int main(int argc, char* argv[])
 	if(isOption(argc,argv,"server",0)>0)
 	{
 		printf("Start server...\n");
+
+		reset_fpga(fpga);
+
 		if(pthread_create(&listener_thread, NULL, tcp_listener, NULL))
 		{
 			printf("Error ! Can't Create the listener thread !\n");
@@ -453,6 +456,10 @@ int main(int argc, char* argv[])
 		fpga->inotify_fd = inotify_init1(0x00);
 
 		inotify_handler_addwatch(fpga, USER_DRIVES_CFG_FILE);
+
+		sound(fpga,1500, 200);
+		sound(fpga,2000, 200);
+		sound(fpga,2500, 200);
 
 		for(;;)
 		{

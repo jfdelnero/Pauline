@@ -81,6 +81,39 @@
 #define CFG_RDYMSK_INDEX      (0x00000001 << 8)
 #define CFG_RDYMSK_DATA       (0x00000001 << 9)
 
+#define DUMP_MUX_SEL_NONE           0
+#define DUMP_MUX_SEL_FLOPPY_O_SEL0  1
+#define DUMP_MUX_SEL_FLOPPY_O_SEL1  2
+#define DUMP_MUX_SEL_FLOPPY_O_SEL2  3
+#define DUMP_MUX_SEL_FLOPPY_O_SEL3  4
+#define DUMP_MUX_SEL_FLOPPY_O_MTON  5
+#define DUMP_MUX_SEL_FLOPPY_O_STEP  6
+#define DUMP_MUX_SEL_FLOPPY_O_DIR   7
+#define DUMP_MUX_SEL_FLOPPY_O_SIDE1 8
+#define DUMP_MUX_SEL_FLOPPY_I_INDEX 9
+#define DUMP_MUX_SEL_FLOPPY_I_PIN02 10
+#define DUMP_MUX_SEL_FLOPPY_I_PIN34 11
+#define DUMP_MUX_SEL_FLOPPY_I_WPT   12
+#define DUMP_MUX_SEL_FLOPPY_I_DATA  13
+#define DUMP_MUX_SEL_FLOPPY_O_WG    14
+#define DUMP_MUX_SEL_FLOPPY_O_WD    15
+#define DUMP_MUX_SEL_HOST_I_SEL0    16
+#define DUMP_MUX_SEL_HOST_I_SEL1    17
+#define DUMP_MUX_SEL_HOST_I_SEL2    18
+#define DUMP_MUX_SEL_HOST_I_SEL3    19
+#define DUMP_MUX_SEL_HOST_I_MTON    20
+#define DUMP_MUX_SEL_HOST_I_STEP    21
+#define DUMP_MUX_SEL_HOST_I_DIR     22
+#define DUMP_MUX_SEL_HOST_I_SIDE1   23
+#define DUMP_MUX_SEL_HOST_I_WG      24
+#define DUMP_MUX_SEL_HOST_I_WD      25
+#define DUMP_MUX_SEL_IO_I_0         26
+#define DUMP_MUX_SEL_IO_I_1         27
+#define DUMP_MUX_SEL_IO_I_2         28
+#define DUMP_MUX_SEL_IO_I_3         29
+#define DUMP_MUX_SEL_EXT_I_IO       30
+#define DUMP_MUX_SEL_EXT_INT        31
+
 #pragma pack(1)
 typedef struct _floppy_ip_regs
 {
@@ -95,17 +128,25 @@ typedef struct _floppy_ip_regs
 	volatile uint32_t image_track_size_reg[4];
 
 	// in_signal_polarity_reg
-	// 0 floppy_step
-	// 1 floppy_dir
-	// 2 floppy_motor
-	// 3 floppy_sel0,floppy_sel1,floppy_sel2,floppy_sel3
-	// 4 floppy_write_gate
-	// 5 floppy_write_data_pulse
-	// 6 floppy_side1
-	// 7 floppy_option_sel0,floppy_option_sel1,floppy_option_sel2,floppy_option_sel3
-	// 8 floppy_option_eject
-	// 9 floppy_option_lock
-	// 10 floppy_option_blink
+	// 0 host_step
+	// 1 host_dir
+	// 2 host_motor
+	// 3 host_sel0,host_sel1,host_sel2,host_sel3
+	// 4 host_write_gate
+	// 5 host_write_data_pulse
+	// 6 host_side1
+	// 7 host_option_sel0,host_option_sel1,host_option_sel2,host_option_sel3
+	// 8 host_option_eject
+	// 9 host_option_lock
+	// 10 host_option_blink
+	// 11 floppy_trk00
+	// 12 floppy_data
+	// 13 floppy_wpt
+	// 14 floppy_index
+	// 15 floppy_pin02
+	// 16 floppy_pin34
+
+
 	volatile uint32_t in_signal_polarity_reg;
 
 	// out_signal_polarity_reg
@@ -231,6 +272,20 @@ typedef struct _floppy_ip_regs
 	volatile uint32_t floppy_port_io;
 	volatile uint32_t host_port_io;
 
+	volatile uint32_t dump_in_mux_sel_3_0;
+	volatile uint32_t dump_in_mux_sel_7_4;
+	volatile uint32_t dump_in_mux_sel_11_8;
+	volatile uint32_t dump_in_mux_sel_15_12;
+	volatile uint32_t dump_in_mux_sel_19_16;
+
+	volatile uint32_t floppy_port_glitch_filter;
+	volatile uint32_t host_port_glitch_filter;
+	volatile uint32_t io_port_glitch_filter;
+
+	volatile uint32_t invert_io_conf;
+
+	volatile uint32_t sound_period;
+
 }floppy_ip_regs;
 
 #pragma pack()
@@ -329,3 +384,5 @@ int  setio(fpga_state * fpga, char * name, int state);
 void test_interface(fpga_state * state);
 
 int get_drive_io(fpga_state * fpga, char * name, int drive, int * regs, unsigned int * bitmask);
+
+void sound(fpga_state * state,int freq, int duration);

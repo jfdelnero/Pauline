@@ -505,6 +505,8 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 	{
 		msg_printf(MSGTYPE_INFO_0,"Start disk reading...\nTrack(s): %d <-> %d, Side(s): %d <-> %d, Ignore index: %d, Time: %dms, %s\n",dump_start_track,dump_max_track,dump_start_side,dump_max_side,ignore_index,dump_time_per_track,high_res_mode?"50Mhz":"25Mhz");
 
+		sound(fpga, 1000, 50);
+
 		memset(&state,0,sizeof(dump_state));
 
 		state.drive_number = drive;
@@ -765,6 +767,10 @@ readstop:
 			display_bmp("/data/pauline_splash_bitmaps/stopped.bmp");
 		}
 	}
+
+	sound(fpga, 2000, 200);
+	sound(fpga, 0, 200);
+	sound(fpga, 2000, 200);
 
 	return 0;
 }
@@ -1102,6 +1108,8 @@ int cmd_movehead(script_ctx * ctx, char * line)
 			floppy_ctrl_selectbyte(fpga, 0x00);
 		}
 */
+		sound(fpga, 2000, 50);
+
 		return 1;
 	}
 
@@ -1148,6 +1156,8 @@ int cmd_recalibrate(script_ctx * ctx, char * line)
 		{
 			floppy_ctrl_select_drive(fpga, drive, 0);
 		}
+
+		sound(fpga, 2000, 50);
 	}
 
 	return 1;
@@ -1219,6 +1229,8 @@ int cmd_ejectdisk(script_ctx * ctx, char * line)
 		floppy_ctrl_x68000_eject(fpga, drive);
 
 		ctx->script_printf(MSGTYPE_INFO_0,"Drive %d : eject disk\n",drive);
+
+		sound(fpga, 2000, 50);
 
 		return 1;
 	}
