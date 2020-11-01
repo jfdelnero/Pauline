@@ -1537,35 +1537,62 @@ int cmd_system(script_ctx * ctx, char * line)
 	return 0;
 }
 
+int cmd_sound(script_ctx * ctx, char * line)
+{
+	int i,j;
+	int freq,duration;
+	char durationstr[DEFAULT_BUFLEN];
+	char freqstr[DEFAULT_BUFLEN];
+
+	i = get_param(line, 1,freqstr);
+	j = get_param(line, 2,durationstr);
+
+	if(i>=0 && j>=0)
+	{
+		freq = atoi(freqstr);
+		duration = atoi(durationstr);
+
+		sound(fpga, freq, duration);
+
+		return 1;
+	}
+
+	ctx->script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+
+	return 0;
+}
+
+
 cmd_list cmdlist[] =
 {
-	{"print",					cmd_print},
-	{"help",					cmd_help},
-	{"?",						cmd_help},
-	{"version",					cmd_version},
+	{"print",                   cmd_print},
+	{"help",                    cmd_help},
+	{"?",                       cmd_help},
+	{"version",                 cmd_version},
 
-	{"set_pin_dir",				cmd_set_pin_mode},
-	{"headstep",				cmd_headstep},
-	{"motsrc",					cmd_set_motor_src},
-	{"selsrc",					cmd_set_select_src},
-	{"dump_time",				cmd_set_dump_time_per_track},
-	{"index_to_dump",			cmd_set_index_to_dump_time},
-	{"reset",					cmd_reset},
-	{"recalibrate",				cmd_recalibrate},
-	{"dump",					cmd_dump},
-	{"stop",					cmd_stop},
-	{"movehead",				cmd_movehead},
-	{"ejectdisk",				cmd_ejectdisk},
+	{"set_pin_dir",             cmd_set_pin_mode},
+	{"headstep",                cmd_headstep},
+	{"motsrc",                  cmd_set_motor_src},
+	{"selsrc",                  cmd_set_select_src},
+	{"dump_time",               cmd_set_dump_time_per_track},
+	{"index_to_dump",           cmd_set_index_to_dump_time},
+	{"reset",                   cmd_reset},
+	{"recalibrate",             cmd_recalibrate},
+	{"dump",                    cmd_dump},
+	{"stop",                    cmd_stop},
+	{"movehead",                cmd_movehead},
+	{"ejectdisk",               cmd_ejectdisk},
 
-	{"setio",					cmd_set_pin},
-	{"cleario",					cmd_clear_pin},
+	{"setio",                   cmd_set_pin},
+	{"cleario",                 cmd_clear_pin},
 
-	{"setpreviewimagesettings",	cmd_set_images_settings},
-	{"setpreviewimagedecoders",	cmd_set_images_decoders},
+	{"setpreviewimagesettings", cmd_set_images_settings},
+	{"setpreviewimagedecoders", cmd_set_images_decoders},
+
+	{"sound",                   cmd_sound},
 
 
-
-	{"system",					cmd_system},
+	{"system",                  cmd_system},
 
 	{0 , 0}
 };
