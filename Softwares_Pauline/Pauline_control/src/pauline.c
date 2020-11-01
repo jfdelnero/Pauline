@@ -179,11 +179,13 @@ void printhelp(char* argv[])
 	printf("  -testmaxtrack\t\t\t: drives max track auto-detection\n");
 	printf("  -set:[io name]\n");
 	printf("  -clear:[io name]\n");
+	printf("  -get:[io name]\n");
 	printf("  -ioslist\n");
 	printf("  -ejectdisk\n");
 	printf("  -setiohigh:[io number]\n");
 	printf("  -setiolow:[io number]\n");
 	printf("  -setiohz:[io number]\n");
+	printf("  -sound:[frequency]\n");
 	printf("  -test_interface\n");
 	printf("\n");
 	printf("Drive Simulation select lines ID (-selsrc & -motsrc ID):\n");
@@ -507,6 +509,11 @@ int main(int argc, char* argv[])
 		reset_fpga(fpga);
 	}
 
+	if(isOption(argc,argv,"sound",(char*)&temp)>0)
+	{
+		sound(fpga,atoi(temp),100);
+	}
+
 	if(isOption(argc,argv,"selsrc",(char*)&temp)>0)
 	{
 		selsrc = atoi(temp);
@@ -649,6 +656,15 @@ int main(int argc, char* argv[])
 	if(isOption(argc,argv,"clear",(char*)&temp)>0)
 	{
 		setio(fpga, (char*)temp, 0);
+	}
+
+	if(isOption(argc,argv,"get",(char*)&temp)>0)
+	{
+		ret = getio(fpga, (char*)temp);
+		if(ret >= 0)
+			printf("io %s state : %d\n", temp, ret);
+		else
+			printf("ERROR : can't get the io %s state ! \n", temp);
 	}
 
 	if(isOption(argc,argv,"ioslist",0)>0)
@@ -986,11 +1002,13 @@ int main(int argc, char* argv[])
 		(isOption(argc,argv,"setiohz",0)<=0 ) &&
 		(isOption(argc,argv,"set",0)<=0 ) &&
 		(isOption(argc,argv,"clear",0)<=0 ) &&
+		(isOption(argc,argv,"get",0)<=0 ) &&
 		(isOption(argc,argv,"ioslist",0)<=0 ) &&
 		(isOption(argc,argv,"ejectdisk",0)<=0 ) &&
 		(isOption(argc,argv,"initscript",0)<=0 ) &&
 		(isOption(argc,argv,"autodetect",0)<=0 ) &&
 		(isOption(argc,argv,"testmaxtrack",0)<=0 ) &&
+		(isOption(argc,argv,"sound",0)<=0 ) &&
 		(isOption(argc,argv,"reset",0)<=0 )
 		)
 	{

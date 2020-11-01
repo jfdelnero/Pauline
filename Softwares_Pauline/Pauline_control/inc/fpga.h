@@ -380,6 +380,7 @@ void floppy_ctrl_x68000_eject(fpga_state * state, int drive);
 
 void set_extio(fpga_state * state, int io, int oe, int data);
 int  setio(fpga_state * fpga, char * name, int state);
+int  getio(fpga_state * fpga, char * name);
 
 void test_interface(fpga_state * state);
 

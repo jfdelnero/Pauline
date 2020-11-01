@@ -1328,6 +1328,35 @@ int cmd_clear_pin(script_ctx * ctx, char * line)
 	return 0;
 }
 
+int cmd_get_pin(script_ctx * ctx, char * line)
+{
+	int i,ret;
+	char temp[DEFAULT_BUFLEN];
+
+	i = get_param(line, 1,temp);
+
+	if(i>=0)
+	{
+		ret = getio(fpga, temp);
+		if(ret >= 0)
+		{
+			ctx->script_printf(MSGTYPE_INFO_0,"io %s state : %d\n",temp,ret);
+			return 1;
+		}
+		else
+		{
+			ctx->script_printf(MSGTYPE_ERROR,"Can't get the io %s state ! \n", temp);
+			return 0;
+		}
+	}
+
+	ctx->script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+
+	return 0;
+}
+
+
+
 int cmd_set_dump_time_per_track(script_ctx * ctx, char * line)
 {
 	int i;
@@ -1585,6 +1614,7 @@ cmd_list cmdlist[] =
 
 	{"setio",                   cmd_set_pin},
 	{"cleario",                 cmd_clear_pin},
+	{"getio",                   cmd_get_pin},	
 
 	{"setpreviewimagesettings", cmd_set_images_settings},
 	{"setpreviewimagedecoders", cmd_set_images_decoders},

@@ -312,6 +312,7 @@ unsigned char * generate_chunk(fpga_state * state, uint16_t * data_in, uint32_t 
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"io_channel 1 floppy_i_pin02\n" );
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"io_channel 2 floppy_i_pin34\n" );
 	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"io_channel 5 floppy_i_wpt\n" );
+	metadata_catprintf(meta_data_buffer,METADATA_MAXSIZE,"io_channel 9 ext_io_i\n" );
 
 	pmetadata_header->type = HXCSTREAM_CHUNKBLOCK_METADATA_ID;
 	pmetadata_header->payload_size = strlen(meta_data_buffer) + 1;

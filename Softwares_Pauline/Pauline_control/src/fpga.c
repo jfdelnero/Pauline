@@ -109,6 +109,33 @@ int setio(fpga_state * fpga, char * name, int state)
 	return -1;
 }
 
+int getio(fpga_state * fpga, char * name)
+{
+	int index;
+	int reg;
+	int state;
+	unsigned int bitmask;
+
+	bitmask = 0x00000000;
+	reg = 0x40;
+
+	index = get_io_index(name);
+
+	if(index  >= 0)
+	{
+		get_io_address(index, &reg, &bitmask);
+
+		state = 0;
+
+		if( *(((volatile uint32_t*)(fpga->regs)) + reg) & bitmask )
+			state = 1;
+
+		return state;
+	}
+
+	return -1;
+}
+
 fpga_state * init_fpga()
 {
 	fpga_state *state;
@@ -208,7 +235,7 @@ void reset_fpga(fpga_state * state)
 
 	state->regs->dump_in_mux_sel_3_0 =   ( (DUMP_MUX_SEL_FLOPPY_O_STEP<<(8*3)) | (DUMP_MUX_SEL_FLOPPY_I_PIN34<<(8*2)) | (DUMP_MUX_SEL_FLOPPY_I_PIN02<<(8*1)) | (DUMP_MUX_SEL_FLOPPY_I_INDEX<<(8*0)));
 	state->regs->dump_in_mux_sel_7_4 =   ( (DUMP_MUX_SEL_FLOPPY_O_SEL0<<(8*3)) | (DUMP_MUX_SEL_FLOPPY_O_SIDE1<<(8*2)) | (DUMP_MUX_SEL_FLOPPY_I_WPT<<(8*1))   | (DUMP_MUX_SEL_FLOPPY_O_DIR<<(8*0)));
-	state->regs->dump_in_mux_sel_11_8 =  ( (DUMP_MUX_SEL_NONE<<(8*3))          | (DUMP_MUX_SEL_NONE<<(8*2))           | (DUMP_MUX_SEL_NONE<<(8*1))           | (DUMP_MUX_SEL_FLOPPY_O_MTON<<(8*0)));
+	state->regs->dump_in_mux_sel_11_8 =  ( (DUMP_MUX_SEL_NONE<<(8*3))          | (DUMP_MUX_SEL_NONE<<(8*2))           | (DUMP_MUX_SEL_EXT_I_IO<<(8*1))       | (DUMP_MUX_SEL_FLOPPY_O_MTON<<(8*0)));
 	state->regs->dump_in_mux_sel_15_12 = ( (DUMP_MUX_SEL_NONE<<(8*3))          | (DUMP_MUX_SEL_NONE<<(8*2))           | (DUMP_MUX_SEL_NONE<<(8*1))           | (DUMP_MUX_SEL_NONE<<(8*0)));
 	state->regs->dump_in_mux_sel_19_16 = ( (DUMP_MUX_SEL_NONE<<(8*3))          | (DUMP_MUX_SEL_NONE<<(8*2))           | (DUMP_MUX_SEL_FLOPPY_I_INDEX<<(8*1)) | (DUMP_MUX_SEL_FLOPPY_I_DATA<<(8*0)));
 

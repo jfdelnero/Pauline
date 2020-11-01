@@ -47,3 +47,4 @@ unsigned int get_io_bitmask(int index);
 void get_io_address(int index, int * regs, unsigned int * bitmask);
 void print_ios_list();
 void set_io_name(fpga_state * fpga, char * name, int state);
+int  get_io_name(fpga_state * fpga, char * name);

@@ -243,3 +243,25 @@ void set_io_name(fpga_state * fpga, char * name, int state)
 
 	return;
 }
+
+int get_io_name(fpga_state * fpga, char * name)
+{
+	int index;
+	int reg;
+	int state;
+	unsigned int bitmask;
+
+	index = get_io_index(name);
+
+	if(index < 0)
+		return -1;
+
+	reg = ios_definition[index].reg_number;
+	bitmask = (0x01 << ios_definition[index].bit_number);
+
+	state = 0;
+	if(*(((volatile uint32_t*)(fpga->regs)) + reg) & bitmask)
+		state = 1;
+
+	return state;
+}
