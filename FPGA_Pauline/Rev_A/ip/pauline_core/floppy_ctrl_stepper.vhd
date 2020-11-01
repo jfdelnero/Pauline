@@ -87,7 +87,9 @@ component floppy_sound
 
 		step_sound              : in  std_logic;
 
-		sound                   : out std_logic
+		period                  : in  std_logic_vector(31 downto 0);
+
+		sound_out               : out std_logic
 		);
 end component;
 
@@ -103,7 +105,9 @@ begin
 
 		step_sound => step_pulse,
 
-		sound  => sound
+		period     => (others=>'0'),
+
+		sound_out  => sound
 	);
 
 	process(clk, reset_n ) begin

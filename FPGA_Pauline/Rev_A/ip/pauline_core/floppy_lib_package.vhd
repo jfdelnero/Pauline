@@ -38,6 +38,8 @@ package floppy_lib_package is
   type  lword_array is array (0 to 4) of std_logic_vector(31 downto 0);
   type  lbyte_array is array (0 to 4) of std_logic_vector(7 downto 0);
 
+  type  muxsel_array is array (0 to 19) of std_logic_vector(7 downto 0);
+
   type pop_fifo_in_databus is record
     pop_fifo_in_data : std_logic_vector(31 downto 0);
     pop_fifo_in_address : std_logic_vector(31 downto 0);

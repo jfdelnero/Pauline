@@ -40,15 +40,24 @@ entity floppy_sound is
 
 		step_sound              : in  std_logic;
 
-		sound                   : out std_logic
+		period                  : in  std_logic_vector(31 downto 0);
+
+		sound_out               : out std_logic
 		);
 end floppy_sound;
 
 architecture arch of floppy_sound is
 
 signal cnt : std_logic_vector(31 downto 0);
+signal period_cnt : std_logic_vector(31 downto 0);
+signal freq_out : std_logic;
+
+signal sound : std_logic;
+
 
 begin
+
+	sound_out <= sound xor freq_out;
 
 	process(clk, reset_n ) begin
 		if(reset_n = '0') then
@@ -68,6 +77,31 @@ begin
 				then
 					cnt <= (others=>'0');
 				end if;
+			end if;
+
+		end if;
+	end process;
+
+	process(clk, reset_n ) begin
+		if(reset_n = '0') then
+
+			period_cnt <= (others=>'0');
+			freq_out <= '0';
+
+		elsif(clk'event and clk = '1') then
+
+			if( period /= conv_std_logic_vector(0,32) )
+			then
+				if( period_cnt < period )
+				then
+					period_cnt <= period_cnt + conv_std_logic_vector(1,32);
+				else
+					freq_out <= not(freq_out);
+					period_cnt <= (others=> '0');
+				end if;
+			else
+				freq_out <= '0';
+				period_cnt <= (others=> '0');
 			end if;
 
 		end if;

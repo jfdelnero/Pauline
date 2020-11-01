@@ -41,12 +41,12 @@ entity floppy_dumper is
 		clk : in std_logic;
 		reset_n : in std_logic;
 
-		pop_fifo_in_databus_b   : in pop_fifo_in_databus;
-		pop_fifo_in_ctrlbus_b   : in pop_fifo_in_ctrlbus;
-		pop_fifo_in_statusbus_b : out pop_fifo_in_statusbus;
+		pop_fifo_in_databus_b     : in pop_fifo_in_databus;
+		pop_fifo_in_ctrlbus_b     : in pop_fifo_in_ctrlbus;
+		pop_fifo_in_statusbus_b   : out pop_fifo_in_statusbus;
 
-		push_fifo_out_databus_b : out push_fifo_out_databus;
-		push_fifo_out_ctrlbus_b : in push_fifo_out_ctrlbus;
+		push_fifo_out_databus_b   : out push_fifo_out_databus;
+		push_fifo_out_ctrlbus_b   : in push_fifo_out_ctrlbus;
 		push_fifo_out_statusbus_b : out push_fifo_out_statusbus;
 
 		write_fifo_cur_track_base : out std_logic_vector(31 downto 0);
@@ -57,20 +57,12 @@ entity floppy_dumper is
 		reset_state               : in std_logic;
 		stop                      : in std_logic;
 
-		floppy_step               : in std_logic;
-		floppy_dir                : in std_logic;
-		floppy_motor              : in std_logic;
-		floppy_select             : in std_logic;
-		floppy_side1              : in std_logic;
+		fast_capture_sig          : in std_logic;
+		slow_capture_bus          : in std_logic_vector(15 downto 0);
+		trigger_capture_sig       : in std_logic;
 
 		floppy_write_gate         : out std_logic;
 		floppy_write_data         : out std_logic;
-
-		floppy_data               : in  std_logic;
-		floppy_wpt                : in  std_logic;
-		floppy_index              : in  std_logic;
-		floppy_pin02              : in  std_logic;
-		floppy_pin34              : in  std_logic;
 
 		sample_rate_divisor       : in  std_logic;
 
@@ -223,7 +215,7 @@ begin
 
 		elsif(clk'event and clk = '1') then
 
-			read_stream_side0 <= floppy_data;
+			read_stream_side0 <= fast_capture_sig;
 
 			write_fifo_rq <= '0';
 			read_fifo_wr <= '0';
@@ -242,7 +234,7 @@ begin
 				out_address_q1 <= (others=>'0');
 				out_address_q2 <= (others=>'0');
 
-				in_ios_state(8 downto 0) <= floppy_motor & floppy_select & floppy_side1 & floppy_wpt &  floppy_dir & floppy_step & floppy_pin34 & floppy_pin02 & floppy_index;
+				in_ios_state <= slow_capture_bus;
 
 				write_enabled <= '0';
 			else
@@ -260,7 +252,7 @@ begin
 					then
 						in_shifter_side0 <= in_shifter_side0(14 downto 0) & (read_stream_side0);
 					else
-						in_shifter_side0 <= in_shifter_side0(14 downto 0) & (read_stream_side0 or floppy_data);
+						in_shifter_side0 <= in_shifter_side0(14 downto 0) & (read_stream_side0 or fast_capture_sig);
 					end if;
 
 					if(enable_dump = '1' or start_write = '1')
@@ -274,9 +266,9 @@ begin
 
 						out_shifter_side0(15 downto 0) <= write_fifo_data(15 downto  0);
 
-                        pop_fifo_data_valid_q1 <= not(pop_fifo_empty);
-                        pop_fifo_data_valid_q2 <= pop_fifo_data_valid_q1;
-                        pop_fifo_data_valid_q3 <= pop_fifo_data_valid_q2;
+						pop_fifo_data_valid_q1 <= not(pop_fifo_empty);
+						pop_fifo_data_valid_q2 <= pop_fifo_data_valid_q1;
+						pop_fifo_data_valid_q3 <= pop_fifo_data_valid_q2;
 
 						out_address_q1 <= write_fifo_data(63 downto 32);
 						out_address_q2 <= out_address_q1;
@@ -287,8 +279,7 @@ begin
 						end if;
 
 						read_fifo_data <= "00000000" & out_address_q2 & in_ios_state & in_shifter_side0;
-						in_ios_state <= (others=>'0');
-						in_ios_state(8 downto 0) <= floppy_motor & floppy_select & floppy_side1 & floppy_wpt &  floppy_dir & floppy_step & floppy_pin34 & floppy_pin02 & floppy_index;
+						in_ios_state <= slow_capture_bus;
 
 						write_flag <= '0';
 
@@ -350,7 +341,7 @@ index_trigger : floppy_trigger
 		clk          => clk,
 		reset_n      => reset_n,
 
-		signal_in    => floppy_index,
+		signal_in    => trigger_capture_sig,
 		signal_out   => index_trigger_signal,
 
 		timeout_out  => index_timeout_signal,

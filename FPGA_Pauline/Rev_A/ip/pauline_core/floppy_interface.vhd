@@ -195,10 +195,7 @@ signal drv_option_int : std_logic_vector(3 downto 0);
 signal host_i_side1 : std_logic;
 signal host_i_write_data_pulse : std_logic;
 signal host_i_write_gate : std_logic;
-signal host_i_sel0 : std_logic;
-signal host_i_sel1 : std_logic;
-signal host_i_sel2 : std_logic;
-signal host_i_sel3 : std_logic;
+signal host_i_selx : std_logic_vector(3 downto 0);
 signal host_i_motor : std_logic;
 signal host_i_dir : std_logic;
 signal host_i_step_pulse : std_logic;
@@ -221,6 +218,14 @@ signal ctrl_enable_dump : std_logic;
 signal ctrl_enable_write : std_logic;
 
 signal ctrl_sound_gpio : std_logic;
+
+signal raw_in_io: std_logic_vector(5 downto 0);
+signal filtered_i_io: std_logic_vector(5 downto 0);
+signal invert_io_conf: std_logic_vector(31 downto 0);
+
+signal floppy_port_glitch_filter : std_logic_vector(31 downto 0);
+signal host_port_glitch_filter : std_logic_vector(31 downto 0);
+signal io_port_glitch_filter : std_logic_vector(31 downto 0);
 
 --
 -- Floppy CTRL signals
@@ -249,6 +254,7 @@ signal done_reg : std_logic_vector(4 downto 0);
 
 signal drive_sound : std_logic_vector(3 downto 0);
 signal ctrl_sound : std_logic;
+signal snd_freq_out : std_logic;
 
 signal dump_sample_rate_divisor : std_logic;
 
@@ -269,6 +275,8 @@ signal track_positions : lbyte_array;
 signal pop_fifo_empty_events : lword_array;
 signal push_fifo_full_events : lword_array;
 
+signal in_mux_selectors_regs : muxsel_array;
+
 signal dump_timeout : std_logic;
 
 signal dump_timeout_value : std_logic_vector(31 downto 0);
@@ -281,10 +289,15 @@ signal ignore_index_trigger : std_logic;
 signal host_inputs_q1: std_logic_vector(31 downto 0);
 signal host_inputs_q2: std_logic_vector(31 downto 0);
 signal host_outputs: std_logic_vector(31 downto 0);
+signal stream_mux_cfg: std_logic_vector(31 downto 0);
 
 signal floppy_inputs_q1: std_logic_vector(31 downto 0);
 signal floppy_inputs_q2: std_logic_vector(31 downto 0);
 signal floppy_outputs: std_logic_vector(31 downto 0);
+
+signal mux_out_bus : std_logic_vector(17 downto 0);
+
+signal sound_period : std_logic_vector(31 downto 0);
 
 component floppy_drive
 	port(
@@ -373,20 +386,12 @@ component floppy_dumper
 		reset_state               : in std_logic;
 		stop                      : in std_logic;
 
-		floppy_step               : in std_logic;
-		floppy_dir                : in std_logic;
-		floppy_motor              : in std_logic;
-		floppy_select             : in std_logic;
-		floppy_side1              : in std_logic;
+		fast_capture_sig          : in std_logic;
+		slow_capture_bus          : in std_logic_vector(15 downto 0);
+		trigger_capture_sig       : in std_logic;
 
 		floppy_write_gate         : out std_logic;
 		floppy_write_data         : out std_logic;
-
-		floppy_data               : in  std_logic;
-		floppy_wpt                : in  std_logic;
-		floppy_index              : in  std_logic;
-		floppy_pin02              : in  std_logic;
-		floppy_pin34              : in  std_logic;
 
 		sample_rate_divisor       : in  std_logic;
 
@@ -520,6 +525,29 @@ component floppy_dma_master
 		);
 end component;
 
+component gen_mux
+	generic (SEL_WIDTH : INTEGER);
+port(
+
+	inputs      : in  std_logic_vector((2**SEL_WIDTH)-1 downto 0);
+	sel         : in  std_logic_vector(SEL_WIDTH - 1 downto 0);
+	out_signal  : out std_logic
+	);
+end component;
+
+component floppy_sound
+	port(
+		clk      : in std_logic;
+		reset_n  : in std_logic;
+
+		step_sound              : in  std_logic;
+
+		period                  : in  std_logic_vector(31 downto 0);
+
+		sound_out               : out std_logic
+		);
+end component;
+
 begin
 
 	ctrl_enable_dump <= ctrl_control_reg(20);
@@ -544,7 +572,14 @@ begin
 	coe_c1_tris_io2_oe <= not(gpio_oe_reg(4));
 	coe_c1_tris_io3_oe <= not(gpio_oe_reg(5));
 
-	coe_c1_buzzer <= drive_sound(0) or drive_sound(1) or drive_sound(2) or drive_sound(3) or ctrl_sound or ctrl_sound_gpio;
+	coe_c1_buzzer <= drive_sound(0) or drive_sound(1) or drive_sound(2) or drive_sound(3) or ctrl_sound or ctrl_sound_gpio or snd_freq_out;
+
+	raw_in_io(0) <= coe_c1_tris_io0_din;
+	raw_in_io(1) <= coe_c1_tris_io1_din;
+	raw_in_io(2) <= coe_c1_tris_io2_din;
+	raw_in_io(3) <= coe_c1_tris_io3_din;
+	raw_in_io(4) <= coe_c1_ext_io_din;
+	raw_in_io(5) <= coe_c1_external_int;
 
 	process(csi_ci_Clk, csi_ci_Reset_n, control_reg, floppy_ctrl_extraouts_reg  ) begin
 
@@ -659,7 +694,6 @@ begin
 		end if;
 
 	end process;
-
 
 	process(csi_ci_Clk, csi_ci_Reset_n, host_inputs_q1, host_inputs_q2, floppy_inputs_q1, floppy_inputs_q2, floppy_outputs, host_outputs ) begin
 		if(csi_ci_Reset_n = '0') then
@@ -794,7 +828,8 @@ floppy_step_filter : floppy_signal_filter
 		signal_in                      => coe_c1_host_i_step,
 		signal_out                     => host_i_step_pulse,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(0),
 
@@ -812,7 +847,8 @@ floppy_dir_filter : floppy_signal_filter
 		signal_in                      => coe_c1_host_i_dir,
 		signal_out                     => host_i_dir,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(1),
 
@@ -830,7 +866,8 @@ floppy_motor_filter : floppy_signal_filter
 		signal_in                      => coe_c1_host_i_motor,
 		signal_out                     => host_i_motor,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(2),
 
@@ -840,15 +877,17 @@ floppy_motor_filter : floppy_signal_filter
 		falling_edge                   => '0'
 		);
 
-floppy_sel0_filter : floppy_signal_filter
+GEN_FLOPSELFILTER: for i_sel in 0 to 3 generate
+floppy_selx_filter : floppy_signal_filter
 	port map (
 		clk                            => csi_ci_Clk,
 		reset_n                        => csi_ci_Reset_n,
 
-		signal_in                      => coe_c1_host_i_sel(0),
-		signal_out                     => host_i_sel0,
+		signal_in                      => coe_c1_host_i_sel(i_sel),
+		signal_out                     => host_i_selx(i_sel),
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(3),
 
@@ -857,60 +896,7 @@ floppy_sel0_filter : floppy_signal_filter
 		rising_edge                    => '0',
 		falling_edge                   => '0'
 		);
-
-floppy_sel1_filter : floppy_signal_filter
-	port map (
-		clk                            => csi_ci_Clk,
-		reset_n                        => csi_ci_Reset_n,
-
-		signal_in                      => coe_c1_host_i_sel(1),
-		signal_out                     => host_i_sel1,
-
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
-
-		invert                         => in_signal_polarity_reg(3),
-
-		pulse_out_mode                 => '0',
-
-		rising_edge                    => '0',
-		falling_edge                   => '0'
-		);
-
-floppy_sel2_filter : floppy_signal_filter
-	port map (
-		clk                            => csi_ci_Clk,
-		reset_n                        => csi_ci_Reset_n,
-
-		signal_in                      => coe_c1_host_i_sel(2),
-		signal_out                     => host_i_sel2,
-
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
-
-		invert                         => in_signal_polarity_reg(3),
-
-		pulse_out_mode                 => '0',
-
-		rising_edge                    => '0',
-		falling_edge                   => '0'
-		);
-
-floppy_sel3_filter : floppy_signal_filter
-	port map (
-		clk                            => csi_ci_Clk,
-		reset_n                        => csi_ci_Reset_n,
-
-		signal_in                      => coe_c1_host_i_sel(3),
-		signal_out                     => host_i_sel3,
-
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
-
-		invert                         => in_signal_polarity_reg(3),
-
-		pulse_out_mode                 => '0',
-
-		rising_edge                    => '0',
-		falling_edge                   => '0'
-		);
+end generate GEN_FLOPSELFILTER;
 
 floppy_write_gate_filter : floppy_signal_filter
 	port map (
@@ -920,7 +906,8 @@ floppy_write_gate_filter : floppy_signal_filter
 		signal_in                      => coe_c1_host_i_write_gate,
 		signal_out                     => host_i_write_gate,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(4),
 
@@ -938,7 +925,8 @@ floppy_write_data_filter : floppy_signal_filter
 		signal_in                      => coe_c1_host_i_write_data,
 		signal_out                     => host_i_write_data_pulse,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(5),
 
@@ -956,7 +944,8 @@ floppy_side1_filter : floppy_signal_filter
 		signal_in                      => coe_c1_host_i_side1,
 		signal_out                     => host_i_side1,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(6),
 
@@ -966,15 +955,17 @@ floppy_side1_filter : floppy_signal_filter
 		falling_edge                   => '0'
 		);
 
-host_i_x68000_sel0_filter : floppy_signal_filter
+GEN_X68SELMUX: for i_sel in 0 to 3 generate
+host_i_x68000_selx_filter : floppy_signal_filter
 	port map (
 		clk                            => csi_ci_Clk,
 		reset_n                        => csi_ci_Reset_n,
 
-		signal_in                      => coe_c1_host_i_x68000_sel(0),
-		signal_out                     => host_i_x68000_sel(0),
+		signal_in                      => coe_c1_host_i_x68000_sel(i_sel),
+		signal_out                     => host_i_x68000_sel(i_sel),
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(7),
 
@@ -983,60 +974,7 @@ host_i_x68000_sel0_filter : floppy_signal_filter
 		rising_edge                    => '0',
 		falling_edge                   => '0'
 		);
-
-host_i_x68000_sel1_filter : floppy_signal_filter
-	port map (
-		clk                            => csi_ci_Clk,
-		reset_n                        => csi_ci_Reset_n,
-
-		signal_in                      => coe_c1_host_i_x68000_sel(1),
-		signal_out                     => host_i_x68000_sel(1),
-
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
-
-		invert                         => in_signal_polarity_reg(7),
-
-		pulse_out_mode                 => '0',
-
-		rising_edge                    => '0',
-		falling_edge                   => '0'
-		);
-
-host_i_x68000_sel2_filter : floppy_signal_filter
-	port map (
-		clk                            => csi_ci_Clk,
-		reset_n                        => csi_ci_Reset_n,
-
-		signal_in                      => coe_c1_host_i_x68000_sel(2),
-		signal_out                     => host_i_x68000_sel(2),
-
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
-
-		invert                         => in_signal_polarity_reg(7),
-
-		pulse_out_mode                 => '0',
-
-		rising_edge                    => '0',
-		falling_edge                   => '0'
-		);
-
-host_i_x68000_sel3_filter : floppy_signal_filter
-	port map (
-		clk                            => csi_ci_Clk,
-		reset_n                        => csi_ci_Reset_n,
-
-		signal_in                      => coe_c1_host_i_x68000_sel(3),
-		signal_out                     => host_i_x68000_sel(3),
-
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
-
-		invert                         => in_signal_polarity_reg(7),
-
-		pulse_out_mode                 => '0',
-
-		rising_edge                    => '0',
-		falling_edge                   => '0'
-		);
+end generate GEN_X68SELMUX;
 
 floppy_option_eject_filter : floppy_signal_filter
 	port map (
@@ -1046,7 +984,8 @@ floppy_option_eject_filter : floppy_signal_filter
 		signal_in                      => coe_c1_host_i_x68000_eject,
 		signal_out                     => host_i_x68000_eject,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(8),
 
@@ -1064,7 +1003,8 @@ floppy_option_lock_filter : floppy_signal_filter
 		signal_in                      => coe_c1_host_i_x68000_lock,
 		signal_out                     => host_i_x68000_lock,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(9),
 
@@ -1082,7 +1022,8 @@ floppy_option_blink_filter : floppy_signal_filter
 		signal_in                      => coe_c1_host_i_x68000_ledblink,
 		signal_out                     => host_i_x68000_ledblink,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(10),
 
@@ -1103,7 +1044,8 @@ floppy_step_dump_filter : floppy_signal_filter
 		signal_in                      => coe_c1_host_i_step,
 		signal_out                     => host_i_step,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
 
 		invert                         => in_signal_polarity_reg(0),
 
@@ -1112,6 +1054,28 @@ floppy_step_dump_filter : floppy_signal_filter
 		rising_edge                    => '0',
 		falling_edge                   => '0'
 		);
+
+-- -----------------------------------------------------------------------------------------------
+
+GEN_IOFILTER: for i_io in 0 to 5 generate
+iox_filter : floppy_signal_filter
+	port map (
+		clk                            => csi_ci_Clk,
+		reset_n                        => csi_ci_Reset_n,
+
+		signal_in                      => raw_in_io(i_io),
+		signal_out                     => filtered_i_io(i_io),
+
+		filter_level                   => io_port_glitch_filter,
+
+		invert                         => invert_io_conf(i_io),
+
+		pulse_out_mode                 => '0',
+
+		rising_edge                    => '0',
+		falling_edge                   => '0'
+		);
+end generate GEN_IOFILTER;
 
 -- -----------------------------------------------------------------------------------------------
 -- -----------------------------------------------------------------------------------------------
@@ -1126,10 +1090,10 @@ drive_select_mux_x : floppy_select_mux
 
 		line_select => drives_config_regs(i_drive)(19  downto 16),
 
-		line0       => host_i_sel0,
-		line1       => host_i_sel1,
-		line2       => host_i_sel2,
-		line3       => host_i_sel3,
+		line0       => host_i_selx(0),
+		line1       => host_i_selx(1),
+		line2       => host_i_selx(2),
+		line3       => host_i_selx(3),
 		line4       => host_i_motor,
 		line5       => '0',
 		line6       => '0',
@@ -1149,10 +1113,10 @@ drive_motor_mux_x : floppy_select_mux
 
 		line_select => drives_config_regs(i_drive)(23  downto 20),
 
-		line0       => host_i_sel0,
-		line1       => host_i_sel1,
-		line2       => host_i_sel2,
-		line3       => host_i_sel3,
+		line0       => host_i_selx(0),
+		line1       => host_i_selx(1),
+		line2       => host_i_selx(2),
+		line3       => host_i_selx(3),
 		line4       => host_i_motor,
 		line5       => '0',
 		line6       => '0',
@@ -1175,9 +1139,10 @@ floppy_ctrl_trk00_filter : floppy_signal_filter
 		signal_in                      => coe_c1_floppy_i_trk00,
 		signal_out                     => floppy_i_trk00,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => floppy_port_glitch_filter(7 downto 0),
 
-		invert                         => in_signal_polarity_reg(0),
+		invert                         => in_signal_polarity_reg(11),
 
 		pulse_out_mode                 => '0',
 
@@ -1193,9 +1158,10 @@ floppy_i_data_filter : floppy_signal_filter
 		signal_in                      => coe_c1_floppy_i_data,
 		signal_out                     => floppy_i_data,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => floppy_port_glitch_filter(7 downto 0),
 
-		invert                         => in_signal_polarity_reg(1),
+		invert                         => in_signal_polarity_reg(12),
 
 		pulse_out_mode                 => '1',
 
@@ -1211,9 +1177,10 @@ floppy_i_wpt_filter : floppy_signal_filter
 		signal_in                      => coe_c1_floppy_i_wpt,
 		signal_out                     => floppy_i_wpt,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => floppy_port_glitch_filter(7 downto 0),
 
-		invert                         => in_signal_polarity_reg(2),
+		invert                         => in_signal_polarity_reg(13),
 
 		pulse_out_mode                 => '0',
 
@@ -1229,9 +1196,10 @@ floppy_i_index_filter : floppy_signal_filter
 		signal_in                      => coe_c1_floppy_i_index,
 		signal_out                     => floppy_i_index,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => floppy_port_glitch_filter(7 downto 0),
 
-		invert                         => in_signal_polarity_reg(3),
+		invert                         => in_signal_polarity_reg(14),
 
 		pulse_out_mode                 => '0',
 
@@ -1247,9 +1215,10 @@ floppy_i_pin02_filter : floppy_signal_filter
 		signal_in                      => coe_c1_floppy_i_pin02,
 		signal_out                     => floppy_i_pin02,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => floppy_port_glitch_filter(7 downto 0),
 
-		invert                         => in_signal_polarity_reg(4),
+		invert                         => in_signal_polarity_reg(15),
 
 		pulse_out_mode                 => '0',
 
@@ -1265,9 +1234,10 @@ floppy_i_pin34_filter : floppy_signal_filter
 		signal_in                      => coe_c1_floppy_i_pin34,
 		signal_out                     => floppy_i_pin34,
 
-		filter_level                   => conv_std_logic_vector(4,32), -- 80ns @ 50Mhz
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => floppy_port_glitch_filter(7 downto 0),
 
-		invert                         => in_signal_polarity_reg(5),
+		invert                         => in_signal_polarity_reg(16),
 
 		pulse_out_mode                 => '0',
 
@@ -1442,6 +1412,48 @@ ctrl_stepper : floppy_ctrl_stepper
 
 		);
 
+GEN_IO_MUX: for i_mux in 0 to 17 generate
+mux_x : gen_mux
+	generic map (SEL_WIDTH => 5)
+	port map
+	(
+		inputs(0)  => '0',
+		inputs(1)  => ctrl_control_reg(0),
+		inputs(2)  => ctrl_control_reg(1),
+		inputs(3)  => ctrl_control_reg(2),
+		inputs(4)  => ctrl_control_reg(3),
+		inputs(5)  => ctrl_control_reg(4),
+		inputs(6)  => floppy_o_step,
+		inputs(7)  => floppy_o_dir,
+		inputs(8)  => ctrl_control_reg(5), -- side1
+		inputs(9)  => floppy_i_index,
+		inputs(10) => floppy_i_pin02,
+		inputs(11) => floppy_i_pin34,
+		inputs(12) => floppy_i_wpt,
+		inputs(13) => floppy_i_data,
+		inputs(14) => floppy_o_write_gate,
+		inputs(15) => floppy_o_write_data,
+		inputs(16) => host_i_selx(0),
+		inputs(17) => host_i_selx(1),
+		inputs(18) => host_i_selx(2),
+		inputs(19) => host_i_selx(3),
+		inputs(20) => host_i_motor,
+		inputs(21) => host_i_step,
+		inputs(22) => host_i_dir,
+		inputs(23) => host_i_side1,
+		inputs(24) => host_i_write_gate,
+		inputs(25) => host_i_write_data_pulse,
+		inputs(26) => filtered_i_io(0),
+		inputs(27) => filtered_i_io(1),
+		inputs(28) => filtered_i_io(2),
+		inputs(29) => filtered_i_io(3),
+		inputs(30) => filtered_i_io(4),
+		inputs(31) => filtered_i_io(5),
+		sel        => in_mux_selectors_regs(i_mux)(4 downto 0),
+		out_signal => mux_out_bus(i_mux)
+	);
+end generate GEN_IO_MUX;
+
 floppy_dumper_unit : floppy_dumper
 	port map
 	(
@@ -1464,20 +1476,12 @@ floppy_dumper_unit : floppy_dumper
 		reset_state                    => reset_drives(4),
 		stop                           => done_reg(4),
 
-		floppy_step                    => host_i_step,
-		floppy_dir                     => host_i_dir,
-		floppy_motor                   => host_i_motor,
-		floppy_select                  => '0',
-		floppy_side1                   => host_i_side1,
+		fast_capture_sig               => mux_out_bus(16),
+		slow_capture_bus               => mux_out_bus(15 downto 0),
+		trigger_capture_sig            => mux_out_bus(17),
 
 		floppy_write_gate              => floppy_o_write_gate,
 		floppy_write_data              => floppy_o_write_data,
-
-		floppy_data                    => floppy_i_data,
-		floppy_wpt                     => floppy_i_wpt,
-		floppy_index                   => floppy_i_index,
-		floppy_pin02                   => floppy_i_pin02,
-		floppy_pin34                   => floppy_i_pin34,
 
 		sample_rate_divisor            => dump_sample_rate_divisor,
 
@@ -1498,6 +1502,18 @@ floppy_dumper_unit : floppy_dumper
 	reset_drives(3) <= not(control_reg(15));
 	reset_drives(4) <= not(control_reg(14));
 
+	sound_generator : floppy_sound
+	port map(
+		clk         => csi_ci_Clk,
+		reset_n     => csi_ci_Reset_n,
+
+		step_sound  => '0',
+
+		period      => sound_period,
+
+		sound_out   => snd_freq_out
+	);
+
 	process(csi_ci_Clk, csi_ci_Reset_n ) begin
 
 		if(csi_ci_Reset_n = '0') then
@@ -1515,15 +1531,27 @@ floppy_dumper_unit : floppy_dumper
 			in_signal_polarity_reg <= (others => '0');
 			out_signal_polarity_reg <= (others => '0');
 
+			floppy_port_glitch_filter <= conv_std_logic_vector(4,32); -- 80ns @ 50Mhz
+			host_port_glitch_filter <= conv_std_logic_vector(4,32); -- 80ns @ 50Mhz
+			io_port_glitch_filter <= conv_std_logic_vector(4,32); -- 80ns @ 50Mhz
+
+			invert_io_conf <= (others => '0');
+
 			gpio_reg <= (others => '0');
 			gpio_oe_reg <= (others => '0');
 			floppy_ctrl_extraouts_reg <= (others => '0');
+
+			sound_period <= (others => '0');
 
 			for i in 0 to 4 loop
 				images_max_track_regs(i) <= conv_std_logic_vector(80,32); -- 80 tracks
 				drives_config_regs(i) <= (others => '0');
 				drives_track_index_start(i) <= (others => '0');
 				drives_index_len(i) <= (others => '0');
+			end loop;
+
+			for i in 0 to 19 loop
+				in_mux_selectors_regs(i) <= (others => '0');
 			end loop;
 
 			host_drv0_qdstopmotor_len <= (others => '0');
@@ -1536,11 +1564,11 @@ floppy_dumper_unit : floppy_dumper
 			ctrl_head_move_cmd <= '0';
 			ctrl_head_move_dir <= '0';
 
-            avs_s1_irq <= '0';
+			avs_s1_irq <= '0';
 
 		elsif(csi_ci_Clk 'event and csi_ci_Clk  = '1') then
 
-            avs_s1_irq <= ctrl_control_reg(31);
+			avs_s1_irq <= ctrl_control_reg(31);
 
 			ctrl_head_move_cmd <= '0';
 
@@ -1813,6 +1841,69 @@ floppy_dumper_unit : floppy_dumper
 							host_outputs((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
 						end if;
 					end loop;
+				elsif ( avs_s1_address = "1000110") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							in_mux_selectors_regs(i) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+				elsif ( avs_s1_address = "1000111") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							in_mux_selectors_regs(4+i) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+				elsif ( avs_s1_address = "1001000") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							in_mux_selectors_regs(8+i) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+				elsif ( avs_s1_address = "1001001") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							in_mux_selectors_regs(12+i) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+				elsif ( avs_s1_address = "1001010") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							in_mux_selectors_regs(16+i) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+				elsif ( avs_s1_address = "1001011") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							floppy_port_glitch_filter((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+				elsif ( avs_s1_address = "1001100") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							host_port_glitch_filter((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+				elsif ( avs_s1_address = "1001101") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							io_port_glitch_filter((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+
+				elsif ( avs_s1_address = "1001110") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							invert_io_conf((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+
+				elsif ( avs_s1_address = "1001111") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							sound_period((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+
 				end if;
 			end if;
 
@@ -2052,6 +2143,39 @@ floppy_dumper_unit : floppy_dumper
 
 					elsif ( avs_s1_address = "1000101") then
 						avs_s1_readdata <= host_inputs_q2;
+						avs_s1_waitrequest <= '0';
+					elsif ( avs_s1_address = "1000110") then
+						avs_s1_readdata <= in_mux_selectors_regs(3) & in_mux_selectors_regs(2) & in_mux_selectors_regs(1) & in_mux_selectors_regs(0);
+						avs_s1_waitrequest <= '0';
+					elsif ( avs_s1_address = "1000111") then
+						avs_s1_readdata <= in_mux_selectors_regs(7) & in_mux_selectors_regs(6) & in_mux_selectors_regs(5) & in_mux_selectors_regs(4);
+						avs_s1_waitrequest <= '0';
+					elsif ( avs_s1_address = "1001000") then
+						avs_s1_readdata <= in_mux_selectors_regs(11) & in_mux_selectors_regs(10) & in_mux_selectors_regs(9) & in_mux_selectors_regs(8);
+						avs_s1_waitrequest <= '0';
+					elsif ( avs_s1_address = "1001001") then
+						avs_s1_readdata <= in_mux_selectors_regs(15) & in_mux_selectors_regs(14) & in_mux_selectors_regs(13) & in_mux_selectors_regs(12);
+						avs_s1_waitrequest <= '0';
+					elsif ( avs_s1_address = "1001010") then
+						avs_s1_readdata <= in_mux_selectors_regs(19) & in_mux_selectors_regs(18) & in_mux_selectors_regs(17) & in_mux_selectors_regs(16);
+						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1001011") then
+						avs_s1_readdata <= floppy_port_glitch_filter;
+						avs_s1_waitrequest <= '0';
+					elsif ( avs_s1_address = "1001100") then
+						avs_s1_readdata <= host_port_glitch_filter;
+						avs_s1_waitrequest <= '0';
+					elsif ( avs_s1_address = "1001101") then
+						avs_s1_readdata <= io_port_glitch_filter;
+						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1001110") then
+						avs_s1_readdata <= invert_io_conf;
+						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1001111") then
+						avs_s1_readdata <= sound_period;
 						avs_s1_waitrequest <= '0';
 
 					end if;

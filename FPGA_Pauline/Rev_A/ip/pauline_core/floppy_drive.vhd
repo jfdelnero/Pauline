@@ -168,7 +168,9 @@ component floppy_sound
 
 		step_sound              : in  std_logic;
 
-		sound                   : out std_logic
+		period                  : in  std_logic_vector(31 downto 0);
+
+		sound_out               : out std_logic
 		);
 end component;
 
@@ -265,10 +267,10 @@ component fifo_floppy_read
 		rdreq       : IN STD_LOGIC ;
 		sclr        : IN STD_LOGIC ;
 		wrreq       : IN STD_LOGIC ;
-		almost_full     : OUT STD_LOGIC ;
+		almost_full : OUT STD_LOGIC ;
 		empty       : OUT STD_LOGIC ;
 		full        : OUT STD_LOGIC ;
-		q       : OUT STD_LOGIC_VECTOR (31 DOWNTO 0);
+		q           : OUT STD_LOGIC_VECTOR (31 DOWNTO 0);
 		usedw       : OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
 	);
 end component;
@@ -281,10 +283,10 @@ component status_fifo
 		rdreq       : IN STD_LOGIC ;
 		sclr        : IN STD_LOGIC ;
 		wrreq       : IN STD_LOGIC ;
-		almost_full     : OUT STD_LOGIC ;
+		almost_full : OUT STD_LOGIC ;
 		empty       : OUT STD_LOGIC ;
 		full        : OUT STD_LOGIC ;
-		q       : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+		q           : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
 		usedw       : OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
 	);
 end component;
@@ -340,7 +342,9 @@ begin
 
 		step_sound => step_sound,
 
-		sound  => drive_sound
+		period     => (others=>'0'),
+
+		sound_out  => drive_sound
 	);
 
 	pin02_generator : floppy_status_signal

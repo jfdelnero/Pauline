@@ -157,9 +157,9 @@ begin
 					signal_out <= disk_changed_2;          -- 1010 - nDiskChanged 3 (timer)
 				elsif ( signal_config = "1011") then
 					signal_out <= not(disk_changed_2);     -- 1011 - DiskChanged 3  (timer)
-				elsif ( signal_config = "01100") then
+				elsif ( signal_config = "1100") then
 					signal_out <= disk_changed_3;          -- 1100 - nDiskChanged 4 (floppy_dc_reset)
-				elsif ( signal_config = "01101") then
+				elsif ( signal_config = "1101") then
 					signal_out <= not(disk_changed_3);     -- 1101 - DiskChanged 4  (floppy_dc_reset)
 				else
 					signal_out <= '0';
