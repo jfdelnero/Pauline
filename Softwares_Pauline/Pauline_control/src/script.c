@@ -167,7 +167,7 @@ static int copy_param(char * dest, char * line, int offs)
 
 	i = 0;
 	insidequote = 0;
-	while( !is_end_line(line[offs]) && ( insidequote || !is_space(line[offs]) ) && (i < (DEFAULT_BUFLEN - 1)) )
+	while( (!is_end_line(line[offs]) || (insidequote && line[offs] == '#') ) && ( insidequote || !is_space(line[offs]) ) && (i < (DEFAULT_BUFLEN - 1)) )
 	{
 		if(line[offs] != '"')
 		{
@@ -254,6 +254,7 @@ int is_dir_present(char * path)
 	}
 }
 
+char forbiddenfilenamechars[]={'\\','/',':','`','*','|',';','"','\'',0};
 char global_search_name[512];
 int global_max_index;
 
@@ -300,7 +301,24 @@ static int display_info(const char *fpath, const struct stat *sb, int tflag)
 
 	}
 
-    return 0;
+	return 0;
+}
+
+int is_valid_char(char c)
+{
+	int i;
+
+	i =0;
+	while(forbiddenfilenamechars[i])
+	{
+		if(forbiddenfilenamechars[i] == c)
+		{
+			return 0;
+		}
+		i++;
+	}
+
+	return 1;
 }
 
 int prepare_folder(char * name, char * comment, int start_index, int mode, char * folder_pathoutput)
@@ -335,6 +353,16 @@ int prepare_folder(char * name, char * comment, int start_index, int mode, char 
 
 				i--;
 			}
+
+			i = 0;
+			while(dump_name[i])
+			{
+				if(!is_valid_char(dump_name[i]))
+				{
+					dump_name[i] = '_';
+				}
+				i++;
+			}
 		}
 	}
 
@@ -356,6 +384,16 @@ int prepare_folder(char * name, char * comment, int start_index, int mode, char 
 
 				i--;
 			}
+		}
+
+		i = 0;
+		while(comment[i])
+		{
+			if(!is_valid_char(comment[i]))
+			{
+				comment[i] = '_';
+			}
+			i++;
 		}
 	}
 
@@ -541,18 +579,20 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 		else
 			state.sample_rate_hz = 25000000;
 
-		display_bmp("/data/pauline_splash_bitmaps/reading_floppy.bmp");
-
-		floppy_ctrl_motor(fpga, drive, 1);
 
 		if( prepare_folder( name, comment, start_index, incmode, folder_path) < 0 )
 		{
 			display_bmp("/data/pauline_splash_bitmaps/error.bmp");
 
-			msg_printf(MSGTYPE_ERROR,"ERROR : Can't create the folder\n",temp);
+			msg_printf(MSGTYPE_ERROR,"ERROR : Can't create the folder %s !\n",temp);
 			dump_running = 0;
+			error_sound(fpga);
 			return -1;
 		}
+
+		display_bmp("/data/pauline_splash_bitmaps/reading_floppy.bmp");
+
+		floppy_ctrl_motor(fpga, drive, 1);
 
 		for(i=0;i<1000;i++)
 			usleep(1000);
@@ -585,6 +625,8 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 				dump_running = 0;
 
 				display_bmp("/data/pauline_splash_bitmaps/error.bmp");
+
+				error_sound(fpga);
 
 				return -1;
 			}
@@ -634,6 +676,8 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 				msg_printf(MSGTYPE_ERROR,"ERROR : Can't create %s\n",temp);
 
 				display_bmp("/data/pauline_splash_bitmaps/error.bmp");
+
+				error_sound(fpga);
 			}
 			floppy_ctrl_side(fpga, drive, j);
 
@@ -683,6 +727,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 					fpga->last_dump_offset = fpga->regs->floppy_dump_buffer_size;
 					msg_printf(MSGTYPE_ERROR,"ERROR : get_next_available_stream_chunk failed !\n");
 					display_bmp("/data/pauline_splash_bitmaps/error.bmp");
+					error_sound(fpga);
 				}
 			}
 
@@ -753,6 +798,8 @@ readstop:
 				msg_printf(MSGTYPE_INFO_0,"No index signal ! Disk in drive ?\n");
 			break;
 		}
+
+		error_sound(fpga);
 	}
 	else
 	{
@@ -766,11 +813,12 @@ readstop:
 			msg_printf(MSGTYPE_INFO_0,"Stopped !!!\n");
 			display_bmp("/data/pauline_splash_bitmaps/stopped.bmp");
 		}
+
+		sound(fpga, 2000, 200);
+		sound(fpga, 0, 200);
+		sound(fpga, 2000, 200);
 	}
 
-	sound(fpga, 2000, 200);
-	sound(fpga, 0, 200);
-	sound(fpga, 2000, 200);
 
 	return 0;
 }
