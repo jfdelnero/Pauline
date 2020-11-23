@@ -242,6 +242,8 @@ signal floppy_o_step  : std_logic;
 signal floppy_o_write_gate : std_logic;
 signal floppy_o_write_data : std_logic;
 
+signal floppy_apple_stepper_phases : std_logic_vector(3 downto 0);
+
 signal ctrl_control_reg : std_logic_vector(31 downto 0);
 signal ctrl_steprate_reg : std_logic_vector(31 downto 0);
 signal ctrl_track_reg : std_logic_vector(9 downto 0);
@@ -471,7 +473,12 @@ component floppy_ctrl_stepper
 		floppy_ctrl_dir         : out std_logic;
 		floppy_ctrl_trk00       : in std_logic;
 
+		floppy_motor_phases     : out std_logic_vector (3 downto 0);
+
 		step_rate               : in  std_logic_vector (31 downto 0);
+
+		phases_timeout_moving   : in  std_logic_vector (31 downto 0);
+		phases_timeout_stopping : in  std_logic_vector (31 downto 0);
 
 		track_pos_cmd           : in  std_logic_vector (9 downto 0);
 		move_head_cmd           : in  std_logic;
@@ -482,7 +489,6 @@ component floppy_ctrl_stepper
 		moving                  : out std_logic;
 
 		sound                   : out std_logic
-
 		);
 end component;
 
@@ -597,10 +603,20 @@ begin
 			coe_c1_floppy_o_write_data       <= floppy_o_write_data;
 			coe_c1_floppy_o_write_gate       <= floppy_o_write_gate;
 			coe_c1_floppy_o_side1            <= ctrl_control_reg(5);
-			coe_c1_floppy_o_x68000_sel(0)    <= floppy_ctrl_extraouts_reg(2);
-			coe_c1_floppy_o_x68000_sel(1)    <= floppy_ctrl_extraouts_reg(3);
-			coe_c1_floppy_o_x68000_sel(2)    <= floppy_ctrl_extraouts_reg(4);
-			coe_c1_floppy_o_x68000_sel(3)    <= floppy_ctrl_extraouts_reg(5);
+
+			if(control_reg(29) = '0')
+			then
+				coe_c1_floppy_o_x68000_sel(0)    <= floppy_ctrl_extraouts_reg(2);
+				coe_c1_floppy_o_x68000_sel(1)    <= floppy_ctrl_extraouts_reg(3);
+				coe_c1_floppy_o_x68000_sel(2)    <= floppy_ctrl_extraouts_reg(4);
+				coe_c1_floppy_o_x68000_sel(3)    <= floppy_ctrl_extraouts_reg(5);
+			else
+				coe_c1_floppy_o_x68000_sel(0)    <= not(floppy_apple_stepper_phases(0));
+				coe_c1_floppy_o_x68000_sel(1)    <= not(floppy_apple_stepper_phases(1));
+				coe_c1_floppy_o_x68000_sel(2)    <= not(floppy_apple_stepper_phases(2));
+				coe_c1_floppy_o_x68000_sel(3)    <= not(floppy_apple_stepper_phases(3));
+			end if;
+
 			coe_c1_floppy_o_x68000_ledblink  <= floppy_ctrl_extraouts_reg(6);
 			coe_c1_floppy_o_x68000_lock      <= floppy_ctrl_extraouts_reg(7);
 			coe_c1_floppy_o_x68000_eject     <= floppy_ctrl_extraouts_reg(8);
@@ -1398,7 +1414,11 @@ ctrl_stepper : floppy_ctrl_stepper
 		floppy_ctrl_dir                => floppy_o_dir,
 		floppy_ctrl_trk00              => floppy_i_trk00,
 
+		floppy_motor_phases            => floppy_apple_stepper_phases,
+
 		step_rate                      => ctrl_steprate_reg,
+		phases_timeout_moving          => conv_std_logic_vector(700000,32),  -- 14ms
+		phases_timeout_stopping        => conv_std_logic_vector(1800000,32), -- 36ms
 
 		track_pos_cmd                  => ctrl_track_reg,
 		move_head_cmd                  => ctrl_head_move_cmd,
@@ -1474,7 +1494,7 @@ floppy_dumper_unit : floppy_dumper
 		buffer_size                    => images_track_size_busses(4),
 
 		reset_state                    => reset_drives(4),
-		stop                           => done_reg(4),
+		stop                           => '0',--done_reg(4),
 
 		fast_capture_sig               => mux_out_bus(16),
 		slow_capture_bus               => mux_out_bus(15 downto 0),
@@ -2048,6 +2068,25 @@ floppy_dumper_unit : floppy_dumper
 						avs_s1_readdata <= (others=>'0');
 						avs_s1_readdata(4 downto 0) <= done_reg;
 						avs_s1_readdata(5) <= dump_timeout;
+
+						avs_s1_readdata(8)  <= push_fifos_out_statusbus_bus(0).push_fifo_empty;
+						avs_s1_readdata(9)  <= push_fifos_out_statusbus_bus(1).push_fifo_empty;
+						avs_s1_readdata(10) <= push_fifos_out_statusbus_bus(2).push_fifo_empty;
+						avs_s1_readdata(11) <= push_fifos_out_statusbus_bus(3).push_fifo_empty;
+						avs_s1_readdata(12) <= push_fifos_out_statusbus_bus(4).push_fifo_empty;
+
+						avs_s1_readdata(16) <= pop_fifos_in_statusbus_bus(0).pop_fifo_empty;
+						avs_s1_readdata(17) <= pop_fifos_in_statusbus_bus(1).pop_fifo_empty;
+						avs_s1_readdata(18) <= pop_fifos_in_statusbus_bus(2).pop_fifo_empty;
+						avs_s1_readdata(19) <= pop_fifos_in_statusbus_bus(3).pop_fifo_empty;
+						avs_s1_readdata(20) <= pop_fifos_in_statusbus_bus(4).pop_fifo_empty;
+
+						avs_s1_readdata(24) <= push_fifos_out_databus_bus(0).push_fifo_out_status(0);
+						avs_s1_readdata(25) <= push_fifos_out_databus_bus(1).push_fifo_out_status(0);
+						avs_s1_readdata(26) <= push_fifos_out_databus_bus(2).push_fifo_out_status(0);
+						avs_s1_readdata(27) <= push_fifos_out_databus_bus(3).push_fifo_out_status(0);
+						avs_s1_readdata(28) <= push_fifos_out_databus_bus(4).push_fifo_out_status(0);
+
 						avs_s1_waitrequest <= '0';
 					elsif ( avs_s1_address = "0101100") then
 						avs_s1_readdata <= (others=>'0');

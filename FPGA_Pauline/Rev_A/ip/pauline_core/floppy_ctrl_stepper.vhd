@@ -45,7 +45,12 @@ entity floppy_ctrl_stepper is
 		floppy_ctrl_dir         : out std_logic;
 		floppy_ctrl_trk00		: in std_logic;
 
+		floppy_motor_phases     : out std_logic_vector (3 downto 0);
+
 		step_rate               : in  std_logic_vector (31 downto 0);
+
+		phases_timeout_moving   : in  std_logic_vector (31 downto 0);
+		phases_timeout_stopping : in  std_logic_vector (31 downto 0);
 
 		track_pos_cmd           : in  std_logic_vector (9 downto 0);
 		move_head_cmd           : in  std_logic;
@@ -79,6 +84,15 @@ architecture arch of floppy_ctrl_stepper is
 	signal step_pulse : std_logic;
 
 	signal floppy_ctrl_dir_q : std_logic;
+
+	signal head_moving : std_logic;
+	
+	signal motor_phases : std_logic_vector(3 downto 0);
+	signal motor_phase_ctrl : std_logic_vector(3 downto 0);
+	signal motor_phases_cnt : integer range 0 to 3;
+	signal phase_state : std_logic_vector(3 downto 0);
+	type   t_phases_timeout is array (0 to 3) of std_logic_vector(31 downto 0);
+	signal phases_timeouts : t_phases_timeout;
 
 component floppy_sound
 	port(
@@ -162,41 +176,102 @@ begin
 		end if;
 	end process;
 
+
+
+	-------------------------------------------------------
+	-- Apple I/II phases motor control outputs
+	-------------------------------------------------------
+	GEN_APPLEPHASES: for i_phase in 0 to 3 generate
+	process(clk, reset_n ) begin
+		if(reset_n = '0') then
+
+			phase_state(i_phase) <= '0';
+			phases_timeouts(i_phase) <= (others=>'1');
+			motor_phase_ctrl(i_phase) <= '0';
+
+		elsif(clk'event and clk = '1') then
+
+			motor_phase_ctrl(i_phase) <= motor_phases(i_phase);
+
+			if( motor_phase_ctrl(i_phase)  = '0' and motor_phases(i_phase) = '1' )
+			then
+				phases_timeouts(i_phase) <= (others=>'0');
+			end if;
+
+			if( head_moving = '1' )
+			then
+				if( phases_timeouts(i_phase) < phases_timeout_moving )
+				then
+					phase_state(i_phase) <= '1';
+				else
+					phase_state(i_phase) <= '0';
+				end if;
+			else
+				if( phases_timeouts(i_phase) < phases_timeout_stopping )
+				then
+					phase_state(i_phase) <= '1';
+				else
+					phase_state(i_phase) <= '0';
+				end if;
+			end if;
+		end if;
+	end process;
+	end generate GEN_APPLEPHASES;
+
+	process(clk, reset_n ) begin
+		if(reset_n = '0') then
+
+			motor_phases <= (others=>'0');
+
+		elsif(clk'event and clk = '1') then
+
+			if( stepper_tick_cnt_rst = '1' )
+			then
+				motor_phases <= (others=>'0');
+			else
+				motor_phases <= (others=>'0');
+				motor_phases(motor_phases_cnt) <= '1';
+			end if;
+		end if;
+	end process;
+
+	floppy_motor_phases <= motor_phases;
 	-------------------------------------------------------
 	-- Track Circuit
 	trackcounter : process(clk,reset_n)
 	begin
 		if (reset_n='0')
 		then
-			moving <= '0';
+			head_moving <= '0';
 			track_pos <= (others=>'0');
 			state_stepper_register <= wait_cmd;
 			floppy_ctrl_dir_q <= '0';
 			move_head_cmd_q <= '0';
 			track_pos_cnt <= (others=>'0');
+			motor_phases_cnt <= 0;
 		elsif (clk='1' and clk'EVENT)
 		then
 			move_head_cmd_q <= move_head_cmd;
 
-			moving <= '0';
+			head_moving <= '0';
 			stepper_tick_cnt_rst <= '1';
 			step_pulse <= '0';
 
 			case state_stepper_register is
 
 				when wait_cmd =>
-					moving <= '0';
+					head_moving <= '0';
 					track_pos_cnt <= (others=>'0');
 					if( move_head_cmd_q = '0' and move_head_cmd = '1' )
 					then
 						floppy_ctrl_dir_q <= move_dir;
-						moving <= '1';
+						head_moving <= '1';
 						state_stepper_register <= pre_move_head;
 					end if;
 
 				when pre_move_head =>
 					stepper_tick_cnt_rst <= '0';
-					moving <= '1';
+					head_moving <= '1';
 
 					if( stepper_tick_cnt = ("0" & step_rate(31 downto 1)) )
 					then
@@ -206,14 +281,18 @@ begin
 							if( track_pos /= conv_std_logic_vector(900, 10) )
 							then
 								track_pos <= track_pos + conv_std_logic_vector(1, 10);
-
 								step_pulse <= '1';
 							end if;
+
+							motor_phases_cnt <= motor_phases_cnt + 1;
+
 						else
 							if( track_pos /= conv_std_logic_vector(0, 10) )
 							then
 								track_pos <= track_pos - conv_std_logic_vector(1, 10);
 							end if;
+
+							motor_phases_cnt <= motor_phases_cnt - 1;
 
 							step_pulse <= '1';
 						end if;
@@ -224,13 +303,14 @@ begin
 
 				when move_head =>
 					stepper_tick_cnt_rst <= '0';
-					moving <= '1';
+					head_moving <= '1';
 
 					if( stepper_tick_cnt = step_rate(31 downto 0) )
 					then
 						if (floppy_ctrl_trk00 = '1' )
 						then
 							track_pos <= (others=> '0');
+							motor_phases_cnt <= 0;
 						end if;
 
 						if( track_pos_cnt /= track_pos_cmd)
@@ -249,6 +329,8 @@ begin
 			end case;
 		end if;
 	end process;
+
+	moving <= head_moving;
 
 end arch;
 
