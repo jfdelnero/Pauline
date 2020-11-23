@@ -86,6 +86,9 @@ signal out_shifter_side0 : std_logic_vector(31 downto 0);
 signal out_address_q1 : std_logic_vector(31 downto 0);
 signal out_address_q2 : std_logic_vector(31 downto 0);
 
+signal out_status_q1 : std_logic_vector(7 downto 0);
+signal out_status_q2 : std_logic_vector(7 downto 0);
+
 signal in_shifter_side0 : std_logic_vector(15 downto 0);
 signal in_ios_state : std_logic_vector(15 downto 0);
 
@@ -123,6 +126,10 @@ signal pop_fifo_data_valid_q3 : std_logic;
 
 signal index_trigger_signal : std_logic;
 signal index_timeout_signal : std_logic;
+
+signal pre_charged_state : std_logic;
+signal pre_charged_state_q1 : std_logic;
+signal pre_charged_state_q2 : std_logic;
 
 component fifo_floppy_read
 	port
@@ -203,6 +210,9 @@ begin
 			out_address_q1 <= (others=>'0');
 			out_address_q2 <= (others=>'0');
 
+			out_status_q1 <= (others=>'0');
+			out_status_q2 <= (others=>'0');
+
 			clock_div <= '0';
 
 			write_enabled <= '0';
@@ -211,7 +221,11 @@ begin
 			pop_fifo_data_valid_q2 <= '0';
 			pop_fifo_data_valid_q3 <= '0';
 
+			pre_charged_state_q1 <= '0';
+			pre_charged_state_q2 <= '0';
+
 			in_ios_state <= (others=>'0');
+			pre_charged_state <= '0';
 
 		elsif(clk'event and clk = '1') then
 
@@ -229,19 +243,30 @@ begin
 				pop_fifo_data_valid_q2 <= '0';
 				pop_fifo_data_valid_q3 <= '0';
 
+				pre_charged_state_q1 <= '0';
+				pre_charged_state_q2 <= '0';
+
 				out_shifter_side0 <= (others=>'0');
 
 				out_address_q1 <= (others=>'0');
 				out_address_q2 <= (others=>'0');
 
+				out_status_q1 <= (others=>'0');
+				out_status_q2 <= (others=>'0');
+
+				write_flag <= '0';
+
 				in_ios_state <= slow_capture_bus;
 
 				write_enabled <= '0';
+
+				pre_charged_state <= '0';
+
 			else
 
 				clock_div <= not(clock_div);
 
-				if( (clock_div = '1' or sample_rate_divisor = '0') and (enable_dump = '1' or write_enabled = '1') and stop = '0' and ( index_trigger_signal = '1' or ignore_index_trigger = '1') )
+				if( (clock_div = '1' or sample_rate_divisor = '0') and (enable_dump = '1' or write_enabled = '1') and (stop = '0') and ( index_trigger_signal = '1' or ignore_index_trigger = '1') )
 				then
 
 					fiforeadcnt <= fiforeadcnt + "000001";
@@ -270,21 +295,29 @@ begin
 						pop_fifo_data_valid_q2 <= pop_fifo_data_valid_q1;
 						pop_fifo_data_valid_q3 <= pop_fifo_data_valid_q2;
 
+						pre_charged_state_q1 <= pre_charged_state;
+						pre_charged_state_q2 <= pre_charged_state_q1;
+
 						out_address_q1 <= write_fifo_data(63 downto 32);
 						out_address_q2 <= out_address_q1;
 
-						if(write_flag = '1' and pop_fifo_data_valid_q3 = '1' )
+						out_status_q1 <= write_fifo_data(71 downto 64);
+						out_status_q2 <= out_status_q1;
+
+						if(pre_charged_state_q2 = '1' and write_flag = '1' and pop_fifo_data_valid_q2 = '1' and out_status_q2(0) = '0')
 						then
 							read_fifo_wr <= '1';
 						end if;
 
-						read_fifo_data <= "00000000" & out_address_q2 & in_ios_state & in_shifter_side0;
+						read_fifo_data <= "00000000" & out_address_q2 & slow_capture_bus & in_shifter_side0;
+
 						in_ios_state <= slow_capture_bus;
 
 						write_flag <= '0';
 
 						if(pop_fifo_empty = '0')
 						then
+							pre_charged_state <= '1';
 							write_fifo_rq <='1';
 						end if;
 
@@ -391,7 +424,7 @@ floppy_read_fifo_address: fifo_floppy_read
 status_fifo_read: status_fifo
 	Port map(
 		clock => clk,
-		data =>  "00000000",-- & qd_stopmotor_state & index_state,!!!
+		data =>  pop_fifo_in_databus_b.pop_fifo_in_status, -- "00000000",-- & qd_stopmotor_state & index_state,!!!
 		rdreq => write_fifo_rq,
 		sclr => reset_state,
 		wrreq => pop_fifo_in_ctrlbus_b.pop_fifo_in_wr,

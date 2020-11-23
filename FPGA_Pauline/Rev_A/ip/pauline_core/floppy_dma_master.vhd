@@ -87,7 +87,7 @@ end floppy_dma_master;
 
 architecture arch of floppy_dma_master is
 
-type   state_type_master is ( state_master_wait_write,state_master_wait_write2,state_master_wait_read,state_master_wait_read2, state_master_idle);
+type   state_type_master is ( state_master_wait_write, state_master_wait_write_ws, state_master_wait_write2,state_master_wait_read,state_master_wait_read2, state_master_idle);
 signal state_master_register : state_type_master;
 
 signal writedata : std_logic_vector(31 downto 0);
@@ -155,7 +155,7 @@ begin
 			then
 				fifos_in_almostfull_index <= 3;
 				fifos_in_allfull <= '0';
-			elsif( pop_fifos_in_statusbus_if(4).pop_fifo_almostfull = '0' and enable_drives(4) = '1' and done_q(4) = '0' )
+			elsif( pop_fifos_in_statusbus_if(4).pop_fifo_almostfull = '0' and enable_drives(4) = '1' ) 
 			then
 				fifos_in_almostfull_index <= 4;
 				fifos_in_allfull <= '0';
@@ -191,7 +191,7 @@ begin
 			then
 				fifos_out_empty_index <= 3;
 				filos_out_allempty <= '0';
-			elsif( push_fifos_out_statusbus_if(4).push_fifo_empty = '0' and enable_drives(4) = '1' and done_q(4) = '0' and reset_drives(4) = '0')
+			elsif( push_fifos_out_statusbus_if(4).push_fifo_empty = '0' and enable_drives(4) = '1' and reset_drives(4) = '0' )
 			then
 				fifos_out_empty_index <= 4;
 				filos_out_allempty <= '0';
@@ -271,19 +271,21 @@ begin
 							push_fifos_out_ctrlbus_if(fifos_out_empty_index).push_fifo_out_rq <= '1';
 							drive_index <= fifos_out_empty_index;
 
-							state_master_register <= state_master_wait_write;
+							state_master_register <= state_master_wait_write_ws;
 						end if;
 					else
 						state_master_register <= state_master_idle;
 					end if;
 
 -------------------------------------------------------------------------------------------
+				when state_master_wait_write_ws =>
+					state_master_register <= state_master_wait_write;
 
 				when state_master_wait_write =>
 
 					writedata <=  push_fifos_out_databus_if(drive_index).push_fifo_out_data;
 					busaddress <= push_fifos_out_databus_if(drive_index).push_fifo_out_address;
-					avm_m1_burstcount <= "00000001";
+					avm_m1_burstcount <= conv_std_logic_vector(1,8);
 					avm_m1_write <= '1';
 					read_wrrq_delay <= '1';
 
@@ -362,6 +364,7 @@ begin
 								drv_cur_track_address(drive_index) <= drv_cur_track_base_address(drive_index);
 							else
 								done_q(drive_index) <= '1';
+								pop_fifos_in_databus_if(drive_index).pop_fifo_in_status(0) <= '1';
 								address_offsets(drive_index) <= images_track_size(drive_index);
 								drv_cur_track_address(drive_index) <= drv_cur_track_base_address(drive_index) + images_track_size(drive_index);
 							end if;
