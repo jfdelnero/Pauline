@@ -587,60 +587,60 @@ begin
 	raw_in_io(4) <= coe_c1_ext_io_din;
 	raw_in_io(5) <= coe_c1_external_int;
 
-	process(csi_ci_Clk, csi_ci_Reset_n, control_reg, floppy_ctrl_extraouts_reg  ) begin
+	process(csi_ci_Clk, csi_ci_Reset_n, control_reg, floppy_ctrl_extraouts_reg ,floppy_outputs,out_signal_polarity_reg, ctrl_control_reg ) begin
 
 		if(control_reg(30) = '0')
 		then
-			coe_c1_floppy_o_pin02            <= floppy_ctrl_extraouts_reg(0);
-			coe_c1_floppy_o_pin04            <= floppy_ctrl_extraouts_reg(1);
-			coe_c1_floppy_o_sel(0)           <= ctrl_control_reg(0);
-			coe_c1_floppy_o_sel(1)           <= ctrl_control_reg(1);
-			coe_c1_floppy_o_sel(2)           <= ctrl_control_reg(2);
-			coe_c1_floppy_o_sel(3)           <= ctrl_control_reg(3);
-			coe_c1_floppy_o_motor            <= ctrl_control_reg(4);
-			coe_c1_floppy_o_dir              <= floppy_o_dir;
-			coe_c1_floppy_o_step             <= floppy_o_step;
-			coe_c1_floppy_o_write_data       <= floppy_o_write_data;
-			coe_c1_floppy_o_write_gate       <= floppy_o_write_gate;
-			coe_c1_floppy_o_side1            <= ctrl_control_reg(5);
+			coe_c1_floppy_o_pin02             <= floppy_ctrl_extraouts_reg(0)   xor out_signal_polarity_reg(19);
+			coe_c1_floppy_o_pin04             <= floppy_ctrl_extraouts_reg(1)   xor out_signal_polarity_reg(20);
+			coe_c1_floppy_o_sel(0)            <= ctrl_control_reg(0)            xor out_signal_polarity_reg(9);
+			coe_c1_floppy_o_sel(1)            <= ctrl_control_reg(1)            xor out_signal_polarity_reg(10);
+			coe_c1_floppy_o_sel(2)            <= ctrl_control_reg(2)            xor out_signal_polarity_reg(11);
+			coe_c1_floppy_o_sel(3)            <= ctrl_control_reg(3)            xor out_signal_polarity_reg(12);
+			coe_c1_floppy_o_motor             <= ctrl_control_reg(4)            xor out_signal_polarity_reg(13);
+			coe_c1_floppy_o_dir               <= floppy_o_dir                   xor out_signal_polarity_reg(14);
+			coe_c1_floppy_o_step              <= floppy_o_step                  xor out_signal_polarity_reg(15);
+			coe_c1_floppy_o_write_data        <= floppy_o_write_data            xor out_signal_polarity_reg(16);
+			coe_c1_floppy_o_write_gate        <= floppy_o_write_gate            xor out_signal_polarity_reg(17);
+			coe_c1_floppy_o_side1             <= ctrl_control_reg(5)            xor out_signal_polarity_reg(18);
 
 			if(control_reg(29) = '0')
 			then
-				coe_c1_floppy_o_x68000_sel(0)    <= floppy_ctrl_extraouts_reg(2);
-				coe_c1_floppy_o_x68000_sel(1)    <= floppy_ctrl_extraouts_reg(3);
-				coe_c1_floppy_o_x68000_sel(2)    <= floppy_ctrl_extraouts_reg(4);
-				coe_c1_floppy_o_x68000_sel(3)    <= floppy_ctrl_extraouts_reg(5);
+				coe_c1_floppy_o_x68000_sel(0) <= floppy_ctrl_extraouts_reg(2)   xor out_signal_polarity_reg(21);
+				coe_c1_floppy_o_x68000_sel(1) <= floppy_ctrl_extraouts_reg(3)   xor out_signal_polarity_reg(22);
+				coe_c1_floppy_o_x68000_sel(2) <= floppy_ctrl_extraouts_reg(4)   xor out_signal_polarity_reg(23);
+				coe_c1_floppy_o_x68000_sel(3) <= floppy_ctrl_extraouts_reg(5)   xor out_signal_polarity_reg(24);
 			else
-				coe_c1_floppy_o_x68000_sel(0)    <= not(floppy_apple_stepper_phases(0));
-				coe_c1_floppy_o_x68000_sel(1)    <= not(floppy_apple_stepper_phases(1));
-				coe_c1_floppy_o_x68000_sel(2)    <= not(floppy_apple_stepper_phases(2));
-				coe_c1_floppy_o_x68000_sel(3)    <= not(floppy_apple_stepper_phases(3));
+				coe_c1_floppy_o_x68000_sel(0) <= floppy_apple_stepper_phases(0) xor out_signal_polarity_reg(21);
+				coe_c1_floppy_o_x68000_sel(1) <= floppy_apple_stepper_phases(1) xor out_signal_polarity_reg(22);
+				coe_c1_floppy_o_x68000_sel(2) <= floppy_apple_stepper_phases(2) xor out_signal_polarity_reg(23);
+				coe_c1_floppy_o_x68000_sel(3) <= floppy_apple_stepper_phases(3) xor out_signal_polarity_reg(24);
 			end if;
 
-			coe_c1_floppy_o_x68000_ledblink  <= floppy_ctrl_extraouts_reg(6);
-			coe_c1_floppy_o_x68000_lock      <= floppy_ctrl_extraouts_reg(7);
-			coe_c1_floppy_o_x68000_eject     <= floppy_ctrl_extraouts_reg(8);
+			coe_c1_floppy_o_x68000_ledblink   <= floppy_ctrl_extraouts_reg(6)   xor out_signal_polarity_reg(25);
+			coe_c1_floppy_o_x68000_lock       <= floppy_ctrl_extraouts_reg(7)   xor out_signal_polarity_reg(26);
+			coe_c1_floppy_o_x68000_eject      <= floppy_ctrl_extraouts_reg(8)   xor out_signal_polarity_reg(27);
 		else
 		-- direct IO / test mode
-			coe_c1_floppy_o_pin02            <= not(floppy_outputs(1)); --coe_c1_floppy_o_pin02
-			coe_c1_floppy_o_pin04            <= not(floppy_outputs(2)); --coe_c1_floppy_o_pin04
-			coe_c1_floppy_o_sel(0)           <= not(floppy_outputs(4)); --coe_c1_floppy_o_sel(0)
-			coe_c1_floppy_o_sel(1)           <= not(floppy_outputs(5)); --coe_c1_floppy_o_sel(1)
-			coe_c1_floppy_o_sel(2)           <= not(floppy_outputs(6)); --coe_c1_floppy_o_sel(2)
-			coe_c1_floppy_o_sel(3)           <= not(floppy_outputs(7)); --coe_c1_floppy_o_sel(3)
-			coe_c1_floppy_o_motor            <= not(floppy_outputs(8)); --coe_c1_floppy_o_motor
-			coe_c1_floppy_o_dir              <= not(floppy_outputs(9)); --coe_c1_floppy_o_dir
-			coe_c1_floppy_o_step             <= not(floppy_outputs(10)); --coe_c1_floppy_o_step
-			coe_c1_floppy_o_write_data       <= not(floppy_outputs(11)); --coe_c1_floppy_o_write_data
-			coe_c1_floppy_o_write_gate       <= not(floppy_outputs(12)); --coe_c1_floppy_o_write_gate
-			coe_c1_floppy_o_side1            <= not(floppy_outputs(16)); --coe_c1_floppy_o_side1
-			coe_c1_floppy_o_x68000_sel(0)    <= not(floppy_outputs(18)); --coe_c1_floppy_o_x68000_sel(0)
-			coe_c1_floppy_o_x68000_sel(1)    <= not(floppy_outputs(19)); --coe_c1_floppy_o_x68000_sel(1)
-			coe_c1_floppy_o_x68000_sel(2)    <= not(floppy_outputs(20)); --coe_c1_floppy_o_x68000_sel(2)
-			coe_c1_floppy_o_x68000_sel(3)    <= not(floppy_outputs(21)); --coe_c1_floppy_o_x68000_sel(3)
-			coe_c1_floppy_o_x68000_eject     <= not(floppy_outputs(23)); --coe_c1_floppy_o_x68000_eject
-			coe_c1_floppy_o_x68000_lock      <= not(floppy_outputs(24)); --coe_c1_floppy_o_x68000_lock
-			coe_c1_floppy_o_x68000_ledblink  <= not(floppy_outputs(25)); --coe_c1_floppy_o_x68000_ledblink
+			coe_c1_floppy_o_pin02             <= not(floppy_outputs(1)); --coe_c1_floppy_o_pin02
+			coe_c1_floppy_o_pin04             <= not(floppy_outputs(2)); --coe_c1_floppy_o_pin04
+			coe_c1_floppy_o_sel(0)            <= not(floppy_outputs(4)); --coe_c1_floppy_o_sel(0)
+			coe_c1_floppy_o_sel(1)            <= not(floppy_outputs(5)); --coe_c1_floppy_o_sel(1)
+			coe_c1_floppy_o_sel(2)            <= not(floppy_outputs(6)); --coe_c1_floppy_o_sel(2)
+			coe_c1_floppy_o_sel(3)            <= not(floppy_outputs(7)); --coe_c1_floppy_o_sel(3)
+			coe_c1_floppy_o_motor             <= not(floppy_outputs(8)); --coe_c1_floppy_o_motor
+			coe_c1_floppy_o_dir               <= not(floppy_outputs(9)); --coe_c1_floppy_o_dir
+			coe_c1_floppy_o_step              <= not(floppy_outputs(10)); --coe_c1_floppy_o_step
+			coe_c1_floppy_o_write_data        <= not(floppy_outputs(11)); --coe_c1_floppy_o_write_data
+			coe_c1_floppy_o_write_gate        <= not(floppy_outputs(12)); --coe_c1_floppy_o_write_gate
+			coe_c1_floppy_o_side1             <= not(floppy_outputs(16)); --coe_c1_floppy_o_side1
+			coe_c1_floppy_o_x68000_sel(0)     <= not(floppy_outputs(18)); --coe_c1_floppy_o_x68000_sel(0)
+			coe_c1_floppy_o_x68000_sel(1)     <= not(floppy_outputs(19)); --coe_c1_floppy_o_x68000_sel(1)
+			coe_c1_floppy_o_x68000_sel(2)     <= not(floppy_outputs(20)); --coe_c1_floppy_o_x68000_sel(2)
+			coe_c1_floppy_o_x68000_sel(3)     <= not(floppy_outputs(21)); --coe_c1_floppy_o_x68000_sel(3)
+			coe_c1_floppy_o_x68000_eject      <= not(floppy_outputs(23)); --coe_c1_floppy_o_x68000_eject
+			coe_c1_floppy_o_x68000_lock       <= not(floppy_outputs(24)); --coe_c1_floppy_o_x68000_lock
+			coe_c1_floppy_o_x68000_ledblink   <= not(floppy_outputs(25)); --coe_c1_floppy_o_x68000_ledblink
 
 		end if;
 
