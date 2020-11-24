@@ -258,8 +258,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "movehead " + document.getElementById("drives-select").value.toString() + " " + document.getElementById("trackselection").value.toString() + "\n";
-
+			var txt = "movehead"  + " " + document.getElementById("drives-select").value.toString() 
+			                      + " " + document.getElementById("trackselection").value.toString()
+			                      + " " + (document.getElementById("ckbDOUBLESTEP").checked + 0).toString()
+			                      + "\n";
+			
 			//alert(txt);
 			ws.send(txt);
 
@@ -273,7 +276,10 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "headstep " + document.getElementById("drives-select").value.toString() + " 1\n";
+			var txt = "headstep" + " " + document.getElementById("drives-select").value.toString() 
+			                     + " " + "1"
+			                     + " " + (document.getElementById("ckbDOUBLESTEP").checked + 0).toString()
+			                     + "\n";
 
 			//alert(txt);
 			ws.send(txt);
@@ -288,7 +294,10 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "headstep " + document.getElementById("drives-select").value.toString() + " -1\n";
+			var txt = "headstep" + " " + document.getElementById("drives-select").value.toString()
+			                     + " " + "-1"
+			                     + " " + (document.getElementById("ckbDOUBLESTEP").checked + 0).toString()
+			                     + "\n";
 
 			//alert(txt);
 			ws.send(txt);
