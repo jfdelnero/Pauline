@@ -187,6 +187,9 @@ fpga_state * init_fpga()
 		state->drive_mot_reg_number[i] = 0x40;
 		state->drive_mot_bit_mask[i] = 0x00000000;
 
+		state->drive_headload_reg_number[i] = 0x40;
+		state->drive_headload_bit_mask[i] = 0x00000000;
+
 		state->drive_X68000_opt_sel_reg_number[i] = 0x40;
 		state->drive_X68000_opt_sel_bit_mask[i] = 0x00000000;
 	}
@@ -375,12 +378,15 @@ void deinit_fpga(fpga_state * state)
 
 void floppy_ctrl_select_drive(fpga_state * state, int drive, int enable)
 {
+	if(drive >= MAX_DRIVES)
+		return;
+
 	pthread_mutex_lock( &state->io_fpga_mutex );
 
 	if(enable)
-		*(((volatile uint32_t*)(state->regs)) + state->drive_sel_reg_number[drive&3]) |= (state->drive_sel_bit_mask[drive&3]);
+		*(((volatile uint32_t*)(state->regs)) + state->drive_sel_reg_number[drive]) |= (state->drive_sel_bit_mask[drive]);
 	else
-		*(((volatile uint32_t*)(state->regs)) + state->drive_sel_reg_number[drive&3]) &= ~(state->drive_sel_bit_mask[drive&3]);
+		*(((volatile uint32_t*)(state->regs)) + state->drive_sel_reg_number[drive]) &= ~(state->drive_sel_bit_mask[drive]);
 
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 
@@ -388,12 +394,15 @@ void floppy_ctrl_select_drive(fpga_state * state, int drive, int enable)
 
 void floppy_ctrl_x68000_option_select_drive(fpga_state * state, int drive, int enable)
 {
+	if(drive >= MAX_DRIVES)
+		return;
+
 	pthread_mutex_lock( &state->io_fpga_mutex );
 
 	if(enable)
-		*(((volatile uint32_t*)(state->regs)) + state->drive_X68000_opt_sel_reg_number[drive&3]) |= (state->drive_X68000_opt_sel_bit_mask[drive&3]);
+		*(((volatile uint32_t*)(state->regs)) + state->drive_X68000_opt_sel_reg_number[drive]) |= (state->drive_X68000_opt_sel_bit_mask[drive]);
 	else
-		*(((volatile uint32_t*)(state->regs)) + state->drive_X68000_opt_sel_reg_number[drive&3]) &= ~(state->drive_X68000_opt_sel_bit_mask[drive&3]);
+		*(((volatile uint32_t*)(state->regs)) + state->drive_X68000_opt_sel_reg_number[drive]) &= ~(state->drive_X68000_opt_sel_bit_mask[drive]);
 
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 }
@@ -416,12 +425,31 @@ void floppy_ctrl_x68000_eject(fpga_state * state, int drive)
 
 void floppy_ctrl_motor(fpga_state * state, int drive, int enable)
 {
+	if(drive >= MAX_DRIVES)
+		return;
+
 	pthread_mutex_lock( &state->io_fpga_mutex );
 
 	if(enable)
-		*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive&3]) |= (state->drive_mot_bit_mask[drive&3]);
+		*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive]) |= (state->drive_mot_bit_mask[drive]);
 	else
-		*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive&3]) &= ~(state->drive_mot_bit_mask[drive&3]);
+		*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive]) &= ~(state->drive_mot_bit_mask[drive]);
+
+	pthread_mutex_unlock( &state->io_fpga_mutex );
+
+}
+
+void floppy_ctrl_headload(fpga_state * state, int drive, int enable)
+{
+	if(drive >= MAX_DRIVES)
+		return;
+
+	pthread_mutex_lock( &state->io_fpga_mutex );
+
+	if(enable)
+		*(((volatile uint32_t*)(state->regs)) + state->drive_headload_reg_number[drive]) |= (state->drive_headload_bit_mask[drive]);
+	else
+		*(((volatile uint32_t*)(state->regs)) + state->drive_headload_reg_number[drive]) &= ~(state->drive_headload_bit_mask[drive]);
 
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 
@@ -450,13 +478,33 @@ void floppy_ctrl_side(fpga_state * state, int drive, int side)
 
 }
 
-
-void floppy_ctrl_move_head(fpga_state * state, int dir, int trk)
+void floppy_ctrl_move_head(fpga_state * state, int dir, int trk, int drive)
 {
 	pthread_mutex_lock( &state->io_fpga_mutex );
 
+	if(drive >=0  && drive < MAX_DRIVES)
+	{
+		if(state->regs->floppy_ctrl_control & (0x1<<6))
+		{
+			state->drive_current_head_position[drive] = 0;
+		}
+	}
+
 	state->regs->floppy_ctrl_steprate = 12000;
 	state->regs->floppy_ctrl_headmove = 0x10000 | ((dir&1)<<17) | (trk & 0x1FF);
+
+	if(drive >=0  && drive < MAX_DRIVES)
+	{
+		if(dir)
+			state->drive_current_head_position[drive] += (trk & 0x1FF);
+		else
+		{
+			if(state->drive_current_head_position[drive] > trk)
+				state->drive_current_head_position[drive] -= (trk & 0x1FF);
+			else
+				state->drive_current_head_position[drive] = 0;
+		}
+	}
 
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 
@@ -468,14 +516,14 @@ void floppy_ctrl_move_head(fpga_state * state, int dir, int trk)
 
 #define STEP_RATE 24000
 
-int floppy_head_recalibrate(fpga_state * state)
+int floppy_head_recalibrate(fpga_state * state, int drive)
 {
 	int i;
 
 	i = 0;
 	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < 100 )
 	{
-		floppy_ctrl_move_head(state, 0, 1);
+		floppy_ctrl_move_head(state, 0, 1, drive);
 		usleep(STEP_RATE);
 		i++;
 	}
@@ -483,9 +531,12 @@ int floppy_head_recalibrate(fpga_state * state)
 	if(i>=100)
 		return -1;
 
+	if(drive >=0  && drive < MAX_DRIVES)
+		state->drive_current_head_position[drive] = 0;
+
 	for(i=0;i<4;i++)
 	{
-		floppy_ctrl_move_head(state, 1, 1);
+		floppy_ctrl_move_head(state, 1, 1, drive);
 		usleep(STEP_RATE);
 	}
 
@@ -495,7 +546,7 @@ int floppy_head_recalibrate(fpga_state * state)
 	i = 0;
 	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < 5 )
 	{
-		floppy_ctrl_move_head(state, 0, 1);
+		floppy_ctrl_move_head(state, 0, 1, drive);
 		usleep(STEP_RATE);
 		i++;
 	}
@@ -503,21 +554,24 @@ int floppy_head_recalibrate(fpga_state * state)
 	if(i>=5)
 		return -3;
 
+	if(drive >=0  && drive < MAX_DRIVES)
+		state->drive_current_head_position[drive] = 0;
+
 	return 0;
 }
 
-int floppy_head_maxtrack(fpga_state * state, int maxtrack)
+int floppy_head_maxtrack(fpga_state * state, int maxtrack, int drive)
 {
 	int i,ret;
 
-	ret = floppy_head_recalibrate(state);
+	ret = floppy_head_recalibrate(state, drive);
 
 	if(ret < 0)
 		return ret;
 
 	for(i=0;i < maxtrack;i++)
 	{
-		floppy_ctrl_move_head(state, 1, 1);
+		floppy_ctrl_move_head(state, 1, 1, drive);
 		usleep(STEP_RATE*2);
 	}
 
@@ -527,7 +581,7 @@ int floppy_head_maxtrack(fpga_state * state, int maxtrack)
 	i = 0;
 	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < maxtrack )
 	{
-		floppy_ctrl_move_head(state, 0, 1);
+		floppy_ctrl_move_head(state, 0, 1, drive);
 		usleep(STEP_RATE*2);
 		i++;
 	}
@@ -936,16 +990,26 @@ void test_interface(fpga_state * state)
 			printf("INT:%d\n",(state->regs->gpio_in_reg>>7)&1);
 			usleep(1000*100);
 		}
-
 	}
 }
 
 void sound(fpga_state * state,int freq, int duration)
 {
-	if( freq )
-		state->regs->sound_period = ((50000000 / freq) / 2);
+	int enable;
+
+	enable = hxcfe_getEnvVarValue( state->libhxcfe, "PAULINE_UI_SOUND" );
+
+	if( enable )
+	{
+		if( freq )
+			state->regs->sound_period = ((50000000 / freq) / 2);
+		else
+			state->regs->sound_period = 0;
+	}
 	else
+	{
 		state->regs->sound_period = 0;
+	}
 
 	usleep(1000*duration);
 

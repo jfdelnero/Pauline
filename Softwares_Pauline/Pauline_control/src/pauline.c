@@ -359,6 +359,8 @@ int main(int argc, char* argv[])
 		printhelp(argv);
 	}
 
+	hxcfe_setEnvVar( libhxcfe, "PAULINE_UI_SOUND", "1" );
+
 	ret = hxcfe_execScriptFile( libhxcfe, DEFAULT_DRIVES_CFG_FILE );
 	if( ret < 0)
 	{
@@ -409,13 +411,14 @@ int main(int argc, char* argv[])
 
 	fpga->libhxcfe = libhxcfe;
 
-	for(i=0;i<4;i++)
+	for(i=0;i<MAX_DRIVES;i++)
 	{
 		sprintf(temp,"DRIVE_%d_MAX_STEPS",i);
 		fpga->drive_max_steps[i] = hxcfe_getEnvVarValue( fpga->libhxcfe, (char *)temp );
 
 		get_drive_io(fpga, "DRIVE_%d_SELECT_LINE", i, &fpga->drive_sel_reg_number[i], &fpga->drive_sel_bit_mask[i]);
 		get_drive_io(fpga, "DRIVE_%d_MOTOR_LINE", i, &fpga->drive_mot_reg_number[i], &fpga->drive_mot_bit_mask[i]);
+		get_drive_io(fpga, "DRIVE_%d_HEADLOAD_LINE", i, &fpga->drive_headload_reg_number[i], &fpga->drive_headload_bit_mask[i]);
 		get_drive_io(fpga, "DRIVE_%d_X68000_OPTION_SELECT_LINE", i, &fpga->drive_X68000_opt_sel_reg_number[i], &fpga->drive_X68000_opt_sel_bit_mask[i]);
 	}
 
@@ -573,7 +576,7 @@ int main(int argc, char* argv[])
 
 		floppy_ctrl_select_drive(fpga, drive, 1);
 
-		ret = floppy_head_recalibrate(fpga);
+		ret = floppy_head_recalibrate(fpga, drive);
 
 		if(ret < 0)
 			printf("Head calibration failed !\n");
@@ -605,7 +608,7 @@ int main(int argc, char* argv[])
 		}
 
 		fflush(stdout);
-		floppy_ctrl_move_head(fpga, dir, track);
+		floppy_ctrl_move_head(fpga, dir, track, drive);
 
 		floppy_ctrl_select_drive(fpga, drive, 0);
 
@@ -762,7 +765,7 @@ int main(int argc, char* argv[])
 		fflush(stdout);
 		setio(fpga, (char*)"DRIVES_PORT_PIN10", 1);
 		usleep(1000);
-		ret = floppy_head_recalibrate(fpga);
+		ret = floppy_head_recalibrate(fpga, -1);
 		if(ret >= 0)
 			printf("Drive on PIN10/DS0/MOTA Found !!!\n");
 		else
@@ -776,7 +779,7 @@ int main(int argc, char* argv[])
 		fflush(stdout);
 		setio(fpga, (char*)"DRIVES_PORT_PIN12", 1);
 		usleep(1000);
-		ret = floppy_head_recalibrate(fpga);
+		ret = floppy_head_recalibrate(fpga, -1);
 		if(ret >= 0)
 			printf("Drive on PIN12/DS1/DRVSB found !!!\n");
 		else
@@ -790,7 +793,7 @@ int main(int argc, char* argv[])
 		fflush(stdout);
 		setio(fpga, (char*)"DRIVES_PORT_PIN14", 1);
 		usleep(1000);
-		ret = floppy_head_recalibrate(fpga);
+		ret = floppy_head_recalibrate(fpga, -1);
 		if(ret >= 0)
 			printf("Drive on PIN14/DS2/DRVSA found !!!\n");
 		else
@@ -804,7 +807,7 @@ int main(int argc, char* argv[])
 		fflush(stdout);
 		setio(fpga, (char*)"DRIVES_PORT_PIN6", 1);
 		usleep(1000);
-		ret = floppy_head_recalibrate(fpga);
+		ret = floppy_head_recalibrate(fpga, -1);
 		if(ret >= 0)
 			printf("Drive on PIN6/DS3 found !!!\n");
 		else
@@ -818,7 +821,7 @@ int main(int argc, char* argv[])
 		fflush(stdout);
 		setio(fpga, (char*)"DRIVES_PORT_PIN16", 1);
 		usleep(1000);
-		ret = floppy_head_recalibrate(fpga);
+		ret = floppy_head_recalibrate(fpga, -1);
 		if(ret >= 0)
 			printf("Drive on PIN16/MOTON/MOTEB found !!! (Shugart drive on twisted ribbon ?)\n");
 		else
@@ -847,7 +850,7 @@ int main(int argc, char* argv[])
 			printf("Max track %d ... : ",testmaxtrack[i]);
 			fflush(stdout);
 
-			ret = floppy_head_maxtrack(fpga, testmaxtrack[i]);
+			ret = floppy_head_maxtrack(fpga, testmaxtrack[i],drive);
 
 			if( ret >= 0)
 			{
@@ -887,7 +890,7 @@ int main(int argc, char* argv[])
 
 		usleep(1000);
 
-		ret = floppy_head_recalibrate(fpga);
+		ret = floppy_head_recalibrate(fpga, drive);
 		if(ret < 0)
 		{
 			printf("Head position calibration failed ! (%d)\n",ret);
@@ -899,12 +902,23 @@ int main(int argc, char* argv[])
 		}
 
 		if(dump_start_track)
-			floppy_ctrl_move_head(fpga, 1, dump_start_track);
+			floppy_ctrl_move_head(fpga, 1, dump_start_track, drive);
 
 		if( dump_max_track > fpga->drive_max_steps[drive] )
 		{
 			printf("Warning : Drive Max step : %d !\n",fpga->drive_max_steps[drive]);
 			dump_max_track = fpga->drive_max_steps[drive];
+		}
+
+		// Head load...
+		if(fpga->drive_headload_bit_mask[drive&3])
+		{
+			usleep(25*1000);
+
+			floppy_ctrl_headload(fpga, drive, 1);
+
+			for(i=0;i<250;i++)
+				usleep(1000);
 		}
 
 		for(i=dump_start_track;i<=dump_max_track;i++)
@@ -955,7 +969,15 @@ int main(int argc, char* argv[])
 			}
 
 			if(i<=dump_max_track)
-				floppy_ctrl_move_head(fpga, 1, 1);
+				floppy_ctrl_move_head(fpga, 1, 1, drive);
+		}
+
+		if(fpga->drive_headload_bit_mask[drive])
+		{
+			floppy_ctrl_headload(fpga, drive, 0);
+
+			for(i=0;i<250;i++)
+				usleep(1000);
 		}
 
 		floppy_ctrl_select_drive(fpga, drive, 0);

@@ -25,7 +25,7 @@
 //
 */
 
-#define MAX_DRIVES 4
+#define MAX_DRIVES 16
 
 #define REG_BASE 0xFF200000
 #define REG_BASE_SIZE 4096
@@ -314,10 +314,14 @@ typedef struct _fpga_state
 	int drive_mot_reg_number[MAX_DRIVES];
 	unsigned int drive_mot_bit_mask[MAX_DRIVES];
 
+	int drive_headload_reg_number[MAX_DRIVES];
+	unsigned int drive_headload_bit_mask[MAX_DRIVES];
+
 	int drive_X68000_opt_sel_reg_number[MAX_DRIVES];
 	unsigned int drive_X68000_opt_sel_bit_mask[MAX_DRIVES];
 
 	int drive_max_steps[MAX_DRIVES];
+	int drive_current_head_position[MAX_DRIVES];	
 
 	HXCFE* libhxcfe;
 
@@ -359,7 +363,7 @@ void set_select_src(fpga_state * state, int drive, int src);
 void set_motor_src(fpga_state * state, int drive, int src);
 void enable_drive(fpga_state * state, int drive, int enable);
 
-void floppy_ctrl_move_head(fpga_state * state, int dir, int trk);
+void floppy_ctrl_move_head(fpga_state * state, int dir, int trk, int drive);
 
 void start_dump(fpga_state * state, uint32_t buffersize, int res, int delay, int ignore_index);
 unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * size, dump_state * dstate);
@@ -370,10 +374,11 @@ void print_fpga_regs(fpga_state * state);
 
 void floppy_ctrl_select_drive(fpga_state * state, int drive, int enable);
 void floppy_ctrl_motor(fpga_state * state, int drive, int enable);
+void floppy_ctrl_headload(fpga_state * state, int drive, int enable);
 void floppy_ctrl_side(fpga_state * state, int drive, int side);
 void floppy_ctrl_selectbyte(fpga_state * state, unsigned char byte);
-int  floppy_head_recalibrate(fpga_state * state);
-int  floppy_head_maxtrack(fpga_state * state, int maxtrack);
+int  floppy_head_recalibrate(fpga_state * state, int drive);
+int  floppy_head_maxtrack(fpga_state * state, int maxtrack, int drive);
 
 void floppy_ctrl_x68000_option_select_drive(fpga_state * state, int drive, int enable);
 void floppy_ctrl_x68000_eject(fpga_state * state, int drive);
