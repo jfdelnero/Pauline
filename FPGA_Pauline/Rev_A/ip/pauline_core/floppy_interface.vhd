@@ -476,6 +476,7 @@ component floppy_ctrl_stepper
 		floppy_motor_phases     : out std_logic_vector (3 downto 0);
 
 		step_rate               : in  std_logic_vector (31 downto 0);
+		step_width              : in  std_logic_vector (15 downto 0);
 
 		phases_timeout_moving   : in  std_logic_vector (31 downto 0);
 		phases_timeout_stopping : in  std_logic_vector (31 downto 0);
@@ -1417,6 +1418,8 @@ ctrl_stepper : floppy_ctrl_stepper
 		floppy_motor_phases            => floppy_apple_stepper_phases,
 
 		step_rate                      => ctrl_steprate_reg,
+		step_width                     => conv_std_logic_vector(400,16),     -- 8uS
+
 		phases_timeout_moving          => conv_std_logic_vector(700000,32),  -- 14ms
 		phases_timeout_stopping        => conv_std_logic_vector(1800000,32), -- 36ms
 

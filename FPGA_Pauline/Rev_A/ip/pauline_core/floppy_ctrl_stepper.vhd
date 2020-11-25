@@ -48,6 +48,7 @@ entity floppy_ctrl_stepper is
 		floppy_motor_phases     : out std_logic_vector (3 downto 0);
 
 		step_rate               : in  std_logic_vector (31 downto 0);
+		step_width              : in  std_logic_vector (15 downto 0);
 
 		phases_timeout_moving   : in  std_logic_vector (31 downto 0);
 		phases_timeout_stopping : in  std_logic_vector (31 downto 0);
@@ -76,7 +77,7 @@ architecture arch of floppy_ctrl_stepper is
 	signal track_pos : std_logic_vector(9 downto 0);
 	signal track_pos_cnt : std_logic_vector(9 downto 0);
 
-	signal step_pulse_cnt : std_logic_vector(9 downto 0);
+	signal step_pulse_cnt : std_logic_vector(15 downto 0);
 	signal stepper_tick_cnt : std_logic_vector(31 downto 0);
 	signal stepper_time_cnt : std_logic_vector(15 downto 0);
 	signal stepper_tick_cnt_rst : std_logic;
@@ -86,7 +87,7 @@ architecture arch of floppy_ctrl_stepper is
 	signal floppy_ctrl_dir_q : std_logic;
 
 	signal head_moving : std_logic;
-	
+
 	signal motor_phases : std_logic_vector(3 downto 0);
 	signal motor_phase_ctrl : std_logic_vector(3 downto 0);
 	signal motor_phases_cnt : integer range 0 to 3;
@@ -132,7 +133,7 @@ begin
 
 			floppy_ctrl_step <= '0';
 
-			if( step_pulse_cnt < conv_std_logic_vector(200, 10) )
+			if( step_pulse_cnt < step_width )
 			then
 				floppy_ctrl_step <= '1';
 			end if;
@@ -141,9 +142,9 @@ begin
 			then
 				step_pulse_cnt <= (others=>'0');
 			else
-				if( step_pulse_cnt /= "1111111111" )
+				if( step_pulse_cnt /= "1111111111111111" )
 				then
-					step_pulse_cnt <= step_pulse_cnt + "0000000001";
+					step_pulse_cnt <= step_pulse_cnt + conv_std_logic_vector(1, 16);
 				end if;
 			end if;
 		end if;
@@ -176,8 +177,6 @@ begin
 		end if;
 	end process;
 
-
-
 	-------------------------------------------------------
 	-- Apple I/II phases motor control outputs
 	-------------------------------------------------------
@@ -193,7 +192,7 @@ begin
 
 			motor_phase_ctrl(i_phase) <= motor_phases(i_phase);
 
-			if( motor_phase_ctrl(i_phase)  = '0' and motor_phases(i_phase) = '1' )
+			if( motor_phase_ctrl(i_phase) = '0' and motor_phases(i_phase) = '1' )
 			then
 				phases_timeouts(i_phase) <= (others=>'0');
 			end if;
