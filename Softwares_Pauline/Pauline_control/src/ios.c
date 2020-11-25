@@ -136,6 +136,8 @@ io_def ios_definition[]=
 	{"PUSH_BUTTON_1_IN",                  INPUT,     0x42,  9},
 	{"PUSH_BUTTON_2_IN",                  INPUT,     0x42,  10},
 
+	{"ENABLE_APPLE_MODE",                 CTRL,      0x00,  29},
+
 	{ NULL,                               INPUT_ST,  0x00,  0},
 };
 

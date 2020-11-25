@@ -85,6 +85,10 @@
 #
 # -----------------------------------------------------------------------------
 
+# Uncomment the following line to enable the Apple Disk II interface mode
+
+#set ENABLE_APPLE_MODE 1
+
 #
 # Drive 0 settings
 #
