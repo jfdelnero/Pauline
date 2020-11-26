@@ -183,6 +183,8 @@ cp ${TARGET_SOURCES}/linux-kernel/arch/arm/boot/zImage ${TARGET_HOME}/output_obj
 ${ALTERA_TOOLS_ROOT}/quartus/bin/quartus_cpf -c -o bitstream_compression=on ${FPGA_GHRD_FOLDER}/output_files/FPGA_Pauline_Rev_A.sof ${TARGET_HOME}/output_objects/soc_system.rbf || exit 1
 ${ALTERA_TOOLS_ROOT}/quartus/bin/quartus_cpf -c -o bitstream_compression=off ${FPGA_GHRD_FOLDER}/output_files/FPGA_Pauline_Rev_A.sof ${TARGET_HOME}/output_objects/soc_system_unpacked.rbf || exit 1
 
+#exit 0
+
 ############################################################################################
 # Create the update ramdisk image
 
@@ -251,7 +253,6 @@ sudo cp -av ${TARGET_ROOTFS_MIRROR}/* ${TARGET_HOME}/output_objects/tmp_mount_po
 
 sudo cp -av ${TARGET_HOME}/output_objects/pauline  ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
 sudo cp -av ${TARGET_HOME}/output_objects/splash_screen ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
-sudo cp -av ${TARGET_HOME}/output_objects/hxcfe ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
 
 sudo cp -av ${TARGET_HOME}/output_objects/target_hxc_tool/hxcfe ${TARGET_HOME}/output_objects/tmp_mount_point/usr/sbin || exit 1
 sudo cp -av ${TARGET_HOME}/output_objects/target_hxc_tool/*.so ${TARGET_HOME}/output_objects/tmp_mount_point/lib || exit 1
