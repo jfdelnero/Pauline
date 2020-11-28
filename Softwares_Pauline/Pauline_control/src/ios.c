@@ -138,6 +138,8 @@ io_def ios_definition[]=
 
 	{"ENABLE_APPLE_MODE",                 CTRL,      0x00,  29},
 
+	{"UNCONNECTED_PORT_OUT",              OUT_OC,    0x22,  0},
+
 	{ NULL,                               INPUT_ST,  0x00,  0},
 };
 
