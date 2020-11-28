@@ -521,7 +521,7 @@ int prepare_folder(char * name, char * comment, int start_index, int mode, char 
 
 int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_side,int dump_max_side,int high_res_mode,int doublestep,int ignore_index,int spy, char * name, char * comment, char * comment2, int start_index, int incmode, char * driveref, char * operator)
 {
-	int i,j;
+	int i,j,max_track;
 	char temp[512];
 	char folder_path[512];
 
@@ -600,8 +600,15 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 
 		if(dump_start_track!=-1)
 		{
+			max_track = 160;
+
+			if(hxcfe_getEnvVarValue( fpga->libhxcfe, (char *)"ENABLE_APPLE_MODE" )>0)
+			{
+				max_track = 80;
+			}
+		
 			i = 0;
-			while( !(fpga->regs->floppy_ctrl_control & (0x1<<6)) && i < 160 )
+			while( !(fpga->regs->floppy_ctrl_control & (0x1<<6)) && i < max_track )
 			{
 				floppy_ctrl_move_head(fpga, 0, 1, drive);
 				usleep(12000);

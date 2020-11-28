@@ -538,6 +538,14 @@ int floppy_head_recalibrate(fpga_state * state, int drive)
 		i++;
 	}
 
+	if(hxcfe_getEnvVarValue( state->libhxcfe, (char *)"ENABLE_APPLE_MODE" )>0)
+	{
+		if(drive >=0  && drive < MAX_DRIVES)
+			state->drive_current_head_position[drive] = 0;
+
+		return 0;
+	}
+
 	if(i>=100)
 		return -1;
 
