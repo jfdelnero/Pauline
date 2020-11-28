@@ -192,11 +192,6 @@ begin
 
 			motor_phase_ctrl(i_phase) <= motor_phases(i_phase);
 
-			if( motor_phase_ctrl(i_phase) = '0' and motor_phases(i_phase) = '1' )
-			then
-				phases_timeouts(i_phase) <= (others=>'0');
-			end if;
-
 			if( head_moving = '1' )
 			then
 				if( phases_timeouts(i_phase) < phases_timeout_moving )
@@ -205,6 +200,12 @@ begin
 				else
 					phase_state(i_phase) <= '0';
 				end if;
+
+				if( phases_timeouts(i_phase) < phases_timeout_moving )
+				then
+					phases_timeouts(i_phase) <= phases_timeouts(i_phase) + conv_std_logic_vector(1, 32);
+				end if;
+
 			else
 				if( phases_timeouts(i_phase) < phases_timeout_stopping )
 				then
@@ -212,7 +213,19 @@ begin
 				else
 					phase_state(i_phase) <= '0';
 				end if;
+
+				if( phases_timeouts(i_phase) < phases_timeout_stopping )
+				then
+					phases_timeouts(i_phase) <= phases_timeouts(i_phase) + conv_std_logic_vector(1, 32);
+				end if;
+
 			end if;
+
+			if( motor_phase_ctrl(i_phase) = '0' and motor_phases(i_phase) = '1' )
+			then
+				phases_timeouts(i_phase) <= (others=>'0');
+			end if;
+
 		end if;
 	end process;
 	end generate GEN_APPLEPHASES;
@@ -224,17 +237,13 @@ begin
 
 		elsif(clk'event and clk = '1') then
 
-			if( stepper_tick_cnt_rst = '1' )
-			then
-				motor_phases <= (others=>'0');
-			else
-				motor_phases <= (others=>'0');
-				motor_phases(motor_phases_cnt) <= '1';
-			end if;
+			motor_phases <= (others=>'0');
+			motor_phases(motor_phases_cnt) <= '1';
+
 		end if;
 	end process;
 
-	floppy_motor_phases <= motor_phases;
+	floppy_motor_phases <= phase_state;
 	-------------------------------------------------------
 	-- Track Circuit
 	trackcounter : process(clk,reset_n)
