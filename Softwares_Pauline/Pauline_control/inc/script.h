@@ -50,3 +50,6 @@ script_ctx * deinit_script(script_ctx * ctx);
 #define MSGTYPE_WARNING                      3
 #define MSGTYPE_ERROR                        4
 #define MSGTYPE_DEBUG                        5
+
+#define USER_DRIVES_CFG_FILE "/home/pauline/Settings/drives.script"
+#define DEFAULT_DRIVES_CFG_FILE "/data/Settings/drives.script"

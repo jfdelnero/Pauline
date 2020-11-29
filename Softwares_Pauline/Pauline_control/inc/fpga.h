@@ -31,6 +31,7 @@
 #define REG_BASE_SIZE 4096
 
 #define BIT_CLOCK 25000000 // 25 Mhz
+#define FPGA_CLOCK 50000000 // 50 Mhz
 
 #define DUMP_IMAGE_BASE 512*1024*1024
 
@@ -286,6 +287,10 @@ typedef struct _floppy_ip_regs
 
 	volatile uint32_t sound_period;
 
+	volatile uint32_t step_signal_width;
+	volatile uint32_t step_phases_width;
+	volatile uint32_t step_phases_stop_width;
+
 }floppy_ip_regs;
 
 #pragma pack()
@@ -328,6 +333,8 @@ typedef struct _fpga_state
 	pthread_mutex_t io_fpga_mutex;
 
 	int inotify_fd;
+	
+	int step_rate;
 
 }fpga_state;
 

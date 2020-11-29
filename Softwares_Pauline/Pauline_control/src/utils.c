@@ -28,6 +28,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <malloc.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+#include <stdint.h>
+#include <pthread.h>
+
+#include "libhxcfe.h"
+
+#include "fpga.h"
 
 void get_filename(char * path,char * filename)
 {
@@ -60,4 +71,28 @@ void get_filename(char * path,char * filename)
 	}
 
 	return;
+}
+
+void delay_us(unsigned int us)
+{
+	#define USLEEP_MAX (1000000 - 1)
+	unsigned int chunk;
+
+	while(us > 0)
+	{
+		chunk = (us > USLEEP_MAX) ? USLEEP_MAX : us;
+		usleep(chunk);
+		us -= chunk;
+	}
+}
+
+
+int us_to_fpga_clk(int us)
+{
+	return ((us* FPGA_CLOCK)/1000000);
+}
+
+int ms_to_fpga_clk(int ms)
+{
+	return ((ms* FPGA_CLOCK)/1000);
 }

@@ -62,9 +62,6 @@ char home_folder[512];
 
 #define INOTIFY_RD_BUF_SIZE ( 32*1024 )
 
-#define USER_DRIVES_CFG_FILE "/home/pauline/Settings/drives.script"
-#define DEFAULT_DRIVES_CFG_FILE "/data/Settings/drives.script"
-
 typedef struct gpio_description_
 {
 	char * name;
@@ -359,7 +356,15 @@ int main(int argc, char* argv[])
 		printhelp(argv);
 	}
 
+	// Default config value
 	hxcfe_setEnvVar( libhxcfe, "PAULINE_UI_SOUND", "1" );
+	hxcfe_setEnvVar( libhxcfe, "DRIVE_MOTOR_SPINUP_DELAY",     "1000" );
+	hxcfe_setEnvVar( libhxcfe, "DRIVE_HEAD_LOAD_DELAY",        "250" );
+	hxcfe_setEnvVar( libhxcfe, "DRIVE_HEAD_STEP_RATE",         "24000" );
+	hxcfe_setEnvVar( libhxcfe, "DRIVE_HEAD_SETTLING_TIME",     "16000" );
+	hxcfe_setEnvVar( libhxcfe, "DRIVE_STEP_SIGNAL_WIDTH",      "8" );
+	hxcfe_setEnvVar( libhxcfe, "DRIVE_STEP_PHASES_WIDTH",      "14000" );
+	hxcfe_setEnvVar( libhxcfe, "DRIVE_STEP_PHASES_STOP_WIDTH", "36000" );
 
 	ret = hxcfe_execScriptFile( libhxcfe, DEFAULT_DRIVES_CFG_FILE );
 	if( ret < 0)

@@ -26,3 +26,6 @@
 */
 
 void get_filename(char * path,char * filename);
+void delay_us(unsigned int us);
+int us_to_fpga_clk(int us);
+int ms_to_fpga_clk(int ms);

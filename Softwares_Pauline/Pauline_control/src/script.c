@@ -50,6 +50,8 @@
 
 #include "messages.h"
 
+#include "utils.h"
+
 #include "version.h"
 
 
@@ -591,12 +593,11 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 
 		floppy_ctrl_motor(fpga, drive, 1);
 
-		for(i=0;i<1000;i++)
-			usleep(1000);
+		delay_us( hxcfe_getEnvVarValue(fpga->libhxcfe, "DRIVE_MOTOR_SPINUP_DELAY") * 1000 );
 
 		floppy_ctrl_select_drive(fpga, drive, 1);
 
-	//	usleep(1000);
+		delay_us( 1000 );
 
 		if(dump_start_track!=-1)
 		{
@@ -606,12 +607,12 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			{
 				max_track = 80;
 			}
-		
+
 			i = 0;
 			while( !(fpga->regs->floppy_ctrl_control & (0x1<<6)) && i < max_track )
 			{
 				floppy_ctrl_move_head(fpga, 0, 1, drive);
-				usleep(12000);
+				delay_us( hxcfe_getEnvVarValue(fpga->libhxcfe, "DRIVE_HEAD_STEP_RATE") );
 				i++;
 			}
 
@@ -673,12 +674,13 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 
 		floppy_ctrl_headload(fpga, drive, 1);
 
-		for(i=0;i<250;i++)
-			usleep(1000);
+		delay_us( hxcfe_getEnvVarValue(fpga->libhxcfe, "DRIVE_HEAD_LOAD_DELAY") * 1000 );
 	}
 
 	for(i=dump_start_track;i<=dump_max_track;i++)
 	{
+		delay_us( hxcfe_getEnvVarValue(fpga->libhxcfe, "DRIVE_HEAD_SETTLING_TIME") );
+
 		for(j=dump_start_side;j<=dump_max_side;j++)
 		{
 			if(stop_process)
@@ -1020,6 +1022,83 @@ int cmd_set_pin_mode(script_ctx * ctx, char * line)
 	ctx->script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
 
 	return 0;
+}
+
+int cmd_set_env(script_ctx * ctx, char * line)
+{
+	int i,j;
+	char variable[DEFAULT_BUFLEN];
+	char value[DEFAULT_BUFLEN];
+
+	i = get_param(line, 1,variable);
+	j = get_param(line, 2,value);
+
+	if(i>=0 && j>=0)
+	{
+		hxcfe_setEnvVar( fpga->libhxcfe, variable, value );
+
+		ctx->script_printf(MSGTYPE_INFO_0,"Set %s to %s\n",variable,value);
+
+		reset_fpga(fpga);
+
+		return 1;
+	}
+
+	ctx->script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+
+	return 0;
+}
+
+int cmd_get_env(script_ctx * ctx, char * line)
+{
+	int i;
+	char variable[DEFAULT_BUFLEN];
+	char value[DEFAULT_BUFLEN];
+	char * var;
+
+	i = get_param(line, 1,variable);
+
+	if(i>=0)
+	{
+		var = hxcfe_getEnvVar( fpga->libhxcfe, variable, NULL );
+
+		ctx->script_printf(MSGTYPE_INFO_0,"%s  = %s\n",variable,var);
+
+		return 1;
+	}
+	else
+	{
+		i = 0;
+		do
+		{
+			var = hxcfe_getEnvVarIndex( fpga->libhxcfe, i, value);
+			if(var)
+			{
+				ctx->script_printf(MSGTYPE_INFO_0,"%s  = %s\n",var,value);
+			}
+			i++;
+		}while(var);
+
+		return 1;
+	}
+}
+
+int cmd_reload_config(script_ctx * ctx, char * line)
+{
+	int ret;
+
+	ret = hxcfe_execScriptFile( fpga->libhxcfe, DEFAULT_DRIVES_CFG_FILE );
+	if( ret < 0)
+	{
+		ctx->script_printf(MSGTYPE_ERROR,"Error while reading the default init script !\n");
+		return 0;
+	}
+
+	reset_fpga(fpga);
+
+	ctx->script_printf(MSGTYPE_INFO_0,"Config file reloaded\n");
+
+	return 1;
 }
 
 int cmd_headstep(script_ctx * ctx, char * line)
@@ -1622,7 +1701,6 @@ int cmd_sound(script_ctx * ctx, char * line)
 	return 0;
 }
 
-
 cmd_list cmdlist[] =
 {
 	{"print",                   cmd_print},
@@ -1650,8 +1728,11 @@ cmd_list cmdlist[] =
 	{"setpreviewimagesettings", cmd_set_images_settings},
 	{"setpreviewimagedecoders", cmd_set_images_decoders},
 
-	{"sound",                   cmd_sound},
+	{"set",                     cmd_set_env},
+	{"get",                     cmd_get_env},
+	{"reloadcfg",               cmd_reload_config},
 
+	{"sound",                   cmd_sound},
 
 	{"system",                  cmd_system},
 

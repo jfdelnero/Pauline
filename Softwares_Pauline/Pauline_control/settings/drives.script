@@ -87,7 +87,70 @@
 
 # Uncomment the following line to enable the Apple Disk II interface mode
 
-#set ENABLE_APPLE_MODE 1
+# set ENABLE_APPLE_MODE 1
+
+#
+# Uncomment the following line to disable the sound output.
+#
+
+# set PAULINE_UI_SOUND 0
+
+#
+# Additionnal drive spin up delay when the motor is turned on.
+# (in milli-seconds)
+#
+
+set DRIVE_MOTOR_SPINUP_DELAY 1000
+
+#
+# Delay to wait after the head load
+# (in milli-seconds)
+#
+
+set DRIVE_HEAD_LOAD_DELAY 250
+
+#
+# Delay to wait after the head load
+# (in micro-seconds)
+# Typical minimum values :
+# 3"1/2 -> 2ms (2000)
+# 5"1/4 -> 12ms (12000)
+#
+
+set DRIVE_HEAD_STEP_RATE 24000
+
+set DRIVE_HEAD_SETTLING_TIME 16000
+
+#
+# Step signal width (Shugart drives). 
+# (in micro-seconds)
+#
+
+set DRIVE_STEP_SIGNAL_WIDTH 8
+
+#
+# Apple Phases signal output width
+#
+# DRIVE_STEP_PHASES_STOP_WIDTH timing is used
+# at the last step
+#
+# I recommend to increase the DRIVE_HEAD_SETTLING_TIME value
+# at least to the DRIVE_STEP_PHASES_STOP_WIDTH or more 
+# to be sure that the head is well stabilized.
+#
+
+set DRIVE_STEP_PHASES_WIDTH 14000
+set DRIVE_STEP_PHASES_STOP_WIDTH 36000
+
+#
+# Set the index signal polarity
+# 0 -> Active low (default)
+# 1 -> Active high
+# Usefull if you use a custom index sensor
+#
+
+set DRIVE_INDEX_SIGNAL_POLARITY 0
+
 
 #
 # Drive 0 settings

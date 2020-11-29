@@ -42,6 +42,8 @@
 #include "dump_chunk.h"
 #include "ios.h"
 
+#include "utils.h"
+
 static void prepare_LUT(uint16_t * lut)
 {
 	int i,a,b;
@@ -194,6 +196,8 @@ fpga_state * init_fpga()
 		state->drive_X68000_opt_sel_bit_mask[i] = 0x00000000;
 	}
 
+	state->step_rate = 24*1000;
+
 	pthread_mutex_init ( &state->io_fpga_mutex, NULL);
 
 	return state;
@@ -245,6 +249,18 @@ void reset_fpga(fpga_state * state)
 		state->regs->out_signal_polarity_reg = 0x00000000;
 		set_io_name(state, "ENABLE_APPLE_MODE", 0);
 	}
+
+	if(hxcfe_getEnvVarValue( state->libhxcfe, (char *)"DRIVE_INDEX_SIGNAL_POLARITY" )>0)
+	{
+		state->regs->in_signal_polarity_reg |= (1<<5);
+	}
+
+	state->regs->step_signal_width = us_to_fpga_clk(hxcfe_getEnvVarValue( state->libhxcfe, (char *)"DRIVE_STEP_SIGNAL_WIDTH" ));
+	state->regs->step_phases_width = us_to_fpga_clk(hxcfe_getEnvVarValue( state->libhxcfe, (char *)"DRIVE_STEP_PHASES_WIDTH" ));
+	state->regs->step_phases_stop_width = us_to_fpga_clk(hxcfe_getEnvVarValue( state->libhxcfe, (char *)"DRIVE_STEP_PHASES_STOP_WIDTH" ));
+
+	state->step_rate = hxcfe_getEnvVarValue( state->libhxcfe, (char *)"DRIVE_HEAD_STEP_RATE" );
+	state->regs->floppy_ctrl_steprate = state->step_rate;
 
 	state->regs->dump_in_mux_sel_3_0 =   ( (DUMP_MUX_SEL_FLOPPY_O_STEP<<(8*3)) | (DUMP_MUX_SEL_FLOPPY_I_PIN34<<(8*2)) | (DUMP_MUX_SEL_FLOPPY_I_PIN02<<(8*1)) | (DUMP_MUX_SEL_FLOPPY_I_INDEX<<(8*0)));
 	state->regs->dump_in_mux_sel_7_4 =   ( (DUMP_MUX_SEL_FLOPPY_O_SEL0<<(8*3)) | (DUMP_MUX_SEL_FLOPPY_O_SIDE1<<(8*2)) | (DUMP_MUX_SEL_FLOPPY_I_WPT<<(8*1))   | (DUMP_MUX_SEL_FLOPPY_O_DIR<<(8*0)));
@@ -500,7 +516,6 @@ void floppy_ctrl_move_head(fpga_state * state, int dir, int trk, int drive)
 		}
 	}
 
-	state->regs->floppy_ctrl_steprate = 12000;
 	state->regs->floppy_ctrl_headmove = 0x10000 | ((dir&1)<<17) | (trk & 0x1FF);
 
 	if(drive >=0  && drive < MAX_DRIVES)
@@ -524,8 +539,6 @@ void floppy_ctrl_move_head(fpga_state * state, int dir, int trk, int drive)
 	}
 }
 
-#define STEP_RATE 24000
-
 int floppy_head_recalibrate(fpga_state * state, int drive)
 {
 	int i;
@@ -534,7 +547,7 @@ int floppy_head_recalibrate(fpga_state * state, int drive)
 	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < 100 )
 	{
 		floppy_ctrl_move_head(state, 0, 1, drive);
-		usleep(STEP_RATE);
+		delay_us(state->step_rate);
 		i++;
 	}
 
@@ -555,7 +568,7 @@ int floppy_head_recalibrate(fpga_state * state, int drive)
 	for(i=0;i<4;i++)
 	{
 		floppy_ctrl_move_head(state, 1, 1, drive);
-		usleep(STEP_RATE);
+		delay_us(state->step_rate);
 	}
 
 	if( (state->regs->floppy_ctrl_control & (0x1<<6)) )
@@ -565,7 +578,7 @@ int floppy_head_recalibrate(fpga_state * state, int drive)
 	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < 5 )
 	{
 		floppy_ctrl_move_head(state, 0, 1, drive);
-		usleep(STEP_RATE);
+		delay_us(state->step_rate);
 		i++;
 	}
 
@@ -590,7 +603,7 @@ int floppy_head_maxtrack(fpga_state * state, int maxtrack, int drive)
 	for(i=0;i < maxtrack;i++)
 	{
 		floppy_ctrl_move_head(state, 1, 1, drive);
-		usleep(STEP_RATE*2);
+		delay_us(state->step_rate * 2);
 	}
 
 	if( (state->regs->floppy_ctrl_control & (0x1<<6)) )
@@ -600,7 +613,7 @@ int floppy_head_maxtrack(fpga_state * state, int maxtrack, int drive)
 	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < maxtrack )
 	{
 		floppy_ctrl_move_head(state, 0, 1, drive);
-		usleep(STEP_RATE*2);
+		delay_us(state->step_rate * 2);
 		i++;
 	}
 
@@ -712,7 +725,7 @@ void start_dump(fpga_state * state, uint32_t buffersize, int res, int delay, int
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 }
 
-#define CHUNK_MAX_SIZE ((((50000000/16)*4) / 16) & ~3) // a chunk size = 1/16 seconds @ 50Mhz
+#define CHUNK_MAX_SIZE ((((FPGA_CLOCK/16)*4) / 16) & ~3) // a chunk size = 1/16 seconds @ 50Mhz
 
 unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * size,dump_state * dstate)
 {
@@ -1020,7 +1033,7 @@ void sound(fpga_state * state,int freq, int duration)
 	if( enable )
 	{
 		if( freq )
-			state->regs->sound_period = ((50000000 / freq) / 2);
+			state->regs->sound_period = ((FPGA_CLOCK / freq) / 2);
 		else
 			state->regs->sound_period = 0;
 	}
