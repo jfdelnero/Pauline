@@ -301,6 +301,10 @@ signal mux_out_bus : std_logic_vector(17 downto 0);
 
 signal sound_period : std_logic_vector(31 downto 0);
 
+signal step_signal_width : std_logic_vector(31 downto 0);
+signal step_phases_width : std_logic_vector(31 downto 0);
+signal step_phases_stop_width : std_logic_vector(31 downto 0);
+
 component floppy_drive
 	port(
 		clk : in std_logic;
@@ -1418,10 +1422,10 @@ ctrl_stepper : floppy_ctrl_stepper
 		floppy_motor_phases            => floppy_apple_stepper_phases,
 
 		step_rate                      => ctrl_steprate_reg,
-		step_width                     => conv_std_logic_vector(400,16),     -- 8uS
+		step_width                     => step_signal_width(15 downto 0),
 
-		phases_timeout_moving          => conv_std_logic_vector(700000,32),  -- 14ms
-		phases_timeout_stopping        => conv_std_logic_vector(1800000,32), -- 36ms
+		phases_timeout_moving          => step_phases_width,
+		phases_timeout_stopping        => step_phases_stop_width,
 
 		track_pos_cmd                  => ctrl_track_reg,
 		move_head_cmd                  => ctrl_head_move_cmd,
@@ -1586,6 +1590,10 @@ floppy_dumper_unit : floppy_dumper
 
 			ctrl_head_move_cmd <= '0';
 			ctrl_head_move_dir <= '0';
+
+			step_signal_width <= conv_std_logic_vector(400,32);          -- 8uS
+			step_phases_width <= conv_std_logic_vector(700000,32);       -- 14ms
+			step_phases_stop_width <= conv_std_logic_vector(1800000,32); -- 36ms
 
 			avs_s1_irq <= '0';
 
@@ -1927,6 +1935,27 @@ floppy_dumper_unit : floppy_dumper
 						end if;
 					end loop;
 
+				elsif ( avs_s1_address = "1010000") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							step_signal_width((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+
+				elsif ( avs_s1_address = "1010001") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							step_phases_width((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+
+				elsif ( avs_s1_address = "1010010") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							step_phases_stop_width((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+
 				end if;
 			end if;
 
@@ -2218,6 +2247,18 @@ floppy_dumper_unit : floppy_dumper
 
 					elsif ( avs_s1_address = "1001111") then
 						avs_s1_readdata <= sound_period;
+						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1010000") then
+						avs_s1_readdata <= step_signal_width;
+						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1010001") then
+						avs_s1_readdata <= step_phases_width;
+						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1010010") then
+						avs_s1_readdata <= step_phases_stop_width;
 						avs_s1_waitrequest <= '0';
 
 					end if;
