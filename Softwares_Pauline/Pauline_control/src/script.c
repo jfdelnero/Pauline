@@ -668,7 +668,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 	}
 
 	// Head load...
-	if(fpga->drive_headload_bit_mask[drive&3])
+	if(fpga->drive_headload_bit_mask[drive])
 	{
 		usleep(25*1000);
 
