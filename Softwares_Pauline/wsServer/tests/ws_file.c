@@ -21,12 +21,17 @@
 #include <unistd.h>
 #include <ws.h>
 
+#ifndef AFL_FUZZ
+#error "This file is intended to be used for fuzzing"
+#error "please enable -DAFL_FUZZ on CFLAGS"
+#endif
+
 /**
- * @dir example/
- * @brief wsServer examples folder
+ * @dir tests/
+ * @brief wsServer tests folder
  *
- * @file send_receive.c
- * @brief Simple send/receiver example.
+ * @file ws_file.c
+ * @brief Read a given stream of frames from a file and parse them.
  */
 
 /**
@@ -75,36 +80,26 @@ void onclose(int fd)
  */
 void onmessage(int fd, const unsigned char *msg, size_t size, int type)
 {
-	char *cli;
-	cli = ws_getaddress(fd);
-	printf("I receive a message: %s (size: %zu, type: %d), from: %s/%d\n", msg, size,
-		type, cli, fd);
-	free(cli);
-
-	/**
-	 * Mimicks the same frame type received and re-send it again
-	 *
-	 * Please note that we could just use a ws_sendframe_txt()
-	 * or ws_sendframe_bin() here, but we're just being safe
-	 * and re-sending the very same frame type and content
-	 * again.
-	 */
+	printf("I receive a message: (%.*s) (size: %zu, type: %d)\n", (int)size, msg,
+		size, type);
 	ws_sendframe(fd, (char *)msg, size, true, type);
 }
 
 /**
  * @brief Main routine.
- *
- * @note After invoking @ref ws_socket, this routine never returns,
- * unless if invoked from a different thread.
  */
-int main(void)
+int main(int argc, char **argv)
 {
+	if (argc < 2)
+	{
+		fprintf(stderr, "Please: %s <file>\n", argv[0]);
+		return (-1);
+	}
+
 	struct ws_events evs;
 	evs.onopen    = &onopen;
 	evs.onclose   = &onclose;
 	evs.onmessage = &onmessage;
-	ws_socket(&evs, 8080); /* Never returns. */
-
+	ws_file(&evs, argv[1]);
 	return (0);
 }
