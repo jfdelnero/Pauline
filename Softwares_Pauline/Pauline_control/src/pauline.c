@@ -40,6 +40,7 @@
 #include <unistd.h>
 #include <sys/inotify.h>
 #include <signal.h>
+#include <execinfo.h>
 
 #include "libhxcfe.h"
 #include "utils.h"
@@ -61,6 +62,34 @@ fpga_state * fpga;
 char home_folder[512];
 
 #define INOTIFY_RD_BUF_SIZE ( 32*1024 )
+
+void sig_handler(int sig)
+{
+	void *array[16];
+	size_t size;
+	int ret;
+	int flog;
+	char tmpstr[256];
+
+	// get void*'s for all entries on the stack
+	size = backtrace(array, 16);
+
+	// print out all the frames to stderr
+	sprintf(tmpstr, "\n-----------------------\nError: signal %d:\n", sig);
+
+	ret = write(stderr,tmpstr, strlen(tmpstr));
+	backtrace_symbols_fd(array, size, STDERR_FILENO);
+
+	flog = open("/home/pauline/pauline_logs.txt", O_CREAT | O_WRONLY | O_APPEND, (S_IRUSR | S_IWUSR));
+	if( flog > 0 )
+	{
+		ret = write(flog,tmpstr, strlen(tmpstr));
+		backtrace_symbols_fd(array, size, flog);
+		close(flog);
+	}
+
+	exit(1);
+}
 
 typedef struct gpio_description_
 {
@@ -322,6 +351,8 @@ int main(int argc, char* argv[])
 	pthread_t script_thread;
 
 	fpga = NULL;
+
+	signal(SIGSEGV, sig_handler);
 
 	init_srv_msg();
 
@@ -916,7 +947,7 @@ int main(int argc, char* argv[])
 		}
 
 		// Head load...
-		if(fpga->drive_headload_bit_mask[drive&3])
+		if(fpga->drive_headload_bit_mask[drive])
 		{
 			usleep(25*1000);
 

@@ -9,11 +9,11 @@ DEBUG ?= 0
 LIBS=
 
 ifeq ($(DEBUG), 1)
-	CFLAGS=-O0 $(INCLUDES) -Wall -I ../wsServer/include/ -g -DDEBUG #-fsanitize=address -fno-omit-frame-pointer
-	LDFLAGS= -lc -lm -ldl -lpthread ${TARGET_ROOTFS}/lib/libhxcfe.so ../wsServer/libws.a
+	CFLAGS=-O0 $(INCLUDES) -Wall -I ../wsServer/include/ -g -rdynamic -DDEBUG -funwind-tables #-fsanitize=address -fno-omit-frame-pointer
+	LDFLAGS= -lc -lm -ldl -lpthread -rdynamic ${TARGET_ROOTFS}/lib/libhxcfe.so ../wsServer/libws.a
 else
-	CFLAGS=-O3 $(INCLUDES) -Wall -I ../wsServer/include/
-	LDFLAGS= -lc -lm -ldl -lpthread ${TARGET_ROOTFS}/lib/libhxcfe.so ../wsServer/libws.a -s
+	CFLAGS=-O3 $(INCLUDES) -Wall -I ../wsServer/include/ -g -rdynamic -funwind-tables
+	LDFLAGS= -lc -lm -ldl -lpthread -rdynamic ${TARGET_ROOTFS}/lib/libhxcfe.so ../wsServer/libws.a
 endif
 
 sources := $(wildcard src/*.c)
