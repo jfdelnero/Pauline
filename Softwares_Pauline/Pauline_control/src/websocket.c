@@ -112,7 +112,7 @@ void *websocket_txthread(void *threadid)
 
 	while( msg_out_wait(handle_to_index(fd), (char*)&msg) > 0 )
 	{
-		ws_sendframe(fd, (char *)msg, -1, false);
+		ws_sendframe_txt(fd, (char *)msg, false);
 	}
 
 	pthread_exit(NULL);
@@ -161,7 +161,7 @@ void onclose(int fd)
 	}
 }
 
-void onmessage(int fd, const unsigned char *msg)
+void onmessage(int fd, const unsigned char *msg, size_t size, int type)
 {
 	char *cli;
 
@@ -206,27 +206,27 @@ void onclose_img(int fd)
 		img_connection--;
 }
 
-void onmessage_img(int fd, const unsigned char *msg)
+void onmessage_img(int fd, const unsigned char *msg, size_t size, int type)
 {
 	FILE *f;
-	int size;
+	int fsize;
 	unsigned char * ptr;
 
 	f = fopen("/tmp/analysis.png","rb");
 	if(f)
 	{
 		fseek(f,0,SEEK_END);
-		size = ftell(f);
+		fsize = ftell(f);
 		fseek(f,0,SEEK_SET);
 
-		if(size>0)
+		if(fsize>0)
 		{
-			ptr= malloc(size);
+			ptr= malloc(fsize);
 			if(ptr)
 			{
-				fread(ptr,size,1,f);
+				fread(ptr,fsize,1,f);
 
-				ws_sendframe(fd, (char *)ptr, size, false);
+				ws_sendframe_bin(fd, (char *)ptr, fsize, false);				
 
 				free(ptr);
 			}
