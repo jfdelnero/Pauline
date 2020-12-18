@@ -53,3 +53,4 @@ script_ctx * deinit_script(script_ctx * ctx);
 
 #define USER_DRIVES_CFG_FILE "/home/pauline/Settings/drives.script"
 #define DEFAULT_DRIVES_CFG_FILE "/data/Settings/drives.script"
+#define CRASH_LOGS_FILE "/home/pauline/pauline_logs.txt"

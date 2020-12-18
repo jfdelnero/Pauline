@@ -80,7 +80,7 @@ void sig_handler(int sig)
 	ret = write(stderr,tmpstr, strlen(tmpstr));
 	backtrace_symbols_fd(array, size, STDERR_FILENO);
 
-	flog = open("/home/pauline/pauline_logs.txt", O_CREAT | O_WRONLY | O_APPEND, (S_IRUSR | S_IWUSR));
+	flog = open(CRASH_LOGS_FILE, O_CREAT | O_WRONLY | O_APPEND, (S_IRUSR | S_IWUSR));
 	if( flog > 0 )
 	{
 		ret = write(flog,tmpstr, strlen(tmpstr));
