@@ -553,6 +553,15 @@ int floppy_head_recalibrate(fpga_state * state, int drive)
 
 	if(hxcfe_getEnvVarValue( state->libhxcfe, (char *)"ENABLE_APPLE_MODE" )>0)
 	{
+		// Be sure to recalibrate the head on the phase 0
+		i = 0;
+		while( (state->regs->floppy_ctrl_headmove & (0x3 << 18)) && i < 4 )
+		{
+			floppy_ctrl_move_head(state, 0, 1, drive);
+			delay_us(state->step_rate);
+			i++;
+		}
+
 		if(drive >=0  && drive < MAX_DRIVES)
 			state->drive_current_head_position[drive] = 0;
 

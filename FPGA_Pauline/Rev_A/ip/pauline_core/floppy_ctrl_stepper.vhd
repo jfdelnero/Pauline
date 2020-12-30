@@ -32,6 +32,7 @@ library IEEE;
 use IEEE.std_logic_arith.all;
 use IEEE.STD_LOGIC_1164.ALL;
 use ieee.std_logic_unsigned.all;
+use ieee.numeric_std.all;
 
 -------------------------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -46,6 +47,7 @@ entity floppy_ctrl_stepper is
 		floppy_ctrl_trk00		: in std_logic;
 
 		floppy_motor_phases     : out std_logic_vector (3 downto 0);
+		motor_phases_cnt_vector : out std_logic_vector (1 downto 0);
 
 		step_rate               : in  std_logic_vector (31 downto 0);
 		step_width              : in  std_logic_vector (15 downto 0);
@@ -112,6 +114,8 @@ begin
 
 	cur_track_pos <= track_pos;
 	floppy_ctrl_dir <= floppy_ctrl_dir_q;
+
+	motor_phases_cnt_vector <= std_logic_vector(to_unsigned(motor_phases_cnt, motor_phases_cnt_vector'length));
 
 	ctrl_floppy_sound_generator : floppy_sound
 	port map(

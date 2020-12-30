@@ -243,6 +243,7 @@ signal floppy_o_write_gate : std_logic;
 signal floppy_o_write_data : std_logic;
 
 signal floppy_apple_stepper_phases : std_logic_vector(3 downto 0);
+signal floppy_apple_motor_phase_pos : std_logic_vector(1 downto 0);
 
 signal ctrl_control_reg : std_logic_vector(31 downto 0);
 signal ctrl_steprate_reg : std_logic_vector(31 downto 0);
@@ -478,6 +479,7 @@ component floppy_ctrl_stepper
 		floppy_ctrl_trk00       : in std_logic;
 
 		floppy_motor_phases     : out std_logic_vector (3 downto 0);
+		motor_phases_cnt_vector : out std_logic_vector (1 downto 0);
 
 		step_rate               : in  std_logic_vector (31 downto 0);
 		step_width              : in  std_logic_vector (15 downto 0);
@@ -1420,6 +1422,7 @@ ctrl_stepper : floppy_ctrl_stepper
 		floppy_ctrl_trk00              => floppy_i_trk00,
 
 		floppy_motor_phases            => floppy_apple_stepper_phases,
+		motor_phases_cnt_vector        => floppy_apple_motor_phase_pos,
 
 		step_rate                      => ctrl_steprate_reg,
 		step_width                     => step_signal_width(15 downto 0),
@@ -2080,6 +2083,8 @@ floppy_dumper_unit : floppy_dumper
 						avs_s1_readdata(9 downto 0) <= ctrl_curtrack_reg;
 						avs_s1_readdata(16) <= ctrl_head_moving;
 						avs_s1_readdata(17) <= ctrl_head_move_dir;
+						avs_s1_readdata(19 downto 18) <= floppy_apple_motor_phase_pos;
+
 						avs_s1_waitrequest <= '0';
 					elsif ( avs_s1_address = "0100110") then
 						avs_s1_readdata(9 downto 0) <= ctrl_track_reg;
