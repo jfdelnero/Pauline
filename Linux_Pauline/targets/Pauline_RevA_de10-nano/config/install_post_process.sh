@@ -36,7 +36,7 @@ then
 	cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
 	cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
 
-	cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1	
+	cp   libusbhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libusbhxcfe.so || exit 1
 	cp   libhxcfe.so  ${TARGET_HOME}/output_objects/target_hxc_tool/libhxcfe.so || exit 1
 
 	cp   libusbhxcfe.so  ${TARGET_ROOTFS}/lib/ || exit 1
@@ -116,6 +116,9 @@ cd ${FPGA_GHRD_FOLDER}
 
 rm -rf ${FPGA_GHRD_FOLDER}/software/spl_bsp/generated
 rm -rf ${FPGA_GHRD_FOLDER}/software/spl_bsp/u-boot-socfpga
+rm -rf ${FPGA_GHRD_FOLDER}/software/spl_bsp/settings.bsp
+rm -rf ${FPGA_GHRD_FOLDER}/software/spl_bsp/*.ds
+rm -rf ${FPGA_GHRD_FOLDER}/software/spl_bsp/*.bin
 
 ${ALTERA_TOOLS_ROOT}/embedded/host_tools/altera/preloadergen/bsp-create-settings --type spl --bsp-dir "${FPGA_GHRD_FOLDER}/software/spl_bsp" --preloader-settings-dir "hps_isw_handoff/soc_system_hps_0" --settings "${FPGA_GHRD_FOLDER}/software/spl_bsp/settings.bsp"
 
@@ -130,16 +133,22 @@ then
 (
 	echo --- build the preloader ---
 
-	cd ${FPGA_GHRD_FOLDER}/software/spl_bsp || exit 1
+	cd ${FPGA_GHRD_FOLDER}/software/spl_bsp
 	cp Makefile_old Makefile
 
 	rm -rf uboot-socfpga
-	tar -xvJf old-uboot-socfpga-2013-01-01.tar.xz
 
-	cp -rfv ${FPGA_GHRD_FOLDER}/software/spl_bsp/generated/* ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/board/altera/socfpga
+	tar -xvJf old-uboot-socfpga-2013-01-01.tar.xz   || exit 1
 
-	make clean  || exit 1
-	make  || exit 1
+	cp  old-uboot-socfpga-2013-01-01.tar.xz uboot-socfpga.tar.gz
+
+	cp -rfv ${FPGA_GHRD_FOLDER}/software/spl_bsp/generated/* ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/board/altera/socfpga || exit 1
+
+	make clean CROSS_COMPILE=arm-hardfloat-linux-gnueabi-        || exit 1
+	echo stamp > uboot-socfpga/.untar
+	make  CROSS_COMPILE=arm-hardfloat-linux-gnueabi-  TGZ=${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga.tar.gz || exit 1
+
+	rm uboot-socfpga.tar.gz
 
 	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/preloader-mkpimage.bin ${TARGET_HOME}/output_objects/  || exit 1
 
