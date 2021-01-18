@@ -177,6 +177,21 @@ function updatedecoders()
 		txt += " DECRX02";
 	}
 
+	if(document.getElementById("ckbC64").checked)
+	{
+		txt += " C64";
+	}
+
+	if(document.getElementById("ckbVictor9K").checked)
+	{
+		txt += " VICTOR9K";
+	}
+
+	if(document.getElementById("ckbQDMO5").checked)
+	{
+		txt += " QD_MO5";
+	}
+
 	txt += "\n";
 
 	//alert(txt);
@@ -258,11 +273,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "movehead"  + " " + document.getElementById("drives-select").value.toString() 
+			var txt = "movehead"  + " " + document.getElementById("drives-select").value.toString()
 			                      + " " + document.getElementById("trackselection").value.toString()
 			                      + " " + (document.getElementById("ckbDOUBLESTEP").checked + 0).toString()
 			                      + "\n";
-			
+
 			//alert(txt);
 			ws.send(txt);
 
@@ -276,7 +291,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
-			var txt = "headstep" + " " + document.getElementById("drives-select").value.toString() 
+			var txt = "headstep" + " " + document.getElementById("drives-select").value.toString()
 			                     + " " + "1"
 			                     + " " + (document.getElementById("ckbDOUBLESTEP").checked + 0).toString()
 			                     + "\n";
