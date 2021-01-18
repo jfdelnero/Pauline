@@ -1633,6 +1633,21 @@ int cmd_set_images_decoders(script_ctx * ctx, char * line)
 	else
 		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_DEC_RX02_M2FM_ENCODING", "0" );
 
+	if(strstr(line,"C64"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_C64_GCR_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_C64_GCR_ENCODING", "0" );
+
+	if(strstr(line,"VICTOR9K"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_VICTOR9000_GCR_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_VICTOR9000_GCR_ENCODING", "0" );
+
+	if(strstr(line,"QD_MO5"))
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_QD_MO5_ENCODING", "1" );
+	else
+		hxcfe_setEnvVar( fpga->libhxcfe, "BMPEXPORT_ENABLE_QD_MO5_ENCODING", "0" );
+
 	strcpy(file_to_analyse,last_file_to_analyse);
 
 	pthread_mutex_unlock(&ctx->script_mutex);
