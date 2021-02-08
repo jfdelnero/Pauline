@@ -184,8 +184,8 @@ void printhelp(char* argv[])
 	printf("  -drive:[drive nb]\t\t: select the drive number\n");
 	printf("  -load:[filename]\t\t: load the a image\n");
 	printf("  -save:[filename]\t\t: Save the a image\n");
-	printf("  -headrecal\t\t\t: move the head\n");
-	printf("  -headstep:[tracknb]\t\t: recalibrate the head\n");
+	printf("  -headrecal\t\t: recalibrate the head\n");
+	printf("  -headstep:[tracknb][\t\t\t: move the head\n");
 	printf("  -selsrc:[id]\t\t\t: select source line\n");
 	printf("  -motsrc:[id]\t\t\t: motor source line\n");
 	printf("  -enabledrive\t\t\t: drive enable\n");
