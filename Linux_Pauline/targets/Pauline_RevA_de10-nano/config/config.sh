@@ -46,7 +46,7 @@ SRC_PACKAGE_PERLCROSS=
 export UBOOT_DEFCONF=socfpga_cyclone5_config
 SRC_PACKAGE_UBOOT="https://github.com/altera-opensource/u-boot-socfpga/archive/rel_socfpga_v2013.01.01_19.03.02_pr.tar.gz"
 
-SRC_PACKAGE_FTRACE="http://ftp.debian.org/debian/pool/main/t/trace-cmd/trace-cmd_2.4.0.orig.tar.gz"
+SRC_PACKAGE_FTRACE="http://ftp.debian.org/debian/pool/main/t/trace-cmd/trace-cmd_2.9.1.orig.tar.gz"
 SRC_PACKAGE_VALGRIND=
 
 # misc

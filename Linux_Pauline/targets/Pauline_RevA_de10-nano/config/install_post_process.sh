@@ -144,6 +144,8 @@ then
 
 	cp -rfv ${FPGA_GHRD_FOLDER}/software/spl_bsp/generated/* ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/board/altera/socfpga || exit 1
 
+	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc6.h ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc10.h
+
 	make clean CROSS_COMPILE=arm-hardfloat-linux-gnueabi-        || exit 1
 	echo stamp > uboot-socfpga/.untar
 	make  CROSS_COMPILE=arm-hardfloat-linux-gnueabi-  TGZ=${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga.tar.gz || exit 1
