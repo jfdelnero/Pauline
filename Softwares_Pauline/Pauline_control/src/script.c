@@ -82,10 +82,10 @@ volatile int dump_running = 0;
 volatile int dump_drive = 0;
 volatile int stop_process = 0;
 
-volatile int preview_image_flags;
-volatile int preview_image_xtime;
-volatile int preview_image_xoffset;
-volatile int preview_image_ytime;
+extern volatile int preview_image_flags;
+extern volatile int preview_image_xtime;
+extern volatile int preview_image_xoffset;
+extern volatile int preview_image_ytime;
 
 extern char file_to_analyse[512];
 extern char last_file_to_analyse[512];
@@ -609,7 +609,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			}
 
 			i = 0;
-			while( !(fpga->regs->floppy_ctrl_control & (0x1<<6)) && i < max_track )
+			while( !(floppy_head_at_track00(fpga, drive)) && i < max_track )
 			{
 				floppy_ctrl_move_head(fpga, 0, 1, drive);
 				delay_us( hxcfe_getEnvVarValue(fpga->libhxcfe, "DRIVE_HEAD_STEP_RATE") );
@@ -698,7 +698,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			}
 
 			floppy_ctrl_side(fpga, drive, j);
-
+			
 			if(high_res_mode)
 				buffersize = (dump_time_per_track * (((50000000 / 16 /*16 bits shift*/ ) * 4 /*A word is 4 bytes*/) / 1000));
 			else
@@ -1160,7 +1160,7 @@ int cmd_headstep(script_ctx * ctx, char * line)
 		if(doublestep)
 			floppy_ctrl_move_head(fpga, dir, track, drive);
 
-		if((fpga->regs->floppy_ctrl_control & (0x1<<6)))
+		if(floppy_head_at_track00(fpga, drive))
 		{
 			fpga->drive_current_head_position[drive] = 0;
 		}
@@ -1241,7 +1241,7 @@ int cmd_movehead(script_ctx * ctx, char * line)
 			floppy_ctrl_move_head(fpga, dir, 1, drive);
 			usleep(12000);
 
-			if((fpga->regs->floppy_ctrl_control & (0x1<<6)))
+			if(floppy_head_at_track00(fpga, drive))
 			{
 				fpga->drive_current_head_position[drive] = 0;
 			}

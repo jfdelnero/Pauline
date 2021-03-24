@@ -87,6 +87,12 @@
 
 # Uncomment the following line to enable the Apple Disk II interface mode
 
+# "GENERIC_FLOPPY_INTERFACE"
+# "APPLE_MACINTOSH_FLOPPY_INTERFACE"
+# "APPLE_II_FLOPPY_INTERFACE"
+
+set DRIVES_INTERFACE_MODE "GENERIC_FLOPPY_INTERFACE"
+
 # set ENABLE_APPLE_MODE 1
 
 #

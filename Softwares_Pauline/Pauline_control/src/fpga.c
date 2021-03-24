@@ -44,6 +44,8 @@
 
 #include "utils.h"
 
+#include "apple_macintosh.h"
+
 static void prepare_LUT(uint16_t * lut)
 {
 	int i,a,b;
@@ -138,6 +140,66 @@ int getio(fpga_state * fpga, char * name)
 	return -1;
 }
 
+void write_apple_mac_cmd(fpga_state * state,unsigned char cmd,unsigned char data)
+{
+	int i;
+	char tmp_str[64];
+
+	setio(state, "DRIVES_PORT_PIN10", 1);
+	setio(state, "DRIVES_PORT_PIN12", 1);
+	setio(state, "DRIVES_PORT_PIN14", 1);
+	setio(state, "DRIVES_PORT_PIN16", 1);
+
+	setio(state, "DRIVES_PORT_SIDE1", cmd&1);
+
+	for(i=0;i<2;i++)
+	{
+		sprintf(tmp_str,"DRIVES_PORT_X68000_OPTIONSEL%d_OUT",i);
+
+		if(cmd & (0x2<<i))
+		{
+			setio(state, tmp_str, 1);
+		}
+		else
+		{
+			setio(state, tmp_str, 0);
+		}
+	}
+
+	setio(state, "DRIVES_PORT_X68000_OPTIONSEL2_OUT", data);
+
+	// Strobe PH3/CA3 -> LSTRB
+	setio(state, "DRIVES_PORT_X68000_OPTIONSEL3_OUT", 0);
+	usleep(30);
+	setio(state, "DRIVES_PORT_X68000_OPTIONSEL3_OUT", 1); // rising edge strobe
+	usleep(30);
+	setio(state, "DRIVES_PORT_X68000_OPTIONSEL3_OUT", 0);
+}
+
+void set_read_mux_apple_mac(fpga_state * state,unsigned char sel)
+{
+	int i;
+	char tmp_str[64];
+
+	setio(state, "DRIVES_PORT_SIDE1", sel&1);
+
+	for(i=0;i<3;i++)
+	{
+		sprintf(tmp_str,"DRIVES_PORT_X68000_OPTIONSEL%d_OUT",i);
+
+		if(sel & (0x2<<i))
+		{
+			setio(state, tmp_str, 1);
+		}
+		else
+		{
+			setio(state, tmp_str, 0);
+		}
+	}
+
+	usleep(30);
+}
+
 fpga_state * init_fpga()
 {
 	fpga_state *state;
@@ -194,6 +256,9 @@ fpga_state * init_fpga()
 
 		state->drive_X68000_opt_sel_reg_number[i] = 0x40;
 		state->drive_X68000_opt_sel_bit_mask[i] = 0x00000000;
+
+		state->drive_type[i] = DRIVES_INTERFACE_GENERIC_MODE;
+
 	}
 
 	state->step_rate = 24*1000;
@@ -205,7 +270,7 @@ fpga_state * init_fpga()
 
 void reset_fpga(fpga_state * state)
 {
-	int i;
+	int i,drives_interface_mode;
 
 	if(!state)
 		return;
@@ -237,17 +302,39 @@ void reset_fpga(fpga_state * state)
 	state->regs->drive_config[2] = (FLOPPY_LINE_SEL_OFF << 20) | (FLOPPY_LINE_SEL_OFF << 16) | CFG_DISK_HD_SW | (CFG_RDYMSK_DATA) | (PIN_CFG_NOTDC1<<4) | PIN_CFG_NOTDENSITY;
 	state->regs->drive_config[3] = (FLOPPY_LINE_SEL_OFF << 20) | (FLOPPY_LINE_SEL_OFF << 16) | CFG_DISK_HD_SW | (CFG_RDYMSK_DATA) | (PIN_CFG_NOTDC1<<4) | PIN_CFG_NOTDENSITY;
 
+	drives_interface_mode = DRIVES_INTERFACE_GENERIC_MODE;
+
 	if(hxcfe_getEnvVarValue( state->libhxcfe, (char *)"ENABLE_APPLE_MODE" )>0)
+		drives_interface_mode = DRIVES_INTERFACE_APPLE_II_MODE;
+
+	if(!strcmp(hxcfe_getEnvVar( state->libhxcfe, (char *)"DRIVES_INTERFACE_MODE", NULL ),"GENERIC_FLOPPY_INTERFACE"))
+		drives_interface_mode = DRIVES_INTERFACE_GENERIC_MODE;
+
+	if(!strcmp(hxcfe_getEnvVar( state->libhxcfe, (char *)"DRIVES_INTERFACE_MODE", NULL ),"APPLE_II_FLOPPY_INTERFACE"))
+		drives_interface_mode = DRIVES_INTERFACE_APPLE_II_MODE;
+
+	if(!strcmp(hxcfe_getEnvVar( state->libhxcfe, (char *)"DRIVES_INTERFACE_MODE", NULL ),"APPLE_MACINTOSH_FLOPPY_INTERFACE"))
+		drives_interface_mode = DRIVES_INTERFACE_APPLE_MACINTOSH_MODE;
+
+	if(drives_interface_mode == DRIVES_INTERFACE_APPLE_II_MODE || drives_interface_mode == DRIVES_INTERFACE_APPLE_MACINTOSH_MODE )
 	{
 		state->regs->in_signal_polarity_reg = (1<<13);
-		state->regs->out_signal_polarity_reg = (0x1 << 16) | (0xF << 21);
-		set_io_name(state, "ENABLE_APPLE_MODE", 1);
+		state->regs->out_signal_polarity_reg = (0x1 << 18) | (0x1 << 16) | (0xF << 21);
+		if(drives_interface_mode == DRIVES_INTERFACE_APPLE_II_MODE)
+			set_io_name(state, "ENABLE_APPLE_MODE", 1);
+		else
+			set_io_name(state, "ENABLE_APPLE_MODE", 0);
 	}
 	else
 	{
 		state->regs->in_signal_polarity_reg = 0x00000000;
 		state->regs->out_signal_polarity_reg = 0x00000000;
 		set_io_name(state, "ENABLE_APPLE_MODE", 0);
+	}
+
+	for(i=0;i<MAX_DRIVES;i++)
+	{
+		state->drive_type[i] =  drives_interface_mode;
 	}
 
 	if(hxcfe_getEnvVarValue( state->libhxcfe, (char *)"DRIVE_INDEX_SIGNAL_POLARITY" )>0)
@@ -402,6 +489,28 @@ void deinit_fpga(fpga_state * state)
 	}
 }
 
+int floppy_head_at_track00(fpga_state * state, int drive)
+{
+	if( state->drive_type[drive] == DRIVES_INTERFACE_APPLE_MACINTOSH_MODE )
+	{
+		set_read_mux_apple_mac(state,APPLE_MAC_CMD_RD_TRK0);
+
+		usleep(250);
+
+		if(state->regs->floppy_port_io & (0x1<<15))
+			return 0;
+		else
+			return 1;
+	}
+	else
+	{
+		if(state->regs->floppy_ctrl_control & (0x1<<6))
+			return 1;
+		else
+			return 0;
+	}
+}
+
 void floppy_ctrl_select_drive(fpga_state * state, int drive, int enable)
 {
 	if(drive >= MAX_DRIVES)
@@ -435,18 +544,27 @@ void floppy_ctrl_x68000_option_select_drive(fpga_state * state, int drive, int e
 
 void floppy_ctrl_x68000_eject(fpga_state * state, int drive)
 {
-	set_io_name(state, "DRIVES_PORT_X68000_BLINK_OUT", 0);
-	set_io_name(state, "DRIVES_PORT_X68000_LOCK_OUT", 0);
-	set_io_name(state, "DRIVES_PORT_X68000_EJECT_OUT", 1);
+	switch(state->drive_type[drive])
+	{
+		case DRIVES_INTERFACE_GENERIC_MODE:
+			set_io_name(state, "DRIVES_PORT_X68000_BLINK_OUT", 0);
+			set_io_name(state, "DRIVES_PORT_X68000_LOCK_OUT", 0);
+			set_io_name(state, "DRIVES_PORT_X68000_EJECT_OUT", 1);
 
-	floppy_ctrl_x68000_option_select_drive(state, drive, 1);
+			floppy_ctrl_x68000_option_select_drive(state, drive, 1);
 
-	usleep(50);
+			usleep(50);
 
-	floppy_ctrl_x68000_option_select_drive(state, drive, 0);
+			floppy_ctrl_x68000_option_select_drive(state, drive, 0);
 
-	set_io_name(state, "DRIVES_PORT_X68000_EJECT_OUT", 0);
-
+			set_io_name(state, "DRIVES_PORT_X68000_EJECT_OUT", 0);
+		break;
+		case DRIVES_INTERFACE_APPLE_II_MODE:
+		break;
+		case DRIVES_INTERFACE_APPLE_MACINTOSH_MODE:
+			write_apple_mac_cmd(state,APPLE_MAC_CMD_WR_DISK_EJECT, 1);
+		break;
+	}
 }
 
 void floppy_ctrl_motor(fpga_state * state, int drive, int enable)
@@ -456,10 +574,19 @@ void floppy_ctrl_motor(fpga_state * state, int drive, int enable)
 
 	pthread_mutex_lock( &state->io_fpga_mutex );
 
-	if(enable)
-		*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive]) |= (state->drive_mot_bit_mask[drive]);
-	else
-		*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive]) &= ~(state->drive_mot_bit_mask[drive]);
+	switch(state->drive_type[drive])
+	{
+		case DRIVES_INTERFACE_GENERIC_MODE:
+		case DRIVES_INTERFACE_APPLE_II_MODE:
+			if(enable)
+				*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive]) |= (state->drive_mot_bit_mask[drive]);
+			else
+				*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive]) &= ~(state->drive_mot_bit_mask[drive]);
+		break;
+		case DRIVES_INTERFACE_APPLE_MACINTOSH_MODE:
+			write_apple_mac_cmd(state,APPLE_MAC_CMD_WR_MOTORON, (enable&1)^1);
+		break;
+	}
 
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 
@@ -472,10 +599,19 @@ void floppy_ctrl_headload(fpga_state * state, int drive, int enable)
 
 	pthread_mutex_lock( &state->io_fpga_mutex );
 
-	if(enable)
-		*(((volatile uint32_t*)(state->regs)) + state->drive_headload_reg_number[drive]) |= (state->drive_headload_bit_mask[drive]);
-	else
-		*(((volatile uint32_t*)(state->regs)) + state->drive_headload_reg_number[drive]) &= ~(state->drive_headload_bit_mask[drive]);
+	switch(state->drive_type[drive])
+	{
+		case DRIVES_INTERFACE_GENERIC_MODE:
+			if(enable)
+				*(((volatile uint32_t*)(state->regs)) + state->drive_headload_reg_number[drive]) |= (state->drive_headload_bit_mask[drive]);
+			else
+				*(((volatile uint32_t*)(state->regs)) + state->drive_headload_reg_number[drive]) &= ~(state->drive_headload_bit_mask[drive]);
+		break;
+		case DRIVES_INTERFACE_APPLE_II_MODE:
+		break;
+		case DRIVES_INTERFACE_APPLE_MACINTOSH_MODE:
+		break;
+	}
 
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 
@@ -495,13 +631,23 @@ void floppy_ctrl_side(fpga_state * state, int drive, int side)
 {
 	pthread_mutex_lock( &state->io_fpga_mutex );
 
-	if(side)
-		state->regs->floppy_ctrl_control |=  (0x20);
-	else
-		state->regs->floppy_ctrl_control &= ~(0x20);
+	switch(state->drive_type[drive])
+	{
+		case DRIVES_INTERFACE_GENERIC_MODE:
+		case DRIVES_INTERFACE_APPLE_II_MODE:
+			if(side)
+				state->regs->floppy_ctrl_control |=  (0x20);
+			else
+				state->regs->floppy_ctrl_control &= ~(0x20);
+		break;
+		case DRIVES_INTERFACE_APPLE_MACINTOSH_MODE:
+			write_apple_mac_cmd(state,APPLE_MAC_CMD_RD_SET_GCR_MODE,0);
+
+			set_read_mux_apple_mac(state,APPLE_MAC_CMD_RD_RDDATAHEAD0 + (side&1));
+		break;
+	}
 
 	pthread_mutex_unlock( &state->io_fpga_mutex );
-
 }
 
 void floppy_ctrl_move_head(fpga_state * state, int dir, int trk, int drive)
@@ -510,13 +656,23 @@ void floppy_ctrl_move_head(fpga_state * state, int dir, int trk, int drive)
 
 	if(drive >=0  && drive < MAX_DRIVES)
 	{
-		if(state->regs->floppy_ctrl_control & (0x1<<6))
+		if( floppy_head_at_track00(state,drive) )
 		{
 			state->drive_current_head_position[drive] = 0;
 		}
 	}
 
-	state->regs->floppy_ctrl_headmove = 0x10000 | ((dir&1)<<17) | (trk & 0x1FF);
+	switch(state->drive_type[drive])
+	{
+		case DRIVES_INTERFACE_GENERIC_MODE:
+		case DRIVES_INTERFACE_APPLE_II_MODE:
+			state->regs->floppy_ctrl_headmove = 0x10000 | ((dir&1)<<17) | (trk & 0x1FF);
+		break;
+		case DRIVES_INTERFACE_APPLE_MACINTOSH_MODE:
+			write_apple_mac_cmd(state,APPLE_MAC_CMD_WR_STEPDIR, (dir&1)^1);
+			write_apple_mac_cmd(state,APPLE_MAC_CMD_WR_HEADSTEP, 0);
+		break;
+	}
 
 	if(drive >=0  && drive < MAX_DRIVES)
 	{
@@ -544,7 +700,7 @@ int floppy_head_recalibrate(fpga_state * state, int drive)
 	int i;
 
 	i = 0;
-	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < 100 )
+	while( !floppy_head_at_track00(state,drive) && i < 100 )
 	{
 		floppy_ctrl_move_head(state, 0, 1, drive);
 		delay_us(state->step_rate);
@@ -580,11 +736,11 @@ int floppy_head_recalibrate(fpga_state * state, int drive)
 		delay_us(state->step_rate);
 	}
 
-	if( (state->regs->floppy_ctrl_control & (0x1<<6)) )
+	if( floppy_head_at_track00(state,drive) )
 		return -2;
 
 	i = 0;
-	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < 5 )
+	while( !floppy_head_at_track00(state,drive) && i < 5 )
 	{
 		floppy_ctrl_move_head(state, 0, 1, drive);
 		delay_us(state->step_rate);
@@ -615,18 +771,18 @@ int floppy_head_maxtrack(fpga_state * state, int maxtrack, int drive)
 		delay_us(state->step_rate * 2);
 	}
 
-	if( (state->regs->floppy_ctrl_control & (0x1<<6)) )
+	if( floppy_head_at_track00(state,drive) )
 		return -2;
 
 	i = 0;
-	while( !(state->regs->floppy_ctrl_control & (0x1<<6)) && i < maxtrack )
+	while( !floppy_head_at_track00(state,drive) && i < maxtrack )
 	{
 		floppy_ctrl_move_head(state, 0, 1, drive);
 		delay_us(state->step_rate * 2);
 		i++;
 	}
 
-	if( (state->regs->floppy_ctrl_control & (0x1<<6)) )
+	if( floppy_head_at_track00(state,drive) )
 	{
 		return maxtrack - i;
 	}

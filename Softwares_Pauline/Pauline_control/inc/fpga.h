@@ -115,6 +115,10 @@
 #define DUMP_MUX_SEL_EXT_I_IO       30
 #define DUMP_MUX_SEL_EXT_INT        31
 
+#define DRIVES_INTERFACE_GENERIC_MODE  0
+#define DRIVES_INTERFACE_APPLE_II_MODE 1
+#define DRIVES_INTERFACE_APPLE_MACINTOSH_MODE 2
+
 #pragma pack(1)
 typedef struct _floppy_ip_regs
 {
@@ -326,14 +330,16 @@ typedef struct _fpga_state
 	unsigned int drive_X68000_opt_sel_bit_mask[MAX_DRIVES];
 
 	int drive_max_steps[MAX_DRIVES];
-	int drive_current_head_position[MAX_DRIVES];	
+	int drive_current_head_position[MAX_DRIVES];
+
+	int drive_type[MAX_DRIVES];
 
 	HXCFE* libhxcfe;
 
 	pthread_mutex_t io_fpga_mutex;
 
 	int inotify_fd;
-	
+
 	int step_rate;
 
 }fpga_state;
