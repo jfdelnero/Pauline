@@ -100,7 +100,7 @@ if [ $SIZELEN == 0 ]; then
 
    # And restart the system...
    /usr/sbin/splash_screen /data/pauline_splash_bitmaps/rebooting.bmp
-   reboot
+   reboot -f
 fi
 
 #
