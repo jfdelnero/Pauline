@@ -374,6 +374,8 @@ void free_dump_buffer(fpga_state * state);
 void deinit_fpga(fpga_state * state);
 void set_select_src(fpga_state * state, int drive, int src);
 void set_motor_src(fpga_state * state, int drive, int src);
+void set_pin02_mode(fpga_state * state, int drive, int mode);
+void set_pin34_mode(fpga_state * state, int drive, int mode);
 void enable_drive(fpga_state * state, int drive, int enable);
 
 void floppy_ctrl_move_head(fpga_state * state, int dir, int trk, int drive);

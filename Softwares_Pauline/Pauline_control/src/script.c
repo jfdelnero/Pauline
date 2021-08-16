@@ -698,7 +698,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			}
 
 			floppy_ctrl_side(fpga, drive, j);
-			
+
 			if(high_res_mode)
 				buffersize = (dump_time_per_track * (((50000000 / 16 /*16 bits shift*/ ) * 4 /*A word is 4 bytes*/) / 1000));
 			else
@@ -1373,6 +1373,58 @@ int cmd_set_select_src(script_ctx * ctx, char * line)
 	return 0;
 }
 
+int cmd_set_pin02_mode(script_ctx * ctx, char * line)
+{
+	int i,j,drive,mode;
+	char temp[DEFAULT_BUFLEN];
+	char temp2[DEFAULT_BUFLEN];
+
+	i = get_param(line, 1,temp);
+	j = get_param(line, 2,temp2);
+
+	if(i>=0 && j>=0)
+	{
+		drive = atoi(temp);
+		mode = atoi(temp2);
+
+		ctx->script_printf(MSGTYPE_INFO_0,"Drive %d pin 2 mode : %d\n",drive,mode);
+
+		set_pin02_mode(fpga, drive, mode);
+
+		return 1;
+	}
+
+	ctx->script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+
+	return 0;
+}
+
+int cmd_set_pin34_mode(script_ctx * ctx, char * line)
+{
+	int i,j,drive,mode;
+	char temp[DEFAULT_BUFLEN];
+	char temp2[DEFAULT_BUFLEN];
+
+	i = get_param(line, 1,temp);
+	j = get_param(line, 2,temp2);
+
+	if(i>=0 && j>=0)
+	{
+		drive = atoi(temp);
+		mode = atoi(temp2);
+
+		ctx->script_printf(MSGTYPE_INFO_0,"Drive %d pin 34 mode : %d\n",drive,mode);
+
+		set_pin34_mode(fpga, drive, mode);
+
+		return 1;
+	}
+
+	ctx->script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+
+	return 0;
+}
+
 int cmd_ejectdisk(script_ctx * ctx, char * line)
 {
 	int i;
@@ -1727,6 +1779,8 @@ cmd_list cmdlist[] =
 	{"headstep",                cmd_headstep},
 	{"motsrc",                  cmd_set_motor_src},
 	{"selsrc",                  cmd_set_select_src},
+	{"pin02mode",               cmd_set_pin02_mode},
+	{"pin34mode",               cmd_set_pin34_mode},
 	{"dump_time",               cmd_set_dump_time_per_track},
 	{"index_to_dump",           cmd_set_index_to_dump_time},
 	{"reset",                   cmd_reset},

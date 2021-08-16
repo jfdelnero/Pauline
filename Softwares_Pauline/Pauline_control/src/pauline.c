@@ -186,8 +186,10 @@ void printhelp(char* argv[])
 	printf("  -save:[filename]\t\t: Save the a image\n");
 	printf("  -headrecal\t\t: recalibrate the head\n");
 	printf("  -headstep:[tracknb][\t\t\t: move the head\n");
-	printf("  -selsrc:[id]\t\t\t: select source line\n");
-	printf("  -motsrc:[id]\t\t\t: motor source line\n");
+	printf("  -selsrc:[id]\t\t\t: drive simulation select source line\n");
+	printf("  -motsrc:[id]\t\t\t: drive simulation motor source line\n");
+	printf("  -pin02mode:[id]\t\t\t: drive simulation pin 2 status line mode\n");
+	printf("  -pin34mode:[id]\t\t\t: drive simulation pin 34 status line mode\n");
 	printf("  -enabledrive\t\t\t: drive enable\n");
 	printf("  -disabledrive\t\t\t: drive disable\n");
 	printf("  -finput:[filename]\t\t: Input file image \n");
@@ -222,6 +224,22 @@ void printhelp(char* argv[])
 	printf("  10: SEL2/DRVSA  (Pin 14)\n");
 	printf("  11: SEL3        (Pin 6)\n");
 	printf("  12: MTRON/MOTEB (Pin 16)\n");
+	printf("\n");
+	printf("Drive Simulation status lines mode ID (-pin02mode & -pin34mode ID):\n");
+	printf("  0 : Low state\n");
+	printf("  1 : High state\n");
+	printf("  2 : nReady\n");
+	printf("  3 : Ready\n");
+	printf("  4 : nDensity\n");
+	printf("  5 : Density\n");
+	printf("  6 : nDiskChange (mode 1 : Head step clear)\n");
+	printf("  7 : DiskChange  (mode 1 : Head step clear)\n");
+	printf("  8 : nDiskChange (mode 2 : Head step clear + timer/timeout clear)\n");
+	printf("  9 : DiskChange  (mode 2 : Head step clear + timer/timeout clear)\n");
+	printf("  10: nDiskChange (mode 3 : timer/timeout clear)\n");
+	printf("  11: DiskChange  (mode 3 : timer/timeout clear)\n");
+	printf("  12: nDiskChange (mode 4 : floppy_dc_reset input clear)\n");
+	printf("  13: DiskChange  (mode 4 : floppy_dc_reset input clear)\n");
 	printf("\n");
 
 	printf("\n");
@@ -329,6 +347,7 @@ int main(int argc, char* argv[])
 
 	int track,dir;
 	int selsrc, motsrc;
+	int pin02mode, pin34mode;
 	unsigned char * tmpptr;
 	uint32_t  buffersize;
 	FILE *f;
@@ -566,6 +585,20 @@ int main(int argc, char* argv[])
 		motsrc = atoi(temp);
 		set_motor_src(fpga, drive, motsrc);
 		printf("Motor source : %d\n", motsrc);
+	}
+
+	if(isOption(argc,argv,"pin02mode",(char*)&temp)>0)
+	{
+		pin02mode = atoi(temp);
+		set_pin02_mode(fpga, drive, pin02mode);
+		printf("Pin 2 Mode : %d\n", pin02mode);
+	}
+
+	if(isOption(argc,argv,"pin34mode",(char*)&temp)>0)
+	{
+		pin34mode = atoi(temp);
+		set_pin34_mode(fpga, drive, pin34mode);
+		printf("Pin 34 Mode : %d\n", pin34mode);
 	}
 
 	// Interface mode option
@@ -1046,6 +1079,8 @@ int main(int argc, char* argv[])
 		(isOption(argc,argv,"infos",0)<=0 ) &&
 		(isOption(argc,argv,"motsrc",0)<=0 ) &&
 		(isOption(argc,argv,"selsrc",0)<=0 ) &&
+		(isOption(argc,argv,"pin02mode",0)<=0 ) &&
+		(isOption(argc,argv,"pin34mode",0)<=0 ) &&
 		(isOption(argc,argv,"enabledrive",0)<=0 ) &&
 		(isOption(argc,argv,"disabledrive",0)<=0 ) &&
 		(isOption(argc,argv,"test",0)<=0 ) &&

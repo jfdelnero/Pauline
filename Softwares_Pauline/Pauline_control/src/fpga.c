@@ -824,6 +824,40 @@ void set_motor_src(fpga_state * state, int drive, int src)
 	}
 }
 
+void set_pin02mode_src(fpga_state * state, int drive, int mode)
+{
+	uint32_t tmp;
+
+	if(state)
+	{
+		pthread_mutex_lock( &state->io_fpga_mutex );
+
+		tmp = state->regs->drive_config[drive&3];
+		tmp &= ~(0xF << 0);
+		tmp |= ((mode&0xF) << 0);
+		state->regs->drive_config[drive&3] = tmp;
+
+		pthread_mutex_unlock( &state->io_fpga_mutex );
+	}
+}
+
+void set_pin34mode_src(fpga_state * state, int drive, int mode)
+{
+	uint32_t tmp;
+
+	if(state)
+	{
+		pthread_mutex_lock( &state->io_fpga_mutex );
+
+		tmp = state->regs->drive_config[drive&3];
+		tmp &= ~(0xF << 4);
+		tmp |= ((mode&0xF) << 4);
+		state->regs->drive_config[drive&3] = tmp;
+
+		pthread_mutex_unlock( &state->io_fpga_mutex );
+	}
+}
+
 void enable_drive(fpga_state * state, int drive, int enable)
 {
 	uint32_t tmp;
