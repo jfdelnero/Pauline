@@ -225,7 +225,7 @@ void printhelp(char* argv[])
 	printf("  11: SEL3        (Pin 6)\n");
 	printf("  12: MTRON/MOTEB (Pin 16)\n");
 	printf("\n");
-	printf("Drive Simulation status lines mode ID (-pin02mode & -pin34mode ID):\n");
+	printf("Drive Simulation status lines ID (-pin02mode & -pin34mode ID):\n");
 	printf("  0 : Low state\n");
 	printf("  1 : High state\n");
 	printf("  2 : nReady\n");
@@ -381,7 +381,7 @@ int main(int argc, char* argv[])
 	home_folder[0] = '\0';
 
 	printf("HxC Floppy Emulator : Pauline floppy drive simulator / floppy drive dumper control software v"STR_FILE_VERSION2"\n");
-	printf("Copyright (C) 2006-2020 Jean-Francois DEL NERO\n");
+	printf("Copyright (C) 2006-2021 Jean-Francois DEL NERO\n");
 	printf("This program comes with ABSOLUTELY NO WARRANTY\n");
 	printf("This is free software, and you are welcome to redistribute it\n");
 	printf("under certain conditions;\n\n");
