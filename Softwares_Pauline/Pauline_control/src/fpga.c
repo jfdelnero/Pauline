@@ -824,7 +824,7 @@ void set_motor_src(fpga_state * state, int drive, int src)
 	}
 }
 
-void set_pin02mode_src(fpga_state * state, int drive, int mode)
+void set_pin02_mode(fpga_state * state, int drive, int mode)
 {
 	uint32_t tmp;
 
@@ -841,7 +841,7 @@ void set_pin02mode_src(fpga_state * state, int drive, int mode)
 	}
 }
 
-void set_pin34mode_src(fpga_state * state, int drive, int mode)
+void set_pin34_mode(fpga_state * state, int drive, int mode)
 {
 	uint32_t tmp;
 
