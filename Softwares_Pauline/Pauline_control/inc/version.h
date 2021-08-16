@@ -1,5 +1,5 @@
-#define FILE_VERSION        1,2,3,1
-#define STR_FILE_VERSION   "1,2,3,1\0"
-#define STR_FILE_VERSION2  "1.2.3.1"
-#define STR_DATE           "18 January 2020"
+#define FILE_VERSION        1,2,4,1
+#define STR_FILE_VERSION   "1,2,4,1\0"
+#define STR_FILE_VERSION2  "1.2.4.1"
+#define STR_DATE           "16 August 2021"
 
