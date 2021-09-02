@@ -110,8 +110,8 @@ signal cur_tracks_base : std_logic_vector(31 downto 0);
 signal rd_fifo_full : std_logic;
 signal fiforeadcnt : std_logic_vector(5 downto 0);
 
-signal out_shifter_side0 : std_logic_vector(31 downto 0);
-signal out_shifter_side1 : std_logic_vector(31 downto 0);
+signal out_shifter_side0 : std_logic_vector(32 downto 0);
+signal out_shifter_side1 : std_logic_vector(32 downto 0);
 
 signal out_address_q1 : std_logic_vector(31 downto 0);
 signal out_address_q2 : std_logic_vector(31 downto 0);
@@ -160,6 +160,8 @@ signal read_fifo_rq : std_logic;
 signal write_fifo_data  : std_logic_vector(71 downto 0);
 signal write_fifo_wr : std_logic;
 
+signal weakbit_noise_sig : std_logic;
+signal noise_gen_signal : std_logic;
 
 component floppy_sound
 	port(
@@ -288,6 +290,15 @@ component status_fifo
 		full        : OUT STD_LOGIC ;
 		q           : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
 		usedw       : OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
+	);
+end component;
+
+component noise_generator is
+	port(
+		clk       : in std_logic;
+		reset_n   : in std_logic;
+
+		noise_out : out std_logic
 	);
 end component;
 
@@ -430,6 +441,15 @@ begin
 		clear_cnt => reset_state
 	);
 
+	weakbit_noise_gen : noise_generator
+	port map
+	(
+		clk => clk,
+		reset_n => reset_n,
+
+		noise_out => weakbit_noise_sig
+	);
+
 	process(floppy_side1, floppy_write_gate, floppy_write_data, floppy_data_side0_pulse, floppy_data_side1_pulse, floppy_write_data_q1 ) begin
 		if( floppy_side1 = '0' )
 		then
@@ -534,8 +554,9 @@ begin
 
 					fiforeadcnt <= fiforeadcnt + "000001";
 
-					out_shifter_side0 <= out_shifter_side0(30 downto 0) & '0';
-					out_shifter_side1 <= out_shifter_side1(30 downto 0) & '0';
+					out_shifter_side0 <= out_shifter_side0(31 downto 0) & '0';
+					out_shifter_side1 <= out_shifter_side1(31 downto 0) & '0';
+					noise_gen_signal  <= weakbit_noise_sig;
 
 					out_index_shifter <= out_index_shifter(30 downto 0) & '0';
 					out_qd_stopmotor_shifter <= out_qd_stopmotor_shifter(30 downto 0) & '0';
@@ -613,7 +634,8 @@ begin
 
 				if( floppy_side1 = '1' )
 				then
-					if( out_shifter_side1(31) = '1' )
+					if( ( out_shifter_side1(31) = '1' and out_shifter_side1(32) = '0' and out_shifter_side1(30) = '0' ) or
+					    ( out_shifter_side1(31) = '1' and ( out_shifter_side1(32) = '1' or out_shifter_side1(30) = '1' ) and noise_gen_signal = '1' ) )
 					then
 						data_pulse_cnt <= (others=>'0');
 					else
@@ -623,7 +645,9 @@ begin
 						end if;
 					end if;
 				else
-					if( out_shifter_side0(31) = '1' )
+
+					if( ( out_shifter_side0(31) = '1' and out_shifter_side0(32) = '0' and out_shifter_side0(30) = '0' ) or
+					    ( out_shifter_side0(31) = '1' and ( out_shifter_side0(32) = '1' or out_shifter_side0(30) = '1' ) and noise_gen_signal = '1' ) )
 					then
 						data_pulse_cnt <= (others=>'0');
 					else
