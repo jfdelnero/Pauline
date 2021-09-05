@@ -196,6 +196,7 @@ signal host_i_side1 : std_logic;
 signal host_i_write_data_pulse : std_logic;
 signal host_i_write_gate : std_logic;
 signal host_i_selx : std_logic_vector(3 downto 0);
+signal ext_io_selx_signal : std_logic;
 signal host_i_motor : std_logic;
 signal host_i_dir : std_logic;
 signal host_i_step_pulse : std_logic;
@@ -298,7 +299,7 @@ signal floppy_inputs_q1: std_logic_vector(31 downto 0);
 signal floppy_inputs_q2: std_logic_vector(31 downto 0);
 signal floppy_outputs: std_logic_vector(31 downto 0);
 
-signal mux_out_bus : std_logic_vector(17 downto 0);
+signal mux_out_bus : std_logic_vector(19 downto 0);
 
 signal sound_period : std_logic_vector(31 downto 0);
 
@@ -568,8 +569,24 @@ begin
 	dump_sample_rate_divisor <= ctrl_control_reg(22);
 	ignore_index_trigger <= ctrl_control_reg(23);
 
-	coe_c1_led1 <= gpio_reg(0);
-	coe_c1_led2 <= gpio_reg(1);
+	process(in_mux_selectors_regs ,gpio_reg ,mux_out_bus )
+	begin
+
+		if( in_mux_selectors_regs(18)(4 downto 0) = "00000")
+		then
+			coe_c1_led1 <= gpio_reg(0);
+		else
+			coe_c1_led1 <= mux_out_bus(18);
+		end if;
+
+		if( in_mux_selectors_regs(19)(4 downto 0) = "00000")
+		then
+			coe_c1_led2 <= gpio_reg(1);
+		else
+			coe_c1_led2 <= mux_out_bus(19);
+		end if;
+
+	end process;
 
 	coe_c1_tris_io0_dout <= gpio_reg(2);
 	coe_c1_tris_io1_dout <= gpio_reg(3);
@@ -921,6 +938,25 @@ floppy_selx_filter : floppy_signal_filter
 		);
 end generate GEN_FLOPSELFILTER;
 
+ext_io_sel_filter : floppy_signal_filter
+	port map (
+		clk                            => csi_ci_Clk,
+		reset_n                        => csi_ci_Reset_n,
+
+		signal_in                      => coe_c1_ext_io_din,
+		signal_out                     => ext_io_selx_signal,
+
+		filter_level(31 downto 8)      => (others=>'0'),
+		filter_level(7 downto 0)       => host_port_glitch_filter(7 downto 0),
+
+		invert                         => in_signal_polarity_reg(3),
+
+		pulse_out_mode                 => '0',
+
+		rising_edge                    => '0',
+		falling_edge                   => '0'
+		);
+
 floppy_write_gate_filter : floppy_signal_filter
 	port map (
 		clk                            => csi_ci_Clk,
@@ -1118,7 +1154,7 @@ drive_select_mux_x : floppy_select_mux
 		line2       => host_i_selx(2),
 		line3       => host_i_selx(3),
 		line4       => host_i_motor,
-		line5       => '0',
+		line5       => ext_io_selx_signal,
 		line6       => '0',
 		line7       => '0',
 
@@ -1141,7 +1177,7 @@ drive_motor_mux_x : floppy_select_mux
 		line2       => host_i_selx(2),
 		line3       => host_i_selx(3),
 		line4       => host_i_motor,
-		line5       => '0',
+		line5       => ext_io_selx_signal,
 		line6       => '0',
 		line7       => '0',
 
@@ -1442,7 +1478,7 @@ ctrl_stepper : floppy_ctrl_stepper
 
 		);
 
-GEN_IO_MUX: for i_mux in 0 to 17 generate
+GEN_IO_MUX: for i_mux in 0 to 19 generate
 mux_x : gen_mux
 	generic map (SEL_WIDTH => 5)
 	port map
