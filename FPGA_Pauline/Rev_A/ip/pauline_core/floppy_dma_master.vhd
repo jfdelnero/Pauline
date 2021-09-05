@@ -119,6 +119,8 @@ signal previous_full_events_state: std_logic_vector(4 downto 0);
 
 signal burst_size : std_logic_vector(31 downto 0);
 
+signal dma_stop_address : lword_array;
+
 begin
 
 	avm_m1_address <= busaddress;
@@ -129,7 +131,7 @@ begin
 	pop_fifo_empty_events <= pop_fifo_empty_events_q;
 	push_fifo_full_events <= push_fifo_full_events_q;
 
-	burst_size <= images_track_size(drive_index) - conv_std_logic_vector(512,32);
+	burst_size <= dma_stop_address(drive_index) - conv_std_logic_vector(512,32);
 
 	process(csi_ci_Clk, csi_ci_Reset_n, pop_fifos_in_statusbus_if, enable_drives, done_q ) begin
 		if(csi_ci_Reset_n = '0') then
@@ -155,7 +157,7 @@ begin
 			then
 				fifos_in_almostfull_index <= 3;
 				fifos_in_allfull <= '0';
-			elsif( pop_fifos_in_statusbus_if(4).pop_fifo_almostfull = '0' and enable_drives(4) = '1' ) 
+			elsif( pop_fifos_in_statusbus_if(4).pop_fifo_almostfull = '0' and enable_drives(4) = '1' )
 			then
 				fifos_in_almostfull_index <= 4;
 				fifos_in_allfull <= '0';
@@ -166,6 +168,30 @@ begin
 		end if;
 	end process;
 
+	process(csi_ci_Clk, csi_ci_Reset_n, pop_fifos_in_statusbus_if, enable_drives, done_q ) begin
+		if(csi_ci_Reset_n = '0') then
+
+			for drive_index in 0 to 4 loop
+
+				dma_stop_address(drive_index) <= conv_std_logic_vector(0,32);
+
+			end loop;
+
+		elsif(csi_ci_Clk 'event and csi_ci_Clk  = '1') then
+
+			for drive_index in 0 to 4 loop
+
+				if( images_track_size(drive_index) >= conv_std_logic_vector(4,32) )
+				then
+					dma_stop_address(drive_index) <= images_track_size(drive_index) - conv_std_logic_vector(4,32);
+				else
+					dma_stop_address(drive_index) <= conv_std_logic_vector(0,32);
+				end if;
+
+			end loop;
+
+		end if;
+	end process;
 
 	process(csi_ci_Clk, csi_ci_Reset_n, push_fifos_out_statusbus_if, enable_drives, done_q, reset_drives ) begin
 		if(csi_ci_Reset_n = '0') then
@@ -324,7 +350,7 @@ begin
 
 					read_wrrq_delay <= '1';
 
-					if( address_offsets(drive_index) < ( images_track_size(drive_index) - conv_std_logic_vector(512,32) ) ) --and pop_fifos_in_statusbus_if(drive_index).pop_fifo_almostfull = '0')
+					if( address_offsets(drive_index) < ( dma_stop_address(drive_index) - conv_std_logic_vector(512,32) ) ) --and pop_fifos_in_statusbus_if(drive_index).pop_fifo_almostfull = '0')
 					then
 						avm_m1_burstcount <= conv_std_logic_vector(128,8);
 						burst_count  <= conv_std_logic_vector(127,8);
@@ -356,7 +382,7 @@ begin
 						pop_fifos_in_databus_if(drive_index).pop_fifo_in_status <= "00000000"; --
 						pop_fifos_in_ctrlbus_if(drive_index).pop_fifo_in_wr <= '1';
 
-						if( address_offsets(drive_index) >= images_track_size(drive_index) )
+						if( address_offsets(drive_index) >= dma_stop_address(drive_index) )
 						then
 							if(continuous_mode(drive_index) = '1')
 							then
@@ -365,8 +391,8 @@ begin
 							else
 								done_q(drive_index) <= '1';
 								pop_fifos_in_databus_if(drive_index).pop_fifo_in_status(0) <= '1';
-								address_offsets(drive_index) <= images_track_size(drive_index);
-								drv_cur_track_address(drive_index) <= drv_cur_track_base_address(drive_index) + images_track_size(drive_index);
+								address_offsets(drive_index) <= dma_stop_address(drive_index);
+								drv_cur_track_address(drive_index) <= drv_cur_track_base_address(drive_index) + dma_stop_address(drive_index);
 							end if;
 						else
 							address_offsets(drive_index) <= address_offsets(drive_index) + conv_std_logic_vector(4,32);
