@@ -1150,6 +1150,8 @@ int main(int argc, char* argv[])
 		(isOption(argc,argv,"autodetect",0)<=0 ) &&
 		(isOption(argc,argv,"testmaxtrack",0)<=0 ) &&
 		(isOption(argc,argv,"sound",0)<=0 ) &&
+		(isOption(argc,argv,"led1src",0)<=0 ) &&
+		(isOption(argc,argv,"led2src",0)<=0 ) &&
 		(isOption(argc,argv,"reset",0)<=0 )
 		)
 	{
