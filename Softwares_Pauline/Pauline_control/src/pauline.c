@@ -248,11 +248,11 @@ void printhelp(char* argv[])
 	// Signal input mux
 	printf("Signal input mux (-led1src & -led2src ID):\n");
 	printf("  0 : LED gpio register\n");
-	printf("  1 : Drive 0 emulation enabled\n");
-	printf("  2 : Drive 1 emulation enabled\n");
-	printf("  3 : Drive 2 emulation enabled\n");
-	printf("  4 : Drive 3 emulation enabled\n");
-	printf("  5 : Motor emulation input enabled\n");
+	printf("  1 : Floppy pin 10 drive 0 selection output\n");
+	printf("  2 : Floppy pin 12 drive 1 selection output\n");
+	printf("  3 : Floppy pin 14 drive 2 selection output\n");
+	printf("  4 : Floppy pin 6  drive 3 selection output\n");
+	printf("  5 : Floppy pin 16 Motor on output\n");
 	printf("  6 : Floppy step output\n");
 	printf("  7 : Floppy dir output\n");
 	printf("  8 : Floppy side1 output\n");

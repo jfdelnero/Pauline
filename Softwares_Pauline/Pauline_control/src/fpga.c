@@ -885,7 +885,7 @@ void set_led_src(fpga_state * state, int led, int src)
 {
 	uint32_t tmp;
 
-	if(state && led < 2 && led > 0)
+	if(state && led < 2 && led >= 0)
 	{
 		pthread_mutex_lock( &state->io_fpga_mutex );
 
