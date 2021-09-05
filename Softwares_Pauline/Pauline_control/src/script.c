@@ -706,7 +706,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 
 			printf_screen(-1, 46, 0x00000000, "T:%.3d H:%d",i,j);
 
-			buffersize += ((4 - (buffersize&3)) & 3);
+			buffersize += ((0x10 - (buffersize&0xF)) & 0xF);
 
 			fpga->last_dump_offset = 0;
 			fpga->bitdelta = 0;
@@ -717,7 +717,7 @@ int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_s
 			state.current_track = i;
 			state.current_side = j;
 
-			while( fpga->last_dump_offset < fpga->regs->floppy_dump_buffer_size)
+			while( fpga->last_dump_offset < ( fpga->regs->floppy_dump_buffer_size - 4 ))
 			{
 				tmpptr = get_next_available_stream_chunk(fpga,&buffersize,&state);
 				if(tmpptr)

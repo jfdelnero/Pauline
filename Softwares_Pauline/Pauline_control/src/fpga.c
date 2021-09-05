@@ -956,7 +956,7 @@ unsigned char * get_next_available_stream_chunk(fpga_state * state, uint32_t * s
 	if( state->regs->floppy_dump_buffer_size - state->last_dump_offset > CHUNK_MAX_SIZE)
 		chunk_size = CHUNK_MAX_SIZE;
 	else
-		chunk_size = state->regs->floppy_dump_buffer_size - state->last_dump_offset;
+		chunk_size = ( state->regs->floppy_dump_buffer_size - state->last_dump_offset) - 4;
 
 	if(chunk_size>0)
 	{
