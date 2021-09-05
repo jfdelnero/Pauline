@@ -208,6 +208,7 @@ void printhelp(char* argv[])
 	printf("  -set:[io name]\n");
 	printf("  -clear:[io name]\n");
 	printf("  -get:[io name]\n");
+	printf("  -ledsrc:[io name]\n");
 	printf("  -ioslist\n");
 	printf("  -ejectdisk\n");
 	printf("  -setiohigh:[io number]\n");
@@ -224,6 +225,8 @@ void printhelp(char* argv[])
 	printf("  10: SEL2/DRVSA  (Pin 14)\n");
 	printf("  11: SEL3        (Pin 6)\n");
 	printf("  12: MTRON/MOTEB (Pin 16)\n");
+	printf("  13: EXTERNAL IO (J5 - Pin 4)\n");
+
 	printf("\n");
 	printf("Drive Simulation status lines ID (-pin02mode & -pin34mode ID):\n");
 	printf("  0 : Low state\n");
@@ -241,6 +244,41 @@ void printhelp(char* argv[])
 	printf("  12: nDiskChange (mode 4 : floppy_dc_reset input clear)\n");
 	printf("  13: DiskChange  (mode 4 : floppy_dc_reset input clear)\n");
 	printf("\n");
+
+	// Signal input mux
+	printf("Signal input mux (-led1src & -led2src ID):\n");
+	printf("  0 : LED gpio register\n");
+	printf("  1 : Drive 0 emulation enabled\n");
+	printf("  2 : Drive 1 emulation enabled\n");
+	printf("  3 : Drive 2 emulation enabled\n");
+	printf("  4 : Drive 3 emulation enabled\n");
+	printf("  5 : Motor emulation input enabled\n");
+	printf("  6 : Floppy step output\n");
+	printf("  7 : Floppy dir output\n");
+	printf("  8 : Floppy side1 output\n");
+	printf("  9 : Floppy index input\n");
+	printf(" 10 : Floppy pin 2 input\n");
+	printf(" 11 : Floppy pin 34 input\n");
+	printf(" 12 : Floppy write protect input\n");
+	printf(" 13 : Floppy data input\n");
+	printf(" 14 : Floppy write gate output\n");
+	printf(" 15 : Floppy write data output\n");
+	printf(" 16 : Host pin 10 / sel 0 input\n");
+	printf(" 17 : Host pin 12 / sel 1 input\n");
+	printf(" 18 : Host pin 14 / sel 2 input\n");
+	printf(" 19 : Host pin 16 / sel 3 input\n");
+	printf(" 20 : Host pin 6  / mot on input\n");
+	printf(" 21 : Host step input\n");
+	printf(" 22 : Host dir input\n");
+	printf(" 23 : Host side1 input\n");
+	printf(" 24 : Host write gate input\n");
+	printf(" 25 : Host write data input\n");
+	printf(" 26 : IO input 0\n");
+	printf(" 27 : IO input 1\n");
+	printf(" 28 : IO input 2\n");
+	printf(" 29 : IO input 3\n");
+	printf(" 30 : IO input 4\n");
+	printf(" 31 : IO input 5\n");
 
 	printf("\n");
 }
@@ -728,6 +766,16 @@ int main(int argc, char* argv[])
 	if(isOption(argc,argv,"clear",(char*)&temp)>0)
 	{
 		setio(fpga, (char*)temp, 0);
+	}
+
+	if(isOption(argc,argv,"led1src",(char*)&temp)>0)
+	{
+		set_led_src(fpga, 0, atoi(temp));
+	}
+
+	if(isOption(argc,argv,"led2src",(char*)&temp)>0)
+	{
+		set_led_src(fpga, 1, atoi(temp));
 	}
 
 	if(isOption(argc,argv,"get",(char*)&temp)>0)

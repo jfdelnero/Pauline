@@ -378,6 +378,8 @@ void set_pin02_mode(fpga_state * state, int drive, int mode);
 void set_pin34_mode(fpga_state * state, int drive, int mode);
 void enable_drive(fpga_state * state, int drive, int enable);
 
+void set_led_src(fpga_state * state, int led, int src);
+
 void floppy_ctrl_move_head(fpga_state * state, int dir, int trk, int drive);
 
 void start_dump(fpga_state * state, uint32_t buffersize, int res, int delay, int ignore_index);

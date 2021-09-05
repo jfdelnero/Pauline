@@ -1373,6 +1373,32 @@ int cmd_set_select_src(script_ctx * ctx, char * line)
 	return 0;
 }
 
+int cmd_set_led_src(script_ctx * ctx, char * line)
+{
+	int i,j,led,ledsrc;
+	char temp[DEFAULT_BUFLEN];
+	char temp2[DEFAULT_BUFLEN];
+
+	i = get_param(line, 1,temp);
+	j = get_param(line, 2,temp2);
+
+	if(i>=0 && j>=0)
+	{
+		led = atoi(temp);
+		ledsrc = atoi(temp2);
+
+		ctx->script_printf(MSGTYPE_INFO_0,"LED %d signal source : %d\n",led,ledsrc);
+
+		set_led_src(fpga, led, ledsrc);
+
+		return 1;
+	}
+
+	ctx->script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+
+	return 0;
+}
+
 int cmd_set_pin02_mode(script_ctx * ctx, char * line)
 {
 	int i,j,drive,mode;
@@ -1800,6 +1826,8 @@ cmd_list cmdlist[] =
 	{"set",                     cmd_set_env},
 	{"get",                     cmd_get_env},
 	{"reloadcfg",               cmd_reload_config},
+
+	{"ledsrc",                  cmd_set_led_src},
 
 	{"sound",                   cmd_sound},
 

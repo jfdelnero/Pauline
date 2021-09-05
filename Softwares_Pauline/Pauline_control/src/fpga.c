@@ -881,6 +881,23 @@ void enable_drive(fpga_state * state, int drive, int enable)
 	}
 }
 
+void set_led_src(fpga_state * state, int led, int src)
+{
+	uint32_t tmp;
+
+	if(state && led < 2 && led > 0)
+	{
+		pthread_mutex_lock( &state->io_fpga_mutex );
+
+		tmp = state->regs->dump_in_mux_sel_19_16;
+		tmp &= ~(0xF << (16 + (8 * led)));
+		tmp |= ((src&0xF) << (16 + (8 * led)));
+		state->regs->dump_in_mux_sel_19_16 = tmp;
+
+		pthread_mutex_unlock( &state->io_fpga_mutex );
+	}
+}
+
 void start_dump(fpga_state * state, uint32_t buffersize, int res, int delay, int ignore_index)
 {
 	uint32_t tmp;
