@@ -275,6 +275,10 @@ assign GPIO0[29] = host_o_pin02;  // !----
 assign GPIO1[35] = host_o_pin34;  // !----
 assign LED[1] = led1_out[0];
 assign LED[2] = led2_out[0];
+assign LED[3] = led1_out[1];
+assign LED[4] = led2_out[1];
+assign LED[5] = led1_out[2];
+assign LED[6] = led2_out[2];
 
 assign GPIO1[33] = floppy_o_side1;  // side1 ----!!!
 assign GPIO1[25] = floppy_o_write_gate; // wg ----!!!
