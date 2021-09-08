@@ -163,6 +163,8 @@ signal write_fifo_wr : std_logic;
 signal weakbit_noise_sig : std_logic;
 signal noise_gen_signal : std_logic;
 
+signal write_protect_state : std_logic;
+
 component floppy_sound
 	port(
 		clk : in std_logic;
@@ -319,7 +321,9 @@ begin
 	floppy_insertfault <= '0';
 	floppy_diskindrive <= '0';
 
-	host_o_wpt <= disk_write_protect_sw or not(disk_in_drive);
+	write_protect_state <= disk_write_protect_sw or not(disk_in_drive);
+
+	host_o_wpt <= write_protect_state;
 
 	host_o_index <= out_index_shifter(31) and (not(readymask_config(0)) or drive_ready);
 	host_o_data <= floppy_data_rd and drive_motor and (not(readymask_config(1)) or drive_ready);
@@ -405,7 +409,7 @@ begin
 		qd_reset          => floppy_step,
 		qd_motoron        => floppy_motor,
 
-		qd_wg             => floppy_write_gate,
+		qd_wg             => floppy_write_gate and not(disk_write_protect_sw),
 
 		qd_rd_head_sw     => out_index_shifter(31),
 		qd_motor_stop_sw  => out_qd_stopmotor_shifter(31),
@@ -453,7 +457,7 @@ begin
 	process(floppy_side1, floppy_write_gate, floppy_write_data, floppy_data_side0_pulse, floppy_data_side1_pulse, floppy_write_data_q1 ) begin
 		if( floppy_side1 = '0' )
 		then
-			if( floppy_write_gate = '1' )
+			if( floppy_write_gate = '1' and write_protect_state = '0' )
 			then
 				write_stream_side0 <= (floppy_write_data or floppy_write_data_q1);
 				write_stream_side1 <= floppy_data_side1_pulse;
@@ -462,7 +466,7 @@ begin
 				write_stream_side1 <= floppy_data_side1_pulse;
 			end if;
 		else
-			if( floppy_write_gate = '1' )
+			if( floppy_write_gate = '1' and write_protect_state = '0' )
 			then
 				write_stream_side0 <= floppy_data_side0_pulse;
 				write_stream_side1 <= (floppy_write_data or floppy_write_data_q1);
@@ -564,7 +568,7 @@ begin
 					in_shifter_side0 <= in_shifter_side0(14 downto 0) & write_stream_side0;
 					in_shifter_side1 <= in_shifter_side1(14 downto 0) & write_stream_side1;
 
-					if(floppy_write_gate = '1' and floppy_select = '1')
+					if(floppy_write_gate = '1' and floppy_select = '1' and write_protect_state = '0')
 					then
 						write_flag <= '1';
 						led2_out <= '1';
