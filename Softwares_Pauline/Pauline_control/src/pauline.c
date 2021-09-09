@@ -190,6 +190,7 @@ void printhelp(char* argv[])
 	printf("  -motsrc:[id]\t\t\t: drive simulation motor source line\n");
 	printf("  -pin02mode:[id]\t\t\t: drive simulation pin 2 status line mode\n");
 	printf("  -pin34mode:[id]\t\t\t: drive simulation pin 34 status line mode\n");
+	printf("  -writeprotectdrive:[0/1]\t\t: drive simulation write protect (0 or 1)\n");
 	printf("  -enabledrive\t\t\t: drive enable\n");
 	printf("  -disabledrive\t\t\t: drive disable\n");
 	printf("  -finput:[filename]\t\t: Input file image \n");
@@ -208,7 +209,7 @@ void printhelp(char* argv[])
 	printf("  -set:[io name]\n");
 	printf("  -clear:[io name]\n");
 	printf("  -get:[io name]\n");
-	printf("  -ledsrc:[io name]\n");
+	printf("  -led1src / led2src:[io name]\n");
 	printf("  -ioslist\n");
 	printf("  -ejectdisk\n");
 	printf("  -setiohigh:[io number]\n");
@@ -806,6 +807,16 @@ int main(int argc, char* argv[])
 		printf("Drive disabled : %d\n", drive);
 	}
 
+	if(isOption(argc,argv,"writeprotectdrive",(char*)&temp)>0)
+	{
+		floppy_ctrl_writeprotect(fpga, drive, atoi(temp));
+
+		if(atoi(temp))
+			printf("Drive %d write protected\n", drive);
+		else
+			printf("Drive %d write enabled\n", drive);
+	}
+
 	high_res_mode = 0;
 	if(isOption(argc,argv,"highres",0)>0)
 	{
@@ -1152,6 +1163,7 @@ int main(int argc, char* argv[])
 		(isOption(argc,argv,"sound",0)<=0 ) &&
 		(isOption(argc,argv,"led1src",0)<=0 ) &&
 		(isOption(argc,argv,"led2src",0)<=0 ) &&
+		(isOption(argc,argv,"writeprotectdrive",0)<=0 ) &&
 		(isOption(argc,argv,"reset",0)<=0 )
 		)
 	{

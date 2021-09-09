@@ -650,6 +650,24 @@ void floppy_ctrl_side(fpga_state * state, int drive, int side)
 	pthread_mutex_unlock( &state->io_fpga_mutex );
 }
 
+void floppy_ctrl_writeprotect(fpga_state * state, int drive, int writeprotect)
+{
+	uint32_t tmp;
+
+	if(state)
+	{
+		pthread_mutex_lock( &state->io_fpga_mutex );
+
+		tmp = state->regs->drive_config[drive&3];
+		tmp &= ~(0x1 << 13);
+		if(writeprotect)
+			tmp |= 0x1 << 13;
+		state->regs->drive_config[drive&3] = tmp;
+
+		pthread_mutex_unlock( &state->io_fpga_mutex );
+	}
+}
+
 void floppy_ctrl_move_head(fpga_state * state, int dir, int trk, int drive)
 {
 	pthread_mutex_lock( &state->io_fpga_mutex );
@@ -890,8 +908,8 @@ void set_led_src(fpga_state * state, int led, int src)
 		pthread_mutex_lock( &state->io_fpga_mutex );
 
 		tmp = state->regs->dump_in_mux_sel_19_16;
-		tmp &= ~(0xF << (16 + (8 * led)));
-		tmp |= ((src&0xF) << (16 + (8 * led)));
+		tmp &= ~(0xFF << (16 + (8 * led)));
+		tmp |= ((src&0xFF) << (16 + (8 * led)));
 		state->regs->dump_in_mux_sel_19_16 = tmp;
 
 		pthread_mutex_unlock( &state->io_fpga_mutex );

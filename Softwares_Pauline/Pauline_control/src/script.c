@@ -1451,6 +1451,32 @@ int cmd_set_pin34_mode(script_ctx * ctx, char * line)
 	return 0;
 }
 
+int cmd_set_writeprotect(script_ctx * ctx, char * line)
+{
+	int i,j,drive,writeprotect;
+	char temp[DEFAULT_BUFLEN];
+	char temp2[DEFAULT_BUFLEN];
+
+	i = get_param(line, 1,temp);
+	j = get_param(line, 2,temp2);
+
+	if(i>=0 && j>=0)
+	{
+		drive = atoi(temp);
+		writeprotect = atoi(temp2);
+
+		ctx->script_printf(MSGTYPE_INFO_0,"Drive %d write protect : %d\n",drive,writeprotect);
+
+		floppy_ctrl_writeprotect(fpga, drive, writeprotect);
+
+		return 1;
+	}
+
+	ctx->script_printf(MSGTYPE_ERROR,"Bad/Missing parameter(s) ! : %s\n",line);
+
+	return 0;
+}
+
 int cmd_ejectdisk(script_ctx * ctx, char * line)
 {
 	int i;
@@ -1803,10 +1829,6 @@ cmd_list cmdlist[] =
 
 	{"set_pin_dir",             cmd_set_pin_mode},
 	{"headstep",                cmd_headstep},
-	{"motsrc",                  cmd_set_motor_src},
-	{"selsrc",                  cmd_set_select_src},
-	{"pin02mode",               cmd_set_pin02_mode},
-	{"pin34mode",               cmd_set_pin34_mode},
 	{"dump_time",               cmd_set_dump_time_per_track},
 	{"index_to_dump",           cmd_set_index_to_dump_time},
 	{"reset",                   cmd_reset},
@@ -1832,6 +1854,12 @@ cmd_list cmdlist[] =
 	{"sound",                   cmd_sound},
 
 	{"system",                  cmd_system},
+
+	{"fe_writeprotect",         cmd_set_writeprotect},
+	{"fe_motsrc",               cmd_set_motor_src},
+	{"fe_selsrc",               cmd_set_select_src},
+	{"fe_pin02mode",            cmd_set_pin02_mode},
+	{"fe_pin34mode",            cmd_set_pin34_mode},
 
 	{0 , 0}
 };

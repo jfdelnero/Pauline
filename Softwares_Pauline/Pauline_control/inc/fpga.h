@@ -394,6 +394,7 @@ void floppy_ctrl_motor(fpga_state * state, int drive, int enable);
 void floppy_ctrl_headload(fpga_state * state, int drive, int enable);
 void floppy_ctrl_side(fpga_state * state, int drive, int side);
 void floppy_ctrl_selectbyte(fpga_state * state, unsigned char byte);
+void floppy_ctrl_writeprotect(fpga_state * state, int drive, int writeprotect);
 int  floppy_head_recalibrate(fpga_state * state, int drive);
 int  floppy_head_maxtrack(fpga_state * state, int maxtrack, int drive);
 
