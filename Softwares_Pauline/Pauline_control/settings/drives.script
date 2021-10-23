@@ -96,6 +96,14 @@ set DRIVES_INTERFACE_MODE "GENERIC_FLOPPY_INTERFACE"
 # set ENABLE_APPLE_MODE 1
 
 #
+# Macintosh drive GCR mode
+# 0 -> MFM disks, 1 GCR disks. 
+# (Can be changed on the control web page)
+#
+
+set MACINTOSH_GCR_MODE 0
+
+#
 # Uncomment the following line to disable the sound output.
 #
 

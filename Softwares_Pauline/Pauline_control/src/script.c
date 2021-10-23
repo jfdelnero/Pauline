@@ -54,7 +54,6 @@
 
 #include "version.h"
 
-
 extern char home_folder[512];
 extern fpga_state * fpga;
 typedef int (* CMD_FUNC)(script_ctx * ctx, char * line);
@@ -1038,8 +1037,6 @@ int cmd_set_env(script_ctx * ctx, char * line)
 		hxcfe_setEnvVar( fpga->libhxcfe, variable, value );
 
 		ctx->script_printf(MSGTYPE_INFO_0,"Set %s to %s\n",variable,value);
-
-		reset_fpga(fpga);
 
 		return 1;
 	}

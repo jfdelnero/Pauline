@@ -584,6 +584,7 @@ void floppy_ctrl_motor(fpga_state * state, int drive, int enable)
 				*(((volatile uint32_t*)(state->regs)) + state->drive_mot_reg_number[drive]) &= ~(state->drive_mot_bit_mask[drive]);
 		break;
 		case DRIVES_INTERFACE_APPLE_MACINTOSH_MODE:
+			write_apple_mac_cmd(state,APPLE_MAC_CMD_RD_SET_GCR_MODE, hxcfe_getEnvVarValue(state->libhxcfe, "MACINTOSH_GCR_MODE") );
 			write_apple_mac_cmd(state,APPLE_MAC_CMD_WR_MOTORON, (enable&1)^1);
 		break;
 	}
@@ -641,8 +642,7 @@ void floppy_ctrl_side(fpga_state * state, int drive, int side)
 				state->regs->floppy_ctrl_control &= ~(0x20);
 		break;
 		case DRIVES_INTERFACE_APPLE_MACINTOSH_MODE:
-			write_apple_mac_cmd(state,APPLE_MAC_CMD_RD_SET_GCR_MODE,0);
-
+			write_apple_mac_cmd(state,APPLE_MAC_CMD_RD_SET_GCR_MODE, hxcfe_getEnvVarValue(state->libhxcfe, "MACINTOSH_GCR_MODE") );
 			set_read_mux_apple_mac(state,APPLE_MAC_CMD_RD_RDDATAHEAD0 + (side&1));
 		break;
 	}
