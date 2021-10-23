@@ -374,12 +374,48 @@ document.addEventListener("DOMContentLoaded", function(event)
 		};
 	};
 
+	var element = document.getElementById("ckbMACMFMMode");
+	if( element )
+	{
+		element.onclick = function()
+		{
+			var log = document.getElementById("taLog").value;
+
+			if( document.getElementById("ckbMACMFMMode").checked )
+			{
+				var txt = "set MACINTOSH_GCR_MODE 1\n";
+			}
+			else
+			{
+				var txt = "set MACINTOSH_GCR_MODE 0\n";
+			}
+
+			//alert(txt);
+			ws.send(txt);
+
+			document.getElementById("taLog").value += ("Send: " + txt + "\n");
+		};
+	};
+
 	var element = document.getElementById("btReadTrack");
 	if( element )
 	{
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
+
+			if( document.getElementById("ckbMACMFMMode").checked )
+			{
+				var txt = "set MACINTOSH_GCR_MODE 1\n";
+			}
+			else
+			{
+				var txt = "set MACINTOSH_GCR_MODE 0\n";
+			}
+
+			ws.send(txt);
+			document.getElementById("taLog").value += ("Send: " + txt + "\n");
+
 			var txt = "index_to_dump" + " " + document.getElementById("txtIndexToDumpDelay").value.toString()
 									  + "\n";
 
@@ -593,6 +629,19 @@ document.addEventListener("DOMContentLoaded", function(event)
 		element.onclick = function()
 		{
 			var log = document.getElementById("taLog").value;
+
+			if( document.getElementById("ckbMACMFMMode").checked )
+			{
+				var txt = "set MACINTOSH_GCR_MODE 1\n";
+			}
+			else
+			{
+				var txt = "set MACINTOSH_GCR_MODE 0\n";
+			}
+
+			ws.send(txt);
+			document.getElementById("taLog").value += ("Send: " + txt + "\n");
+
 			var txt = "index_to_dump" + " " + document.getElementById("txtIndexToDumpDelay").value.toString()
 									  + "\n";
 
