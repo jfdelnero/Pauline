@@ -363,6 +363,7 @@ component floppy_drive
 		pin02_config            : in std_logic_vector(3 downto 0);
 		pin34_config            : in std_logic_vector(3 downto 0);
 		readymask_config        : in std_logic_vector(3 downto 0);
+		double_step_mode        : in std_logic;
 
 		qd_mode                 : in std_logic;
 
@@ -1403,6 +1404,7 @@ floppy_drive_x : floppy_drive
 		pin02_config                   => drives_config_regs(i_drive)(3 downto 0),
 		pin34_config                   => drives_config_regs(i_drive)(7 downto 4),
 		readymask_config               => drives_config_regs(i_drive)(11 downto 8),
+		double_step_mode               => drives_config_regs(i_drive)(25),
 
 		qd_mode                        => drives_config_regs(i_drive)(24),
 

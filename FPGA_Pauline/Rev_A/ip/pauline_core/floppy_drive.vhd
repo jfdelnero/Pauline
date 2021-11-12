@@ -92,6 +92,7 @@ entity floppy_drive is
 		pin02_config            : in std_logic_vector(3 downto 0);
 		pin34_config            : in std_logic_vector(3 downto 0);
 		readymask_config        : in std_logic_vector(3 downto 0);
+		double_step_mode        : in std_logic;
 
 		qd_mode                 : in std_logic;
 
@@ -209,19 +210,20 @@ component trackcore
 
 		HEADTRACKPOSITION       : out std_logic_vector(7 downto 0); -- track position value
 
-		HEADMOVED: out std_logic;
+		HEADMOVED               : out std_logic;
 
-		drive_head_step : out std_logic;
+		drive_head_step         : out std_logic;
 
-		ackheadmove: in std_logic;
-		FLOPPY_STEP: in std_logic;  -- Step command
-		FLOPPY_DIR:  in std_logic;  -- Step direction
-		FLOPPY_TRK00  : out std_logic;  -- Track 0 indicator
+		ackheadmove             : in std_logic;
+		FLOPPY_STEP             : in std_logic;   -- Step command
+		FLOPPY_DIR              : in std_logic;   -- Step direction
+		FLOPPY_TRK00            : out std_logic;  -- Track 0 indicator
 
-		step_sound : out std_logic;
+		step_sound              : out std_logic;
 
-		clear_cnt: in std_logic
+		double_step_mode        : in std_logic;
 
+		clear_cnt               : in std_logic
 	);
 end component;
 
@@ -441,6 +443,8 @@ begin
 		FLOPPY_TRK00 => floppy_trk00,
 
 		step_sound => step_sound,
+
+		double_step_mode => double_step_mode,
 
 		clear_cnt => reset_state
 	);
