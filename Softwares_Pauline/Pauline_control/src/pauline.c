@@ -381,7 +381,7 @@ int main(int argc, char* argv[])
 	char ofilename[512];
 	char layoutformat[128];
 	char temp[512];
-	//int doublestep;
+	int doublestep;
 	int drive;
 
 	int track,dir;
@@ -416,7 +416,7 @@ int main(int argc, char* argv[])
 
 	verbose = 0;
 	drive = 0;
-	//doublestep = -1;
+	doublestep = 0;
 	home_folder[0] = '\0';
 
 	printf("HxC Floppy Emulator : Pauline floppy drive simulator / floppy drive dumper control software v"STR_FILE_VERSION2"\n");
@@ -656,7 +656,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	/*
 	if(isOption(argc,argv,"singlestep",0)>0)
 	{
 		doublestep = 0;
@@ -666,7 +665,6 @@ int main(int argc, char* argv[])
 	{
 		doublestep = 0xFF;
 	}
-	*/
 
 /*
 	if(isOption(argc,argv,"init",0)>0)
@@ -736,7 +734,7 @@ int main(int argc, char* argv[])
 		printf("Stream HFE Load : %s, drive : %d\n",filename,drive);
 		fflush(stdout);
 
-		load_stream_hfe(fpga, drive, filename, 0,0);
+		load_stream_hfe(fpga, drive, filename, 0,0,doublestep);
 	}
 
 	if(isOption(argc,argv,"getiostate",(char*)&temp)>0)

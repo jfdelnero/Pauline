@@ -25,6 +25,6 @@
 //
 */
 
-unsigned short * load_stream_hfe(fpga_state * state,int drive, char * imgfile, int * tracksize,int * numberoftracks);
+unsigned short * load_stream_hfe(fpga_state * state,int drive, char * imgfile, int * tracksize,int * numberoftracks,int double_step);
 unsigned short * save_stream_hfe(fpga_state * state,int drive, char * imgfile);
 

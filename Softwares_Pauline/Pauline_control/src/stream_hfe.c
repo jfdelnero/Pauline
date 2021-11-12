@@ -145,7 +145,7 @@ int decodestream(fpga_state * state, int drive, streamhfe_track_def * trackdef, 
 	return 0;
 }
 
-unsigned short * load_stream_hfe(fpga_state * state,int drive, char * imgfile, int * tracksize,int * numberoftracks)
+unsigned short * load_stream_hfe(fpga_state * state,int drive, char * imgfile, int * tracksize,int * numberoftracks,int double_step)
 {
 	int i,j,track_array_index;
 	FILE * f;
@@ -222,6 +222,11 @@ unsigned short * load_stream_hfe(fpga_state * state,int drive, char * imgfile, i
 		}
 
 		state->regs->drive_config[drive] |= CFG_DISK_IN_DRIVE;
+
+		if(double_step)
+			state->regs->drive_config[drive] |= CFG_DISK_DOUBLE_STEP;
+		else
+			state->regs->drive_config[drive] &= ~CFG_DISK_DOUBLE_STEP;
 
 	}
 	else

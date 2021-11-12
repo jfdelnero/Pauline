@@ -78,6 +78,7 @@
 #define CFG_DISK_HD_SW        (0x00000001 << 14)
 #define CFG_DISK_ED_SW        (0x00000001 << 15)
 #define CFG_QD_MODE           (0x00000001 << 24)
+#define CFG_DISK_DOUBLE_STEP  (0x00000001 << 25)
 
 #define CFG_RDYMSK_INDEX      (0x00000001 << 8)
 #define CFG_RDYMSK_DATA       (0x00000001 << 9)
