@@ -80,6 +80,8 @@ package floppy_lib_package is
   type push_fifos_out_ctrlbus is array (0 to 4) of push_fifo_out_ctrlbus;
   type push_fifos_out_statusbus is array (0 to 4) of push_fifo_out_statusbus;
 
+  type hs_index_pos_array is array (0 to 31) of std_logic_vector(31 downto 0);
+
   component example_component is
     port (
       i_data  : in  std_logic;

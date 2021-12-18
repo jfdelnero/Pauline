@@ -30,7 +30,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
-use ieee.STD_LOGIC_ARITH.ALL;
+use ieee.numeric_std.all;
 
 library work;
 use work.floppy_lib_package.all;
@@ -174,6 +174,8 @@ signal gpio_oe_reg : std_logic_vector(31 downto 0);
 
 signal images_max_track_regs : lword_array;
 signal drives_config_regs : lword_array;
+signal drives_datasep_config_regs : lword_array;
+
 signal drives_track_index_start : lword_array;
 signal drives_index_len : lword_array;
 signal reset_drives: std_logic_vector(4 downto 0);
@@ -187,6 +189,7 @@ signal drv_pin02 : std_logic_vector(3 downto 0);
 signal drv_pin34 : std_logic_vector(3 downto 0);
 signal drv_write_protect : std_logic_vector(3 downto 0);
 signal drv_index : std_logic_vector(3 downto 0);
+signal drv_window : std_logic_vector(3 downto 0);
 
 signal drv_option_diskindrive : std_logic_vector(3 downto 0);
 signal drv_option_insertfault : std_logic_vector(3 downto 0);
@@ -307,10 +310,14 @@ signal step_signal_width : std_logic_vector(31 downto 0);
 signal step_phases_width : std_logic_vector(31 downto 0);
 signal step_phases_stop_width : std_logic_vector(31 downto 0);
 
+signal hs_index_state : std_logic_vector(31 downto 0);
+signal hs_index : std_logic;
+signal hs_index_positions : hs_index_pos_array;
+
 component floppy_drive
 	port(
-		clk : in std_logic;
-		reset_n : in std_logic;
+		clk                     : in std_logic;
+		reset_n                 : in std_logic;
 
 		pop_fifo_in_databus_b   : in pop_fifo_in_databus;
 		pop_fifo_in_ctrlbus_b   : in pop_fifo_in_ctrlbus;
@@ -348,6 +355,8 @@ component floppy_drive
 		floppy_pin02            : out std_logic;
 		floppy_pin34            : out std_logic;
 
+		floppy_window           : out std_logic;
+
 		host_i_x68000_sel       : in std_logic;
 		floppy_eject_func       : in std_logic;
 		floppy_lock_func        : in std_logic;
@@ -363,7 +372,10 @@ component floppy_drive
 		pin02_config            : in std_logic_vector(3 downto 0);
 		pin34_config            : in std_logic_vector(3 downto 0);
 		readymask_config        : in std_logic_vector(3 downto 0);
+		datasep_window_config   : in std_logic_vector(31 downto 0);
+
 		double_step_mode        : in std_logic;
+		updown_step_mode        : in std_logic;
 
 		qd_mode                 : in std_logic;
 
@@ -570,6 +582,15 @@ begin
 	dump_sample_rate_divisor <= ctrl_control_reg(22);
 	ignore_index_trigger <= ctrl_control_reg(23);
 
+	hs_index <= hs_index_state(0) or hs_index_state(1) or hs_index_state(2) or hs_index_state(3) or
+				hs_index_state(4) or hs_index_state(5) or hs_index_state(6) or hs_index_state(7) or
+				hs_index_state(8) or hs_index_state(9) or hs_index_state(10) or hs_index_state(11) or
+				hs_index_state(12) or hs_index_state(13) or hs_index_state(14) or hs_index_state(15) or
+				hs_index_state(16) or hs_index_state(17) or hs_index_state(18) or hs_index_state(19) or
+				hs_index_state(20) or hs_index_state(21) or hs_index_state(22) or hs_index_state(23) or
+				hs_index_state(24) or hs_index_state(25) or hs_index_state(26) or hs_index_state(27) or
+				hs_index_state(28) or hs_index_state(29) or hs_index_state(30) or hs_index_state(31);
+
 	process(in_mux_selectors_regs ,gpio_reg ,mux_out_bus )
 	begin
 
@@ -671,7 +692,7 @@ begin
 
 	end process;
 
-	process(csi_ci_Clk, csi_ci_Reset_n,host_sel_drive_unit,ctrl_control_reg,drv_track_trk00,drv_pin02,drv_pin34,drv_write_protect,drv_index,drv_data,out_signal_polarity_reg )
+	process(csi_ci_Clk, csi_ci_Reset_n,host_sel_drive_unit,ctrl_control_reg,drv_track_trk00,drv_pin02,drv_pin34,drv_window,drv_write_protect,drv_index,drv_data,out_signal_polarity_reg )
 	begin
 		if(control_reg(30) = '0')
 		then
@@ -685,7 +706,7 @@ begin
 					coe_c1_host_o_pin02 <= drv_pin02(0) xor out_signal_polarity_reg(3);
 					coe_c1_host_o_pin34 <= drv_pin34(0) xor out_signal_polarity_reg(4);
 					coe_c1_host_o_index <= drv_index(0) xor out_signal_polarity_reg(5);
-					coe_c1_host_o_pin03 <= '0';
+					coe_c1_host_o_pin03 <= drv_window(0) xor out_signal_polarity_reg(28);
 
 				when "0010" =>
 					coe_c1_host_o_trk00 <= drv_track_trk00(1) xor out_signal_polarity_reg(0);
@@ -694,7 +715,7 @@ begin
 					coe_c1_host_o_pin02 <= drv_pin02(1) xor out_signal_polarity_reg(3);
 					coe_c1_host_o_pin34 <= drv_pin34(1) xor out_signal_polarity_reg(4);
 					coe_c1_host_o_index <= drv_index(1) xor out_signal_polarity_reg(5);
-					coe_c1_host_o_pin03 <= '0';
+					coe_c1_host_o_pin03 <= drv_window(1) xor out_signal_polarity_reg(28);
 
 				when "0100" =>
 					coe_c1_host_o_trk00 <= drv_track_trk00(2) xor out_signal_polarity_reg(0);
@@ -703,7 +724,7 @@ begin
 					coe_c1_host_o_pin02 <= drv_pin02(2) xor out_signal_polarity_reg(3);
 					coe_c1_host_o_pin34 <= drv_pin34(2) xor out_signal_polarity_reg(4);
 					coe_c1_host_o_index <= drv_index(2) xor out_signal_polarity_reg(5);
-					coe_c1_host_o_pin03 <= '0';
+					coe_c1_host_o_pin03 <= drv_window(2) xor out_signal_polarity_reg(28);
 
 				when "1000" =>
 					coe_c1_host_o_trk00 <= drv_track_trk00(3) xor out_signal_polarity_reg(0);
@@ -712,7 +733,7 @@ begin
 					coe_c1_host_o_pin02 <= drv_pin02(3) xor out_signal_polarity_reg(3);
 					coe_c1_host_o_pin34 <= drv_pin34(3) xor out_signal_polarity_reg(4);
 					coe_c1_host_o_index <= drv_index(3) xor out_signal_polarity_reg(5);
-					coe_c1_host_o_pin03 <= '0';
+					coe_c1_host_o_pin03 <= drv_window(3) xor out_signal_polarity_reg(28);
 
 				when others =>
 					coe_c1_host_o_trk00 <= '0';
@@ -826,7 +847,7 @@ begin
 				when "0001" =>
 					coe_c1_host_o_x68000_diskindrive <= drv_option_diskindrive(0) xor out_signal_polarity_reg(6);
 					coe_c1_host_o_x68000_insertfault <= drv_option_insertfault(0) xor out_signal_polarity_reg(7);
-					coe_c1_host_o_x68000_int <= drv_option_int(0) xor out_signal_polarity_reg(8);
+					coe_c1_host_o_x68000_int <= (drv_option_int(0) or hs_index) xor out_signal_polarity_reg(8);
 
 				when "0010" =>
 					coe_c1_host_o_x68000_diskindrive <= drv_option_diskindrive(1) xor out_signal_polarity_reg(6);
@@ -893,10 +914,10 @@ floppy_dir_filter : floppy_signal_filter
 
 		invert                         => in_signal_polarity_reg(1),
 
-		pulse_out_mode                 => '0',
+		pulse_out_mode                 => drives_config_regs(0)(26),--'0',
 
 		rising_edge                    => '0',
-		falling_edge                   => '0'
+		falling_edge                   => drives_config_regs(0)(26) --'0'
 		);
 
 floppy_motor_filter : floppy_signal_filter
@@ -1388,6 +1409,7 @@ floppy_drive_x : floppy_drive
 		host_o_index                   => drv_index(i_drive),
 		floppy_pin02                   => drv_pin02(i_drive),
 		floppy_pin34                   => drv_pin34(i_drive),
+		floppy_window                  => drv_window(i_drive),
 
 		host_i_x68000_sel              => host_i_x68000_sel(0),
 		floppy_eject_func              => host_i_x68000_eject,
@@ -1404,7 +1426,10 @@ floppy_drive_x : floppy_drive
 		pin02_config                   => drives_config_regs(i_drive)(3 downto 0),
 		pin34_config                   => drives_config_regs(i_drive)(7 downto 4),
 		readymask_config               => drives_config_regs(i_drive)(11 downto 8),
+		datasep_window_config          => drives_datasep_config_regs(i_drive),
+
 		double_step_mode               => drives_config_regs(i_drive)(25),
+		updown_step_mode               => drives_config_regs(i_drive)(26),
 
 		qd_mode                        => drives_config_regs(i_drive)(24),
 
@@ -1432,6 +1457,24 @@ host_o_index_gen_X : floppy_index_generator
 		index_out                      => index_state(i_drive)
 		);
 end generate GEN_INDEX;
+
+GEN_HS_INDEX: for i_hs_index in 0 to 31 generate
+host_o_index_gen_hs_X : floppy_index_generator
+	port map(
+		clk                            => csi_ci_Clk,
+		reset_n                        => csi_ci_Reset_n,
+
+		track_length                   => images_track_size_busses(0),
+
+		index_length                   => drives_index_len(0),
+
+		start_track_index              => hs_index_positions(i_hs_index),
+
+		current_position               => drv_cur_track_offsets_busses(0),
+
+		index_out                      => hs_index_state(i_hs_index)
+		);
+end generate GEN_HS_INDEX;
 
 floppy_qd_stopmotor_gen : floppy_index_generator
 	port map(
@@ -1592,16 +1635,16 @@ floppy_dumper_unit : floppy_dumper
 			continuous_mode_reg <= (others => '1');
 
 			for i in 0 to 4 loop
-				images_base_address_busses(i) <= conv_std_logic_vector(900*1024*1024,32); -- 900MB
-				images_track_size_busses(i) <= conv_std_logic_vector(624998*2,32); -- 625000*2
+				images_base_address_busses(i) <= std_logic_vector(to_unsigned(900*1024*1024,32)); -- 900MB
+				images_track_size_busses(i) <= std_logic_vector(to_unsigned(624998*2,32)); -- 625000*2
 			end loop;
 
 			in_signal_polarity_reg <= (others => '0');
 			out_signal_polarity_reg <= (others => '0');
 
-			floppy_port_glitch_filter <= conv_std_logic_vector(4,32); -- 80ns @ 50Mhz
-			host_port_glitch_filter <= conv_std_logic_vector(4,32); -- 80ns @ 50Mhz
-			io_port_glitch_filter <= conv_std_logic_vector(4,32); -- 80ns @ 50Mhz
+			floppy_port_glitch_filter <= std_logic_vector(to_unsigned(4,32)); -- 80ns @ 50Mhz
+			host_port_glitch_filter <= std_logic_vector(to_unsigned(4,32)); -- 80ns @ 50Mhz
+			io_port_glitch_filter <= std_logic_vector(to_unsigned(4,32)); -- 80ns @ 50Mhz
 
 			invert_io_conf <= (others => '0');
 
@@ -1612,14 +1655,19 @@ floppy_dumper_unit : floppy_dumper
 			sound_period <= (others => '0');
 
 			for i in 0 to 4 loop
-				images_max_track_regs(i) <= conv_std_logic_vector(80,32); -- 80 tracks
+				images_max_track_regs(i) <= std_logic_vector(to_unsigned(80,32)); -- 80 tracks
 				drives_config_regs(i) <= (others => '0');
 				drives_track_index_start(i) <= (others => '0');
 				drives_index_len(i) <= (others => '0');
+				drives_datasep_config_regs(i) <= (others => '0');
 			end loop;
 
 			for i in 0 to 19 loop
 				in_mux_selectors_regs(i) <= (others => '0');
+			end loop;
+
+			for i in 0 to 31 loop
+				hs_index_positions(i) <= (others => '0');
 			end loop;
 
 			host_drv0_qdstopmotor_len <= (others => '0');
@@ -1632,9 +1680,9 @@ floppy_dumper_unit : floppy_dumper
 			ctrl_head_move_cmd <= '0';
 			ctrl_head_move_dir <= '0';
 
-			step_signal_width <= conv_std_logic_vector(400,32);          -- 8uS
-			step_phases_width <= conv_std_logic_vector(700000,32);       -- 14ms
-			step_phases_stop_width <= conv_std_logic_vector(1800000,32); -- 36ms
+			step_signal_width <= std_logic_vector(to_unsigned(400,32));          -- 8uS
+			step_phases_width <= std_logic_vector(to_unsigned(700000,32));       -- 14ms
+			step_phases_stop_width <= std_logic_vector(to_unsigned(1800000,32)); -- 36ms
 
 			avs_s1_irq <= '0';
 
@@ -1644,10 +1692,11 @@ floppy_dumper_unit : floppy_dumper
 
 			ctrl_head_move_cmd <= '0';
 
-			images_max_track_regs(4) <= conv_std_logic_vector(1,32);
+			images_max_track_regs(4) <= std_logic_vector(to_unsigned(1,32));
 			drives_config_regs(4) <= (others=>'0');
 			drives_track_index_start(4) <= (others => '0');
 			drives_index_len(4) <= (others => '0');
+			drives_datasep_config_regs(4) <= (others => '0');
 
 			avs_s1_waitrequest <= '1';
 
@@ -1997,6 +2046,42 @@ floppy_dumper_unit : floppy_dumper
 						end if;
 					end loop;
 
+				elsif ( avs_s1_address = "1010011") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							drives_datasep_config_regs(0)((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+
+				elsif ( avs_s1_address = "1010100") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							drives_datasep_config_regs(1)((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+
+				elsif ( avs_s1_address = "1010101") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							drives_datasep_config_regs(2)((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+
+				elsif ( avs_s1_address = "1010110") then
+					for i in 0 to 3 loop
+						if(avs_s1_byteenable(i) = '1') then
+							drives_datasep_config_regs(3)((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+						end if;
+					end loop;
+
+				else
+					if ( avs_s1_address >= "1100000" and avs_s1_address <= "1111111") then
+						for i in 0 to 3 loop
+							if(avs_s1_byteenable(i) = '1') then
+								hs_index_positions( to_integer( unsigned( avs_s1_address( 4 downto 0) ) ) )((((i+1)*8)-1) downto i*8)  <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+							end if;
+						end loop;
+					end if;
 				end if;
 			end if;
 
@@ -2303,6 +2388,32 @@ floppy_dumper_unit : floppy_dumper
 					elsif ( avs_s1_address = "1010010") then
 						avs_s1_readdata <= step_phases_stop_width;
 						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1010010") then
+						avs_s1_readdata <= step_phases_stop_width;
+						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1010011") then
+						avs_s1_readdata <= drives_datasep_config_regs(0);
+						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1010100") then
+						avs_s1_readdata <= drives_datasep_config_regs(1);
+						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1010101") then
+						avs_s1_readdata <= drives_datasep_config_regs(2);
+						avs_s1_waitrequest <= '0';
+
+					elsif ( avs_s1_address = "1010110") then
+						avs_s1_readdata <= drives_datasep_config_regs(3);
+						avs_s1_waitrequest <= '0';
+
+					else
+						if ( avs_s1_address >= "1100000" and avs_s1_address <= "1111111") then
+							avs_s1_readdata <=	hs_index_positions( to_integer( unsigned( avs_s1_address( 4 downto 0) ) ) );
+							avs_s1_waitrequest <= '0';
+						end if;
 
 					end if;
 
