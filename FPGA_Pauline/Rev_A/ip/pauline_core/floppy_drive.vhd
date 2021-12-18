@@ -77,6 +77,8 @@ entity floppy_drive is
 		floppy_pin02            : out std_logic;
 		floppy_pin34            : out std_logic;
 
+		floppy_window           : out std_logic;
+
 		host_i_x68000_sel       : in std_logic;
 		floppy_eject_func       : in std_logic;
 		floppy_lock_func        : in std_logic;
@@ -92,7 +94,10 @@ entity floppy_drive is
 		pin02_config            : in std_logic_vector(3 downto 0);
 		pin34_config            : in std_logic_vector(3 downto 0);
 		readymask_config        : in std_logic_vector(3 downto 0);
+		datasep_window_config   : in std_logic_vector(31 downto 0);
+
 		double_step_mode        : in std_logic;
+		updown_step_mode        : in std_logic;
 
 		qd_mode                 : in std_logic;
 
@@ -166,6 +171,8 @@ signal noise_gen_signal : std_logic;
 
 signal write_protect_state : std_logic;
 
+signal data_line : std_logic;
+
 component floppy_sound
 	port(
 		clk : in std_logic;
@@ -222,6 +229,7 @@ component trackcore
 		step_sound              : out std_logic;
 
 		double_step_mode        : in std_logic;
+		updown_mode             : in std_logic;
 
 		clear_cnt               : in std_logic
 	);
@@ -306,6 +314,20 @@ component noise_generator is
 	);
 end component;
 
+component floppy_fm_data_separator is
+	port(
+		clk                     : in  std_logic;
+		reset_n                 : in  std_logic;
+
+		raw_data                : in  std_logic;
+
+		window_size             : in  std_logic_vector(15 downto 0);
+		window_phase_correction : in  std_logic_vector(15 downto 0);
+
+		window_clk              : out std_logic
+	);
+end component;
+
 begin
 
 	process(clk, reset_n, qd_mode, floppy_motor, qd_motor ) begin
@@ -328,7 +350,8 @@ begin
 	host_o_wpt <= write_protect_state;
 
 	host_o_index <= out_index_shifter(31) and (not(readymask_config(0)) or drive_ready);
-	host_o_data <= floppy_data_rd and drive_motor and (not(readymask_config(1)) or drive_ready);
+	host_o_data <= data_line;
+	data_line <= floppy_data_rd and drive_motor and (not(readymask_config(1)) or drive_ready);
 
 	floppy_data_side0_pulse <= out_shifter_side0(30);
 	floppy_data_side1_pulse <= out_shifter_side1(30);
@@ -445,6 +468,7 @@ begin
 		step_sound => step_sound,
 
 		double_step_mode => double_step_mode,
+		updown_mode => updown_step_mode,
 
 		clear_cnt => reset_state
 	);
@@ -456,6 +480,20 @@ begin
 		reset_n => reset_n,
 
 		noise_out => weakbit_noise_sig
+	);
+
+	floppy_fm_data_separator_gen : floppy_fm_data_separator
+	port map
+	(
+		clk                     => clk,
+		reset_n                 => reset_n,
+
+		raw_data                => data_line,
+
+		window_size             => datasep_window_config(15 downto 0),
+		window_phase_correction => datasep_window_config(31 downto 16),
+
+		window_clk              => floppy_window
 	);
 
 	process(floppy_side1, floppy_write_gate, floppy_write_data, floppy_data_side0_pulse, floppy_data_side1_pulse, floppy_write_data_q1 ) begin
