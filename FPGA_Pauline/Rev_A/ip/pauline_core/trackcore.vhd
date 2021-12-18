@@ -64,6 +64,7 @@ entity trackcore is
 		step_sound              : out std_logic;
 
 		double_step_mode        : in std_logic;
+		updown_mode             : in std_logic;
 
 		clear_cnt               : in std_logic
 		);
@@ -80,6 +81,8 @@ architecture arch of trackcore is
 	signal double_step_ff : std_logic;
 	signal delayed_dir_sig : std_logic;
 
+	signal dir_sig : std_logic;
+	signal step_sig : std_logic;
 
 begin
 
@@ -87,9 +90,18 @@ begin
 	cur_tracks_base <= image_base_address + tracks_base;
 	-------------------------------------------------------
 
-
-	internal_step_gen : process(FLOPPY_STEP,FLOPPY_DIR,FLOPPY_DRIVE_SELECT,double_step_mode,clk,reset_n)
+	internal_step_gen : process(step_sig,dir_sig,FLOPPY_DRIVE_SELECT,double_step_mode,clk,reset_n)
 	begin
+
+		if( updown_mode = '0' )
+		then
+			dir_sig <= FLOPPY_DIR;
+			step_sig <= FLOPPY_STEP;
+		else
+			dir_sig <= FLOPPY_DIR;
+			step_sig <= FLOPPY_STEP or FLOPPY_DIR;
+		end if;
+
 		if (reset_n='0')
 		then
 			internal_step <= '0';
@@ -102,7 +114,7 @@ begin
 			if( FLOPPY_DRIVE_SELECT = '1' )
 			then
 
-				if( FLOPPY_STEP = '1' )
+				if( step_sig = '1' )
 				then
 
 					if( double_step_mode = '0' )
@@ -126,7 +138,7 @@ begin
 	end process;
 
 	-- Track Circuit
-	trackcounter : process(FLOPPY_STEP,FLOPPY_DIR,trackposition,clk,reset_n)
+	trackcounter : process(step_sig,dir_sig,trackposition,clk,reset_n)
 	begin
 		if (reset_n='0')
 		then
