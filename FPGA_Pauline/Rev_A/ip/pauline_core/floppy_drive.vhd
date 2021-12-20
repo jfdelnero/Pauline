@@ -94,7 +94,10 @@ entity floppy_drive is
 		pin02_config            : in std_logic_vector(3 downto 0);
 		pin34_config            : in std_logic_vector(3 downto 0);
 		readymask_config        : in std_logic_vector(3 downto 0);
+
 		datasep_window_config   : in std_logic_vector(31 downto 0);
+		datasep_window_config2  : in std_logic_vector(31 downto 0);
+		datasep_window_config3  : in std_logic_vector(31 downto 0);
 
 		double_step_mode        : in std_logic;
 		updown_step_mode        : in std_logic;
@@ -321,11 +324,17 @@ component floppy_fm_data_separator is
 
 		raw_data                : in  std_logic;
 
-		window_size             : in  std_logic_vector(15 downto 0);
+		window_period           : in  std_logic_vector(15 downto 0);
 		window_phase_correction : in  std_logic_vector(15 downto 0);
 
-		window_clk              : out std_logic
-	);
+		reshaped_window_mode    : in  std_logic;
+		window_delay            : in  std_logic_vector(15 downto 0);
+		window_width            : in  std_logic_vector(15 downto 0);
+		window_polarity         : in  std_logic;
+
+		phase_select            : in  std_logic;
+
+		window_clk              : out std_logic	);
 end component;
 
 begin
@@ -481,7 +490,7 @@ begin
 
 		noise_out => weakbit_noise_sig
 	);
-
+		
 	floppy_fm_data_separator_gen : floppy_fm_data_separator
 	port map
 	(
@@ -490,8 +499,15 @@ begin
 
 		raw_data                => data_line,
 
-		window_size             => datasep_window_config(15 downto 0),
+		window_period           => datasep_window_config(15 downto 0),
 		window_phase_correction => datasep_window_config(31 downto 16),
+
+		reshaped_window_mode    => datasep_window_config3(0),
+		window_delay            => datasep_window_config2(31 downto 16),
+		window_width            => datasep_window_config2(15 downto 0),
+		window_polarity         => datasep_window_config3(1),
+		
+		phase_select            => datasep_window_config3(2),
 
 		window_clk              => floppy_window
 	);

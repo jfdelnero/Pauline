@@ -175,6 +175,8 @@ signal gpio_oe_reg : std_logic_vector(31 downto 0);
 signal images_max_track_regs : lword_array;
 signal drives_config_regs : lword_array;
 signal drives_datasep_config_regs : lword_array;
+signal drives_datasep_config2_regs : lword_array;
+signal drives_datasep_config3_regs : lword_array;
 
 signal drives_track_index_start : lword_array;
 signal drives_index_len : lword_array;
@@ -372,7 +374,10 @@ component floppy_drive
 		pin02_config            : in std_logic_vector(3 downto 0);
 		pin34_config            : in std_logic_vector(3 downto 0);
 		readymask_config        : in std_logic_vector(3 downto 0);
+
 		datasep_window_config   : in std_logic_vector(31 downto 0);
+		datasep_window_config2  : in std_logic_vector(31 downto 0);
+		datasep_window_config3  : in std_logic_vector(31 downto 0);
 
 		double_step_mode        : in std_logic;
 		updown_step_mode        : in std_logic;
@@ -1427,6 +1432,8 @@ floppy_drive_x : floppy_drive
 		pin34_config                   => drives_config_regs(i_drive)(7 downto 4),
 		readymask_config               => drives_config_regs(i_drive)(11 downto 8),
 		datasep_window_config          => drives_datasep_config_regs(i_drive),
+		datasep_window_config2         => drives_datasep_config2_regs(i_drive),
+		datasep_window_config3         => drives_datasep_config3_regs(i_drive),
 
 		double_step_mode               => drives_config_regs(i_drive)(25),
 		updown_step_mode               => drives_config_regs(i_drive)(26),
@@ -1660,6 +1667,8 @@ floppy_dumper_unit : floppy_dumper
 				drives_track_index_start(i) <= (others => '0');
 				drives_index_len(i) <= (others => '0');
 				drives_datasep_config_regs(i) <= (others => '0');
+				drives_datasep_config2_regs(i) <= (others => '0');
+				drives_datasep_config3_regs(i) <= (others => '0');
 			end loop;
 
 			for i in 0 to 19 loop
@@ -1697,6 +1706,8 @@ floppy_dumper_unit : floppy_dumper
 			drives_track_index_start(4) <= (others => '0');
 			drives_index_len(4) <= (others => '0');
 			drives_datasep_config_regs(4) <= (others => '0');
+			drives_datasep_config2_regs(4) <= (others => '0');
+			drives_datasep_config3_regs(4) <= (others => '0');
 
 			avs_s1_waitrequest <= '1';
 
@@ -2056,21 +2067,14 @@ floppy_dumper_unit : floppy_dumper
 				elsif ( avs_s1_address = "1010100") then
 					for i in 0 to 3 loop
 						if(avs_s1_byteenable(i) = '1') then
-							drives_datasep_config_regs(1)((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+							drives_datasep_config2_regs(0)((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
 						end if;
 					end loop;
 
 				elsif ( avs_s1_address = "1010101") then
 					for i in 0 to 3 loop
 						if(avs_s1_byteenable(i) = '1') then
-							drives_datasep_config_regs(2)((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
-						end if;
-					end loop;
-
-				elsif ( avs_s1_address = "1010110") then
-					for i in 0 to 3 loop
-						if(avs_s1_byteenable(i) = '1') then
-							drives_datasep_config_regs(3)((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
+							drives_datasep_config3_regs(0)((((i+1)*8)-1) downto i*8) <= avs_s1_writedata((((i+1)*8)-1) downto i*8);
 						end if;
 					end loop;
 
@@ -2398,15 +2402,11 @@ floppy_dumper_unit : floppy_dumper
 						avs_s1_waitrequest <= '0';
 
 					elsif ( avs_s1_address = "1010100") then
-						avs_s1_readdata <= drives_datasep_config_regs(1);
+						avs_s1_readdata <= drives_datasep_config2_regs(0);
 						avs_s1_waitrequest <= '0';
 
 					elsif ( avs_s1_address = "1010101") then
-						avs_s1_readdata <= drives_datasep_config_regs(2);
-						avs_s1_waitrequest <= '0';
-
-					elsif ( avs_s1_address = "1010110") then
-						avs_s1_readdata <= drives_datasep_config_regs(3);
+						avs_s1_readdata <= drives_datasep_config3_regs(0);
 						avs_s1_waitrequest <= '0';
 
 					else
