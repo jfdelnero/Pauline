@@ -193,7 +193,11 @@ unsigned short * load_stream_hfe(fpga_state * state,int drive, char * imgfile, i
 			{
 				printf("Load Track %.3d.%d\n",j,i);
 
-				track_array_index = (j<<1) | (i&1);
+				if(header.number_of_side==2)
+					track_array_index = (j<<1) | (i&1);
+				else
+					track_array_index = j;
+
 				fseek(f, trackoffsetlist[track_array_index].packed_data_offset,SEEK_SET);
 
 				if(trackoffsetlist[track_array_index].packed_data_size)
@@ -510,7 +514,7 @@ int save_stream_hfe(fpga_state * state,int drive, char * imgfile)
 	unsigned int stream_track_size;
 	unsigned int track_size,number_of_pulses;
 	unsigned char tempbuf[512];
-	unsigned int max_packed_size;
+	unsigned int max_packed_size,track_index;
 
 	if(!state)
 		return 0;
@@ -577,8 +581,13 @@ int save_stream_hfe(fpga_state * state,int drive, char * imgfile)
 
 			track_size = 0;
 
-			tracks_def[(i<<1) | (j&1)].flags = STREAMHFE_TRKFLAG_PACKED;
-			tracks_def[(i<<1) | (j&1)].packed_data_offset = ftell(hxcstreamhfefile);
+			if(FILEHEADER->number_of_side==2)
+				track_index = (i<<1) | (j&1);
+			else
+				track_index = i;
+
+			tracks_def[track_index].flags = STREAMHFE_TRKFLAG_PACKED;
+			tracks_def[track_index].packed_data_offset = ftell(hxcstreamhfefile);
 			stream_track_size = 0;
 
 			packedsize = 0;
@@ -601,10 +610,10 @@ int save_stream_hfe(fpga_state * state,int drive, char * imgfile)
 				free(packed_track);
 			}
 
-			tracks_def[(i<<1) | (j&1)].packed_data_size = packedsize;
-			tracks_def[(i<<1) | (j&1)].unpacked_data_size = stream_track_size;
-			tracks_def[(i<<1) | (j&1)].track_len = track_size;
-			tracks_def[(i<<1) | (j&1)].nb_pulses = number_of_pulses;
+			tracks_def[track_index].packed_data_size = packedsize;
+			tracks_def[track_index].unpacked_data_size = stream_track_size;
+			tracks_def[track_index].track_len = track_size;
+			tracks_def[track_index].nb_pulses = number_of_pulses;
 
 			j++;
 		}
@@ -628,5 +637,4 @@ int save_stream_hfe(fpga_state * state,int drive, char * imgfile)
 
 ////////////////////////////////////////:
 }
-
 
