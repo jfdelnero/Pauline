@@ -215,7 +215,7 @@ find . | cpio --dereference -H newc -o | gzip -9 > ${TARGET_HOME}/output_objects
 ############################################################################################
 # Create SD Card image
 
-dd if=/dev/zero of=${TARGET_HOME}/output_objects/pauline_sdcard.img iflag=fullblock bs=1M count=512 && sync
+dd if=/dev/zero of=${TARGET_HOME}/output_objects/pauline_sdcard.img iflag=fullblock bs=1M count=800 && sync
 sudo losetup loop0 --sector-size 512  ${TARGET_HOME}/output_objects/pauline_sdcard.img || exit 1
 sudo sfdisk -f /dev/loop0 < ${TARGET_CONFIG}/sfdisk_pauline.txt || exit 1
 sudo losetup -d /dev/loop0
@@ -228,8 +228,8 @@ sudo losetup -d /dev/loop0
 #sudo losetup -d /dev/loop0
 
 #1040384
-dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=1040384  conv=notrunc && sync
-dd if=${TARGET_HOME}/output_objects/u-boot.img of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=1040896 conv=notrunc && sync
+dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=1296384  conv=notrunc && sync
+dd if=${TARGET_HOME}/output_objects/u-boot.img of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=1296896 conv=notrunc && sync
 
 fdisk -l ${TARGET_HOME}/output_objects/pauline_sdcard.img
 
