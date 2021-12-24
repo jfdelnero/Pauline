@@ -52,7 +52,7 @@ then
 SRC_PACKAGE_GDB="@COMMON@""https://ftp.gnu.org/gnu/gdb/gdb-10.1.tar.xz"
 SRC_PACKAGE_STRACE="@COMMON@""https://strace.io/files/5.9/strace-5.9.tar.xz"
 #SRC_PACKAGE_LTRACE="@COMMON@""https://fossies.org/linux/misc/ltrace-0.7.3.tar.gz"
-SRC_PACKAGE_VALGRIND="@COMMON@""ftp://sourceware.org/pub/valgrind/valgrind-3.17.0.tar.bz2"
+SRC_PACKAGE_VALGRIND="@COMMON@""https://sourceware.org/pub/valgrind/valgrind-3.18.1.tar.bz2"
 
 fi
 
