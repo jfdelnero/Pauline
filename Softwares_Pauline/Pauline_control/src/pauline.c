@@ -426,6 +426,11 @@ int main(int argc, char* argv[])
 	printf("under certain conditions;\n\n");
 
 	libhxcfe = hxcfe_init();
+	if(!libhxcfe)
+	{
+		printf("libhxcfe init error !\n");
+		exit(-1);
+	}
 
 	// License print...
 	if(isOption(argc,argv,"license",0)>0)

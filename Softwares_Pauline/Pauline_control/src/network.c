@@ -569,7 +569,7 @@ void *server_script_thread(void *threadid)
 	//tp = (thread_params*)threadid;
 
 	pthread_detach(pthread_self());
-	script_context = init_script();
+	script_context = pauline_init_script();
 
 	//tv.tv_sec = 20;
 	//tv.tv_usec = 0;
@@ -610,7 +610,7 @@ void *server_script_thread(void *threadid)
 					}
 					else
 					{
-						execute_line(script_context,fullline);
+						pauline_execute_line(script_context,fullline);
 						line_index = 0;
 					}
 					i++;

@@ -91,7 +91,7 @@ extern char last_file_to_analyse[512];
 
 script_ctx * script_context = NULL;
 
-script_ctx * init_script()
+script_ctx * pauline_init_script()
 {
 	script_ctx * ctx;
 
@@ -100,7 +100,7 @@ script_ctx * init_script()
 	if(ctx)
 	{
 		memset(ctx,0,sizeof(script_ctx));
-		setOutputFunc( ctx, msg_printf );
+		pauline_setOutputFunc( ctx, msg_printf );
 		pthread_mutex_init(&ctx->script_mutex, NULL);
 	}
 
@@ -109,7 +109,7 @@ script_ctx * init_script()
 	return ctx;
 }
 
-script_ctx * deinit_script(script_ctx * ctx)
+script_ctx * pauline_deinit_script(script_ctx * ctx)
 {
 	if(ctx)
 	{
@@ -119,7 +119,7 @@ script_ctx * deinit_script(script_ctx * ctx)
 	return ctx;
 }
 
-void setOutputFunc( script_ctx * ctx, PRINTF_FUNC ext_printf )
+void pauline_setOutputFunc( script_ctx * ctx, PRINTF_FUNC ext_printf )
 {
 	ctx->script_printf = ext_printf;
 
@@ -231,7 +231,7 @@ static int get_param(char * line, int param_offset,char * param)
 	return -1;
 }
 
-int is_dir_present(char * path)
+static int is_dir_present(char * path)
 {
 	DIR* dir = opendir(path);
 
@@ -253,9 +253,9 @@ int is_dir_present(char * path)
 	}
 }
 
-char forbiddenfilenamechars[]={'\\','/',':','`','*','|',';','"','\'',0};
-char global_search_name[512];
-int global_max_index;
+static char forbiddenfilenamechars[]={'\\','/',':','`','*','|',';','"','\'',0};
+static char global_search_name[512];
+static int global_max_index;
 
 static int display_info(const char *fpath, const struct stat *sb, int tflag)
 {
@@ -303,7 +303,7 @@ static int display_info(const char *fpath, const struct stat *sb, int tflag)
 	return 0;
 }
 
-int is_valid_char(char c)
+static int is_valid_char(char c)
 {
 	int i;
 
@@ -320,7 +320,7 @@ int is_valid_char(char c)
 	return 1;
 }
 
-int prepare_folder(char * name, char * comment, int start_index, int mode, char * folder_pathoutput)
+static int prepare_folder(char * name, char * comment, int start_index, int mode, char * folder_pathoutput)
 {
 	char folder_path[1024];
 	char dump_name[512];
@@ -520,7 +520,7 @@ int prepare_folder(char * name, char * comment, int start_index, int mode, char 
 	return ret;
 }
 
-int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_side,int dump_max_side,int high_res_mode,int doublestep,int ignore_index,int spy, char * name, char * comment, char * comment2, int start_index, int incmode, char * driveref, char * operator)
+static int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_start_side,int dump_max_side,int high_res_mode,int doublestep,int ignore_index,int spy, char * name, char * comment, char * comment2, int start_index, int incmode, char * driveref, char * operator)
 {
 	int i,j,max_track;
 	char temp[512];
@@ -930,7 +930,7 @@ void *diskdump_thread(void *threadid)
 	pthread_exit(NULL);
 }
 
-int cmd_dump(script_ctx * ctx, char * line)
+static int cmd_dump(script_ctx * ctx, char * line)
 {
 	int p1,p2,p3,p4,p5,p6,p7,p8,p9,rc;
 	char tmpstr[DEFAULT_BUFLEN];
@@ -971,7 +971,7 @@ int cmd_dump(script_ctx * ctx, char * line)
 
 }
 
-int cmd_stop(script_ctx * ctx, char * line)
+static int cmd_stop(script_ctx * ctx, char * line)
 {
 	ctx->script_printf(MSGTYPE_INFO_0,"Stopping current dump...\n");
 
@@ -989,7 +989,7 @@ int cmd_stop(script_ctx * ctx, char * line)
 	return 1;
 }
 
-int cmd_print(script_ctx * ctx, char * line)
+static int cmd_print(script_ctx * ctx, char * line)
 {
 	int i;
 
@@ -1000,7 +1000,7 @@ int cmd_print(script_ctx * ctx, char * line)
 	return 1;
 }
 
-int cmd_set_pin_mode(script_ctx * ctx, char * line)
+static int cmd_set_pin_mode(script_ctx * ctx, char * line)
 {
 	int i,j,k;
 	char dev_index[DEFAULT_BUFLEN];
@@ -1023,7 +1023,7 @@ int cmd_set_pin_mode(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_set_env(script_ctx * ctx, char * line)
+static int cmd_set_env(script_ctx * ctx, char * line)
 {
 	int i,j;
 	char variable[DEFAULT_BUFLEN];
@@ -1046,7 +1046,7 @@ int cmd_set_env(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_get_env(script_ctx * ctx, char * line)
+static int cmd_get_env(script_ctx * ctx, char * line)
 {
 	int i;
 	char variable[DEFAULT_BUFLEN];
@@ -1080,7 +1080,7 @@ int cmd_get_env(script_ctx * ctx, char * line)
 	}
 }
 
-int cmd_reload_config(script_ctx * ctx, char * line)
+static int cmd_reload_config(script_ctx * ctx, char * line)
 {
 	int ret;
 
@@ -1098,7 +1098,7 @@ int cmd_reload_config(script_ctx * ctx, char * line)
 	return 1;
 }
 
-int cmd_headstep(script_ctx * ctx, char * line)
+static int cmd_headstep(script_ctx * ctx, char * line)
 {
 	int i,j,k,track,dir;
 	int drive,doublestep;
@@ -1175,7 +1175,7 @@ int cmd_headstep(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_movehead(script_ctx * ctx, char * line)
+static int cmd_movehead(script_ctx * ctx, char * line)
 {
 	int i,j,k,track,dir;
 	int cur_track;
@@ -1275,14 +1275,14 @@ int cmd_movehead(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_reset(script_ctx * ctx, char * line)
+static int cmd_reset(script_ctx * ctx, char * line)
 {
 	ctx->script_printf(MSGTYPE_INFO_0,"FPGA reset \n");
 	reset_fpga(fpga);
 	return 0;
 }
 
-int cmd_recalibrate(script_ctx * ctx, char * line)
+static int cmd_recalibrate(script_ctx * ctx, char * line)
 {
 	int i;
 	int ret;
@@ -1318,7 +1318,7 @@ int cmd_recalibrate(script_ctx * ctx, char * line)
 	return 1;
 }
 
-int cmd_set_motor_src(script_ctx * ctx, char * line)
+static int cmd_set_motor_src(script_ctx * ctx, char * line)
 {
 	int i,j,drive,motsrc;
 	char temp[DEFAULT_BUFLEN];
@@ -1344,7 +1344,7 @@ int cmd_set_motor_src(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_set_select_src(script_ctx * ctx, char * line)
+static int cmd_set_select_src(script_ctx * ctx, char * line)
 {
 	int i,j,drive,selsrc;
 	char temp[DEFAULT_BUFLEN];
@@ -1370,7 +1370,7 @@ int cmd_set_select_src(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_set_led_src(script_ctx * ctx, char * line)
+static int cmd_set_led_src(script_ctx * ctx, char * line)
 {
 	int i,j,led,ledsrc;
 	char temp[DEFAULT_BUFLEN];
@@ -1396,7 +1396,7 @@ int cmd_set_led_src(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_set_pin02_mode(script_ctx * ctx, char * line)
+static int cmd_set_pin02_mode(script_ctx * ctx, char * line)
 {
 	int i,j,drive,mode;
 	char temp[DEFAULT_BUFLEN];
@@ -1422,7 +1422,7 @@ int cmd_set_pin02_mode(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_set_pin34_mode(script_ctx * ctx, char * line)
+static int cmd_set_pin34_mode(script_ctx * ctx, char * line)
 {
 	int i,j,drive,mode;
 	char temp[DEFAULT_BUFLEN];
@@ -1448,7 +1448,7 @@ int cmd_set_pin34_mode(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_set_writeprotect(script_ctx * ctx, char * line)
+static int cmd_set_writeprotect(script_ctx * ctx, char * line)
 {
 	int i,j,drive,writeprotect;
 	char temp[DEFAULT_BUFLEN];
@@ -1474,7 +1474,7 @@ int cmd_set_writeprotect(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_ejectdisk(script_ctx * ctx, char * line)
+static int cmd_ejectdisk(script_ctx * ctx, char * line)
 {
 	int i;
 	int drive;
@@ -1497,7 +1497,7 @@ int cmd_ejectdisk(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_set_pin(script_ctx * ctx, char * line)
+static int cmd_set_pin(script_ctx * ctx, char * line)
 {
 	int i;
 	char temp[DEFAULT_BUFLEN];
@@ -1518,7 +1518,7 @@ int cmd_set_pin(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_clear_pin(script_ctx * ctx, char * line)
+static int cmd_clear_pin(script_ctx * ctx, char * line)
 {
 	int i;
 	char temp[DEFAULT_BUFLEN];
@@ -1539,7 +1539,7 @@ int cmd_clear_pin(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_get_pin(script_ctx * ctx, char * line)
+static int cmd_get_pin(script_ctx * ctx, char * line)
 {
 	int i,ret;
 	char temp[DEFAULT_BUFLEN];
@@ -1566,9 +1566,7 @@ int cmd_get_pin(script_ctx * ctx, char * line)
 	return 0;
 }
 
-
-
-int cmd_set_dump_time_per_track(script_ctx * ctx, char * line)
+static int cmd_set_dump_time_per_track(script_ctx * ctx, char * line)
 {
 	int i;
 	char temp[DEFAULT_BUFLEN];
@@ -1595,7 +1593,7 @@ int cmd_set_dump_time_per_track(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_set_index_to_dump_time(script_ctx * ctx, char * line)
+static int cmd_set_index_to_dump_time(script_ctx * ctx, char * line)
 {
 	int i;
 	char temp[DEFAULT_BUFLEN];
@@ -1616,7 +1614,7 @@ int cmd_set_index_to_dump_time(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_set_images_settings(script_ctx * ctx, char * line)
+static int cmd_set_images_settings(script_ctx * ctx, char * line)
 {
 	int i,int_val[5];
 	char temp[DEFAULT_BUFLEN];
@@ -1655,7 +1653,7 @@ int cmd_set_images_settings(script_ctx * ctx, char * line)
 	return 1;
 }
 
-int cmd_set_images_decoders(script_ctx * ctx, char * line)
+static int cmd_set_images_decoders(script_ctx * ctx, char * line)
 {
 	pthread_mutex_lock(&ctx->script_mutex);
 
@@ -1758,15 +1756,15 @@ int cmd_set_images_decoders(script_ctx * ctx, char * line)
 	return 1;
 }
 
-int cmd_help(script_ctx * ctx, char * line);
+static int cmd_help(script_ctx * ctx, char * line);
 
-int cmd_version(script_ctx * ctx, char * line)
+static int cmd_version(script_ctx * ctx, char * line)
 {
 	ctx->script_printf(MSGTYPE_INFO_0,"HxC Streamer version : %s, Date : "STR_DATE", Build Date : "__DATE__" "__TIME__"\n",STR_FILE_VERSION2);
 	return 1;
 }
 
-int cmd_system(script_ctx * ctx, char * line)
+static int cmd_system(script_ctx * ctx, char * line)
 {
 	int i,ret;
 	char temp[DEFAULT_BUFLEN];
@@ -1792,7 +1790,7 @@ int cmd_system(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int cmd_sound(script_ctx * ctx, char * line)
+static int cmd_sound(script_ctx * ctx, char * line)
 {
 	int i,j;
 	int freq,duration;
@@ -1817,7 +1815,7 @@ int cmd_sound(script_ctx * ctx, char * line)
 	return 0;
 }
 
-cmd_list cmdlist[] =
+static cmd_list cmdlist[] =
 {
 	{"print",                   cmd_print},
 	{"help",                    cmd_help},
@@ -1862,7 +1860,7 @@ cmd_list cmdlist[] =
 };
 
 
-int extract_cmd(char * line, char * command)
+static int extract_cmd(char * line, char * command)
 {
 	int offs,i;
 
@@ -1888,7 +1886,7 @@ int extract_cmd(char * line, char * command)
 	return 0;
 }
 
-int exec_cmd(script_ctx * ctx, char * command,char * line)
+static int exec_cmd(script_ctx * ctx, char * command,char * line)
 {
 	int i;
 
@@ -1907,7 +1905,7 @@ int exec_cmd(script_ctx * ctx, char * command,char * line)
 	return ERROR_CMD_NOT_FOUND;
 }
 
-int cmd_help(script_ctx * ctx, char * line)
+static int cmd_help(script_ctx * ctx, char * line)
 {
 	int i;
 
@@ -1923,7 +1921,7 @@ int cmd_help(script_ctx * ctx, char * line)
 	return 1;
 }
 
-int execute_line(script_ctx * ctx, char * line)
+int pauline_execute_line(script_ctx * ctx, char * line)
 {
 	char command[DEFAULT_BUFLEN];
 
@@ -1943,7 +1941,7 @@ int execute_line(script_ctx * ctx, char * line)
 	return 0;
 }
 
-int execute_script(script_ctx * ctx, char * filename)
+int pauline_execute_script(script_ctx * ctx, char * filename)
 {
 	FILE * f;
 	char script_line[MAX_LINE_SIZE];
@@ -1955,7 +1953,7 @@ int execute_script(script_ctx * ctx, char * filename)
 		{
 			if(fgets(script_line,sizeof(script_line)-1,f))
 			{
-				execute_line(ctx, script_line);
+				pauline_execute_line(ctx, script_line);
 			}
 		}while(!feof(f));
 		fclose(f);

@@ -36,11 +36,11 @@ typedef struct _script_ctx
 	pthread_mutex_t script_mutex;
 } script_ctx;
 
-script_ctx * init_script();
-int execute_script( script_ctx * ctx, char * filename );
-int execute_line( script_ctx * ctx, char * line );
-void setOutputFunc( script_ctx * ctx, PRINTF_FUNC ext_printf );
-script_ctx * deinit_script(script_ctx * ctx);
+script_ctx * pauline_init_script();
+int pauline_execute_script( script_ctx * ctx, char * filename );
+int pauline_execute_line( script_ctx * ctx, char * line );
+void pauline_setOutputFunc( script_ctx * ctx, PRINTF_FUNC ext_printf );
+script_ctx * pauline_deinit_script(script_ctx * ctx);
 
 
 // Output Message level
