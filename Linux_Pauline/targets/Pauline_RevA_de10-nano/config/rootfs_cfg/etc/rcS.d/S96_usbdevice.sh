@@ -16,9 +16,12 @@ g=/sys/kernel/config/usb_gadget/device
 device="ffb40000.usb"
 
 usb_ver="0x0200" # USB 2.0
-dev_class="2"
+dev_ver="0x0100"
+dev_class="0xef"
+dev_subclass="0x02"
+dev_protocol="0x01"
 vid="0x1d50"
-pid="0x60c7"
+pid="0x60c8"
 mfg="HxC2001"
 prod="Pauline"
 serial="0123456789"
@@ -41,8 +44,11 @@ ms_subcompat_id="5162001" # matches Windows RNDIS 6.0 Driver
 # Create a new gadget
 
 mkdir -p ${g}
+echo "${dev_ver}" > ${g}/bcdDevice
 echo "${usb_ver}" > ${g}/bcdUSB
 echo "${dev_class}" > ${g}/bDeviceClass
+echo "${dev_subclass}" > ${g}/bDeviceSubClass
+echo "${dev_protocol}" > ${g}/bDeviceProtocol
 echo "${vid}" > ${g}/idVendor
 echo "${pid}" > ${g}/idProduct
 mkdir ${g}/strings/0x409
@@ -75,19 +81,18 @@ echo "${ms_qw_sign}" > ${g}/os_desc/qw_sign
 
 mkdir ${g}/functions/rndis.usb0
 echo "${dev_mac}" > ${g}/functions/rndis.usb0/dev_addr
-#echo "32:23:45:67:89:ab" > ${g}/functions/rndis.usb0/dev_addr
 echo "${host_mac}" > ${g}/functions/rndis.usb0/host_addr
-#echo "22:23:45:67:89:ab" > ${g}/functions/rndis.usb0/host_addr
 echo "${ms_compat_id}" > ${g}/functions/rndis.usb0/os_desc/interface.rndis/compatible_id
 echo "${ms_subcompat_id}" > ${g}/functions/rndis.usb0/os_desc/interface.rndis/sub_compatible_id
 
 # config 2 is for CDC
-
-mkdir ${g}/configs/c.2
-echo "${attr}" > ${g}/configs/c.2/bmAttributes
-echo "${pwr}" > ${g}/configs/c.2/MaxPower
-mkdir ${g}/configs/c.2/strings/0x409
-echo "${cfg2}" > ${g}/configs/c.2/strings/0x409/configuration
+# Note : Windows doesn't support dual configuration composite devices !
+# ECM Disabled for the moment...
+#mkdir ${g}/configs/c.2
+#echo "${attr}" > ${g}/configs/c.2/bmAttributes
+#echo "${pwr}" > ${g}/configs/c.2/MaxPower
+#mkdir ${g}/configs/c.2/strings/0x409
+#echo "${cfg2}" > ${g}/configs/c.2/strings/0x409/configuration
 
 # Create the CDC ECM function
 
@@ -100,6 +105,8 @@ echo "${host_mac}" > ${g}/functions/ecm.usb0/host_addr
 #mkdir ${g}/functions/acm.GS0
 #mkdir ${g}/functions/acm.GS1
 
+# MTP function
+
 mkdir ${g}/functions/ffs.mtp
 
 # Link everything up and bind the USB device
@@ -107,24 +114,21 @@ mkdir ${g}/functions/ffs.mtp
 ln -s ${g}/configs/c.1          ${g}/os_desc
 
 ln -s ${g}/functions/rndis.usb0 ${g}/configs/c.1
+ln -s ${g}/functions/ecm.usb0   ${g}/configs/c.1
 #ln -s ${g}/functions/acm.GS0    ${g}/configs/c.1
 #ln -s ${g}/functions/acm.GS1    ${g}/configs/c.1
 ln -s ${g}/functions/ffs.mtp    ${g}/configs/c.1
 
-ln -s ${g}/functions/ecm.usb0   ${g}/configs/c.2
+#ln -s ${g}/functions/ecm.usb0   ${g}/configs/c.2
 #ln -s ${g}/functions/acm.GS0    ${g}/configs/c.2
 #ln -s ${g}/functions/acm.GS1    ${g}/configs/c.2
-ln -s ${g}/functions/ffs.mtp    ${g}/configs/c.2
+#ln -s ${g}/functions/ffs.mtp    ${g}/configs/c.2
 
 mkdir /dev/ffs-mtp
 mount -t functionfs mtp /dev/ffs-mtp
 
 # Start the umtprd service
 umtprd &
-
-echo "0xEF" > ${g}/bDeviceClass
-echo "0x02" > ${g}/bDeviceSubClass
-echo "0x01" > ${g}/bDeviceProtocol
 
 sleep 1
 
