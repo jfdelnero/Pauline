@@ -175,6 +175,7 @@ signal noise_gen_signal : std_logic;
 signal write_protect_state : std_logic;
 
 signal data_line : std_logic;
+signal data_sep_out : std_logic;
 
 component floppy_sound
 	port(
@@ -334,7 +335,8 @@ component floppy_fm_data_separator is
 
 		phase_select            : in  std_logic;
 
-		window_clk              : out std_logic	);
+		window_clk              : out std_logic;
+		data_out                : out std_logic );
 end component;
 
 begin
@@ -359,7 +361,9 @@ begin
 	host_o_wpt <= write_protect_state;
 
 	host_o_index <= out_index_shifter(31) and (not(readymask_config(0)) or drive_ready);
-	host_o_data <= data_line;
+
+	host_o_data <= (data_line and not(datasep_window_config3(3))) or (data_sep_out and datasep_window_config3(3));
+
 	data_line <= floppy_data_rd and drive_motor and (not(readymask_config(1)) or drive_ready);
 
 	floppy_data_side0_pulse <= out_shifter_side0(30);
@@ -509,7 +513,8 @@ begin
 		
 		phase_select            => datasep_window_config3(2),
 
-		window_clk              => floppy_window
+		window_clk              => floppy_window,
+		data_out                => data_sep_out
 	);
 
 	process(floppy_side1, floppy_write_gate, floppy_write_data, floppy_data_side0_pulse, floppy_data_side1_pulse, floppy_write_data_q1 ) begin

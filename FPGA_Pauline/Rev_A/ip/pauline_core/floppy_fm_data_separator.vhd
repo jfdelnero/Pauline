@@ -50,7 +50,8 @@ entity floppy_fm_data_separator is
 
 		phase_select            : in  std_logic;
 
-		window_clk              : out std_logic
+		window_clk              : out std_logic;
+		data_out                : out std_logic
 	);
 end floppy_fm_data_separator;
 
@@ -81,6 +82,8 @@ signal data_bit_window_q : std_logic;
 --
 
 begin
+
+	data_out <= raw_data and data_bit_window;
 
 	-- direct or reshaped signal selector
 	process(clk, reset_n ) begin
