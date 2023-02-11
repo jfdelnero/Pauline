@@ -1,0 +1,3 @@
+[submodule "Softwares_Pauline/HxCFloppyEmulator"]
+	path = Softwares_Pauline/HxCFloppyEmulator
+	url = https://github.com/jfdelnero/HxCFloppyEmulator
