@@ -11,10 +11,12 @@ mount -t proc none  /proc
 mount -t sysfs none /sys
 
 mount -t tmpfs -o size=256m tmpfs /root
-chmod go-r /root
+chmod go-rwx /root
 
 mount -t tmpfs -o size=64m  tmpfs /tmp
+
 mount -t tmpfs -o size=64m  tmpfs /var
+chmod og-w /var
 
 # Populate /var
 mkdir /var/log
@@ -29,12 +31,29 @@ mkdir /var/log/lastlog
 mkdir /var/tmp
 mkdir /var/local
 mkdir /var/lib
+mkdir /var/cache
 mkdir /var/lock
 mkdir /var/spool
 mkdir /var/spool/cron
 mkdir /var/spool/cron/crontabs
 mkdir /var/state
 mkdir /var/mail
+mkdir /var/cache/samba/
+mkdir /var/lock/samba
+mkdir /var/log/samba
+mkdir /var/lib/samba/
+mkdir /var/lib/samba/private/
+
+chgrp smbuser /var/log/samba
+chown smbuser /var/log/samba
+chgrp smbuser /var/cache/samba
+chown smbuser /var/cache/samba
+chgrp smbuser /var/lock/samba
+chown smbuser /var/lock/samba
+chgrp smbuser /var/lib/samba
+chown smbuser /var/lib/samba
+chgrp smbuser /var/lib/samba/private
+chown smbuser /var/lib/samba/private
 
 #######################################
 # /dev
@@ -74,21 +93,30 @@ chmod ugo+rw /dev/tty
 mount -t tmpfs -o size=64m  tmpfs /mnt
 cp -aR /home/* /mnt
 mount --move /mnt /home
+chmod og-w /home
 
 #######
 # /run
 mount -t tmpfs -o size=64m  tmpfs /mnt
 cp -aR /run/* /mnt 2> /dev/null
 mount --move /mnt /run
+chmod og-w /run
 
 #######
 # /etc
 mount -t tmpfs -o size=64m  tmpfs /mnt
 cp -aR /etc/* /mnt
 mount --move /mnt /etc
+chmod og-w /etc
 
-#######
+mount -t tmpfs -o size=500m none /ramdisk
+chown ramdisk /ramdisk
+chgrp ramdisk /ramdisk
+chmod og-rwx /ramdisk
+
+#######################################
 # Test the data partition presence
+#######################################
 SIZELEN=`sfdisk /dev/mmcblk0p4 -F -s 2>/dev/null | wc -m`
 if [ $SIZELEN == 0 ]; then
    /usr/sbin/splash_screen /data/pauline_splash_bitmaps/prep_data_disk.bmp
@@ -171,7 +199,11 @@ then
 	cp -ar /data/Settings/drives.script /home/pauline/Settings/drives_script_base.txt
 fi
 
+#######################################
+# Cache :
 # Push to the disk the dirty data after 1 second !
+#######################################
+
 echo 100 > /proc/sys/vm/dirty_expire_centisecs
 echo 100 > /proc/sys/vm/dirty_writeback_centisecs
 
@@ -180,4 +212,3 @@ cp -aR /ramdisk/* /mnt
 mount --move /mnt /ramdisk
 
 mount -a
-

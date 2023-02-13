@@ -22,7 +22,7 @@ mkdir ${TARGET_HOME}/output_objects
 if [ ! -d ${TARGET_HOME}/output_objects/target_hxc_tool ]
 then
 (
-	cd ${PAULINE_BASE}/../../build
+	cd ${PAULINE_BASE}/Softwares_Pauline/HxCFloppyEmulator/build
 	make mrproper
 	make CC=${TGT_MACH}-gcc HxCFloppyEmulator_cmdline || exit 1
 
@@ -41,7 +41,7 @@ then
 
 	cp   libusbhxcfe.so  ${TARGET_ROOTFS}/lib/ || exit 1
 	cp   libhxcfe.so  ${TARGET_ROOTFS}/lib/ || exit 1
-	cp   ${PAULINE_BASE}/../../libhxcfe/trunk/sources/libhxcfe.h  ${TARGET_ROOTFS}/include/ || exit 1
+	cp   ${PAULINE_BASE}/Softwares_Pauline/HxCFloppyEmulator/libhxcfe/sources/libhxcfe.h  ${TARGET_ROOTFS}/include/ || exit 1
 
 	cp   libusbhxcfe.so  ${TARGET_ROOTFS_MIRROR}/lib/ || exit 1
 	cp   libhxcfe.so  ${TARGET_ROOTFS_MIRROR}/lib/ || exit 1
@@ -84,7 +84,7 @@ cp   ${PAULINE_BASE}/Softwares_Pauline/splash_screen/splash_screen  ${TARGET_HOM
 if [ ! -d ${TARGET_HOME}/output_objects/pc_hxc_tool ]
 then
 (
-	cd ${PAULINE_BASE}/../../build
+	cd ${PAULINE_BASE}/Softwares_Pauline/HxCFloppyEmulator/build
 	make mrproper
 	make TARGET=mingw32 || exit 1
 
@@ -145,10 +145,11 @@ then
 	cp -rfv ${FPGA_GHRD_FOLDER}/software/spl_bsp/generated/* ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/board/altera/socfpga || exit 1
 
 	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc6.h ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc10.h
+	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc6.h ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc12.h
 
-	make clean CROSS_COMPILE=arm-hardfloat-linux-gnueabi-        || exit 1
+	make clean CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-        || exit 1
 	echo stamp > uboot-socfpga/.untar
-	make  CROSS_COMPILE=arm-hardfloat-linux-gnueabi-  TGZ=${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga.tar.gz || exit 1
+	make  CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-  TGZ=${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga.tar.gz || exit 1
 
 	rm uboot-socfpga.tar.gz
 
@@ -208,57 +209,65 @@ cd     ${TARGET_UPDATE_RD_ROOTFS}
 
 cp -av ${TARGET_ROOTFS_MIRROR}/* .
 
-rm -rf boot home/www include libexec media opt share usr/arm-hardfloat-linux-gnueabi usr/lib usr/bin usr/local usr/share www etc/fonts etc/libnl etc/lighttpd etc/netword etc/share etc/ssh etc/ssl etc/umtprd bin/smbclient bin/smbd bin/mu-mh lib/audit lib/cmake lib/engines lib/gconv lib/libffi-3.2 lib/libnl lib/mailutils lib/*.a lib/*.o lib/modules  usr/include usr/libexec var/db
+rm -rf boot home/www include libexec media opt share usr/armv7a-hardfloat-linux-gnueabi usr/lib usr/bin usr/local usr/share www etc/fonts etc/libnl etc/lighttpd etc/netword etc/share etc/ssh etc/ssl etc/umtprd bin/smbclient bin/smbd bin/mu-mh lib/audit lib/cmake lib/engines lib/gconv lib/libffi-3.2 lib/libnl lib/mailutils lib/*.a lib/*.o lib/modules  usr/include usr/libexec var/db
 
 find . | cpio --dereference -H newc -o | gzip -9 > ${TARGET_HOME}/output_objects/update_rd.img
 
 ############################################################################################
 # Create SD Card image
 
-dd if=/dev/zero of=${TARGET_HOME}/output_objects/pauline_sdcard.img iflag=fullblock bs=1M count=800 && sync
-sudo losetup loop0 --sector-size 512  ${TARGET_HOME}/output_objects/pauline_sdcard.img || exit 1
-sudo sfdisk -f /dev/loop0 < ${TARGET_CONFIG}/sfdisk_pauline.txt || exit 1
-sudo losetup -d /dev/loop0
+dd if=/dev/zero of=${TARGET_HOME}/output_objects/pauline_sdcard.img iflag=fullblock bs=1M count=1024 && sync
+sudo losetup loop6 --sector-size 512  ${TARGET_HOME}/output_objects/pauline_sdcard.img || exit 1
+sudo sfdisk -f /dev/loop6 < ${TARGET_CONFIG}/sfdisk_pauline.txt || exit 1
+sudo losetup -d /dev/loop6
 
 ############################################################################################
 
 #sudo losetup --show --sector-size 512 -f -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
-#sudo dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=/dev/loop0p3 bs=64k seek=0  && sync
-#sudo dd if=${TARGET_HOME}/output_objects/u-boot.img of=/dev/loop0p3 bs=64k seek=4              && sync
-#sudo losetup -d /dev/loop0
+#sudo dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=/dev/loop6p3 bs=64k seek=0  && sync
+#sudo dd if=${TARGET_HOME}/output_objects/u-boot.img of=/dev/loop6p3 bs=64k seek=4              && sync
+#sudo losetup -d /dev/loop6
 
 #1040384
-dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=1296384  conv=notrunc && sync
-dd if=${TARGET_HOME}/output_objects/u-boot.img of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=1296896 conv=notrunc && sync
+dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=2088960  conv=notrunc && sync
+dd if=${TARGET_HOME}/output_objects/u-boot.img of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=2089472 conv=notrunc && sync
 
 fdisk -l ${TARGET_HOME}/output_objects/pauline_sdcard.img
 
 ############################################################################################
 
-sudo losetup --show --sector-size 512 -f -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
-sudo mkfs.vfat /dev/loop0p1
-sudo mkfs.ext2 /dev/loop0p2
-sudo losetup -d /dev/loop0
+sleep 1
+sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
+sleep 1
+
+sudo mkfs.vfat /dev/loop6p1
+sudo mkfs.ext2 /dev/loop6p2
+sudo losetup -d /dev/loop6
 
 ############################################################################################
 echo "Copy boot files to the file image ..."
 mkdir ${TARGET_HOME}/output_objects/tmp_mount_point
 
-sudo losetup --show --sector-size 512 -f -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
-sudo mount /dev/loop0p1 ${TARGET_HOME}/output_objects/tmp_mount_point
+sleep 1
+sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
+sleep 1
+
+sudo mount /dev/loop6p1 ${TARGET_HOME}/output_objects/tmp_mount_point
 sudo cp ${TARGET_HOME}/output_objects/u-boot.scr        ${TARGET_HOME}/output_objects/tmp_mount_point  && sync
 sudo cp ${TARGET_HOME}/output_objects/soc_system.rbf    ${TARGET_HOME}/output_objects/tmp_mount_point  && sync
 sudo cp ${TARGET_HOME}/output_objects/soc_system.dtb    ${TARGET_HOME}/output_objects/tmp_mount_point  && sync
 sudo cp ${TARGET_HOME}/output_objects/soc_system.dts    ${TARGET_HOME}/output_objects/tmp_mount_point  && sync
 sudo cp ${TARGET_HOME}/output_objects/zImage            ${TARGET_HOME}/output_objects/tmp_mount_point  && sync
 sudo umount ${TARGET_HOME}/output_objects/tmp_mount_point
-sudo losetup -d /dev/loop0
+sudo losetup -d /dev/loop6
 
 ############################################################################################
 echo "Copy rootfs to the file image ..."
 
-sudo losetup --show --sector-size 512 -f -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
-sudo mount /dev/loop0p2 ${TARGET_HOME}/output_objects/tmp_mount_point
+sleep 1
+sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
+sleep 1
+sudo mount /dev/loop6p2 ${TARGET_HOME}/output_objects/tmp_mount_point
 
 sudo cp -av ${TARGET_ROOTFS_MIRROR}/* ${TARGET_HOME}/output_objects/tmp_mount_point/.
 
@@ -307,7 +316,7 @@ sudo chmod u+rw    ${TARGET_HOME}/output_objects/tmp_mount_point/etc/passwd
 sudo chmod go+r    ${TARGET_HOME}/output_objects/tmp_mount_point/etc/passwd
 
 sudo umount ${TARGET_HOME}/output_objects/tmp_mount_point
-sudo losetup -d /dev/loop0
+sudo losetup -d /dev/loop6
 
 ############################################################################################
 

@@ -8,4 +8,5 @@
 
 source ${TARGET_CONFIG}/config.sh || exit 1
 
+sed -i -e "s/YYLTYPE\ yylloc/extern\ YYLTYPE\ \ yylloc/g" ./scripts/dtc/dtc-lexer.lex.c
 cp ${TARGET_CONFIG}/patches/ssd1307fb.c ./drivers/video/fbdev/ || exit 1
