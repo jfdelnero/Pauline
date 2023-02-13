@@ -10,6 +10,8 @@ source ${SCRIPTS_HOME}/unpack.sh || exit 1
 
 source ${TARGET_CONFIG}/config.sh || exit 1
 
+source ${SCRIPTS_HOME}/apply_patches.sh || exit 1
+
 echo "***********"
 echo "* Network *"
 echo "***********"
@@ -99,6 +101,10 @@ then
 	(
 		unpack ${CUR_PACKAGE} ""
 
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		apply_patches ${COMMON_PATCHES}/iptables
+
 		cd ${TARGET_BUILD} || exit 1
 		mkdir iptables
 		cd iptables || exit 1
@@ -108,7 +114,6 @@ then
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH \
-				--with-kernel=${BASE_DIR}/linux-4.7.5 \
 				CFLAGS=-DPATH_MAX=4096 \
 				LDFLAGS="${TARGET_ROOTFS}/lib/libmnl.so  ${TARGET_ROOTFS}/lib/libnftnl.so"  || exit 1
 
@@ -138,6 +143,8 @@ then
 
 		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
 
+		apply_patches ${COMMON_PATCHES}/ntp
+
 		cd ${TARGET_BUILD} || exit 1
 		mkdir ntp
 		cd ntp || exit 1
@@ -152,6 +159,38 @@ then
 
 		make ${NBCORE}         || exit 1
 		make ${NBCORE} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# Chrony client
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_CHRONY:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix= \
+				--build=$MACHTYPE \
+				--host=$TGT_MACH \
+				--target=$TGT_MACH || exit 1
+
+		make ${NBCORE}         || exit 1
+		make ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -176,7 +215,7 @@ then
 		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		export CROSS=${TGT_MACH}
-		export CC=${TGT_MACH}-gcc
+		export CC="${TGT_MACH}-gcc -latomic"
 		export LD=${TGT_MACH}-ld
 		export AS=${TGT_MACH}-as
 		export AR=${TGT_MACH}-ar
@@ -288,9 +327,6 @@ then
 
 
 		make ${NBCORE}           || exit 1
-		make ${NBCORE} install   || exit 1
-
-		cd include     || exit 1
 		make ${NBCORE} install   || exit 1
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
@@ -447,6 +483,169 @@ then
 
 		make ${NBCORE} CC=${TGT_MACH}-gcc              || exit 1
 		make ${NBCORE} install PREFIX=${TARGET_ROOTFS}
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# LIBPCAP
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_LIBPCAP:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" \
+				--host=$TGT_MACH \
+				|| exit 1
+
+		make ${NBCORE}           || exit 1
+		make ${NBCORE} install   || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# TCPDUMP
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_TCPDUMP:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" \
+				--host=$TGT_MACH \
+				|| exit 1
+
+		make ${NBCORE}           || exit 1
+		make ${NBCORE} install   || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# NMAP
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_NMAP:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" \
+				--host=$TGT_MACH \
+				|| exit 1
+
+		make ${NBCORE}           || exit 1
+		make ${NBCORE} install   || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# TCPSLICE
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_TCPSLICE:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" \
+				--host=$TGT_MACH \
+				|| exit 1
+
+		make ${NBCORE}           || exit 1
+		make ${NBCORE} install   || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# IPROUTE2
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_IPROUTE2:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		export CROSS=${TGT_MACH}
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+		export TARGET_DIR=${TARGET_ROOTFS}
+		export PREFIX=${TARGET_ROOTFS}
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" \
+				--host=$TGT_MACH \
+				|| exit 1
+
+		make ${NBCORE}           || exit 1
+		make ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 

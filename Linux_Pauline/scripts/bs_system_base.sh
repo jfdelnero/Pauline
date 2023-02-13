@@ -43,6 +43,7 @@ then
 				--prefix="${TARGET_CROSS_TOOLS}" \
 				--target=$TGT_MACH \
 				--with-sysroot=${TARGET_ROOTFS} \
+				--disable-doc \
 				--disable-multilib \
 				|| exit 1
 
@@ -55,12 +56,15 @@ then
 ) || exit 1
 fi
 
+CROSSCOMPILERONLY_TMP=${CROSSCOMPILERONLY:-"UNDEF"}
+CROSSCOMPILERONLY_TMP="${CROSSCOMPILERONLY_TMP##*/}"
+
 ####################################################################
 # Kernel headers generation
 ####################################################################
 CUR_PACKAGE=${SRC_PACKAGE_KERNEL:-"UNDEF"}
 CUR_PACKAGE="${CUR_PACKAGE##*/}"
-if [ "$CUR_PACKAGE" != "UNDEF" ]
+if [ "$CUR_PACKAGE" != "UNDEF" ] && [ "$CROSSCOMPILERONLY_TMP" != "1" ]
 then
 (
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
@@ -80,7 +84,7 @@ then
 		then
 		(
 			echo Pre process script available... executing it...
-			#To apply patchs or anything else
+			#To apply patches or anything else
 			source ${TARGET_CONFIG}/kernel_pre_process.sh || exit 1
 		)
 		fi
@@ -113,8 +117,8 @@ then
 		)
 		fi
 
-		make ${NBCORE} ARCH=${KERNEL_ARCH}  oldconfig || exit 1
-		make ${NBCORE} ARCH=${KERNEL_ARCH}  headers_check || exit 1
+		make ${NBCORE} ARCH=${KERNEL_ARCH}  olddefconfig || exit 1
+		#make ${NBCORE} ARCH=${KERNEL_ARCH}  headers_check || exit 1
 		make ${NBCORE} ARCH=${KERNEL_ARCH}  INSTALL_HDR_PATH="${TARGET_ROOTFS}" headers_install || exit 1
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
@@ -173,15 +177,24 @@ then
 
 		TMP_ARCHIVE_FOLDER=$CUR_SRC_MAIN_FOLDER
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		if [ "$CROSSCOMPILERONLY_TMP" = "1" ];
+		then
+			${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_CROSS_TOOLS}" \
+				--target=$TGT_MACH          \
+				--enable-languages=c,c++   \
+				--disable-multilib         \
+				${GCC_ADD_CONF} || exit 1
+		else
+			${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_CROSS_TOOLS}" \
 				--target=$TGT_MACH          \
 				--enable-languages=c,c++   \
 				--disable-multilib         \
 				--with-sysroot=${TARGET_ROOTFS} \
 				--with-native-system-header-dir=/include \
-				--enable-languages=c,c++ \
 				${GCC_ADD_CONF} || exit 1
+		fi
 
 		# To force the fixed limits.h generation...
 		echo > ${TARGET_ROOTFS}/include/limits.h
@@ -198,6 +211,14 @@ then
 	fi
 
 ) || exit 1
+fi
+
+####################################################################
+# Exit here in simple cross compiler mode
+####################################################################
+if [ "$CROSSCOMPILERONLY_TMP" = "1" ];
+then
+	exit 0
 fi
 
 ####################################################################
@@ -333,6 +354,43 @@ then
 fi
 
 ####################################################################
+# ZLIB
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_ZLIB:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_BUILD}
+		mkdir zlib
+		cd zlib || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+					--prefix="${TARGET_ROOTFS}" \
+					|| exit 1
+
+		make ${NBCORE}         || exit 1
+		make ${NBCORE} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
 # LIBTIRPC
 ####################################################################
 CUR_PACKAGE=${SRC_PACKAGE_LIBTIRPC:-"UNDEF"}
@@ -421,7 +479,46 @@ then
 		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--target=$TGT_MACH \
+				--enable-elf64 \
 				--enable-compat || exit 1
+
+		make ${NBCORE}  || exit 1
+		make ${NBCORE} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+
+) || exit 1
+fi
+
+####################################################################
+# elfutils
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_ELFUTILS:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		echo "**************"
+		echo "*  elfutils   *"
+		echo "**************"
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_BUILD} || exit 1
+		mkdir -pv elfutils || exit 1
+		cd elfutils || exit 1
+
+		export CC=${TGT_MACH}-gcc
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" -host=$TGT_MACH \
+				--disable-libdebuginfod --disable-debuginfod || exit 1
 
 		make ${NBCORE}  || exit 1
 		make ${NBCORE} install || exit 1
@@ -451,7 +548,7 @@ then
 		then
 		(
 			echo Pre process script available... executing it...
-			#To apply patchs or anything else
+			#To apply patches or anything else
 			source ${TARGET_CONFIG}/kernel_pre_process.sh || exit 1
 		)
 		fi
@@ -472,7 +569,7 @@ then
 		#)
 		#fi
 
-		make ${NBCORE} ARCH=${KERNEL_ARCH} CROSS_COMPILE=${TGT_MACH}- oldconfig || exit 1
+		make ${NBCORE} ARCH=${KERNEL_ARCH} CROSS_COMPILE=${TGT_MACH}- olddefconfig || exit 1
 
 		make ${NBCORE} ${KERNEL_IMAGE_TYPE} ARCH=${KERNEL_ARCH} CROSS_COMPILE=${TGT_MACH}- ${KERNEL_ADD_OPTIONS} || exit 1
 
@@ -540,7 +637,7 @@ then
 		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}
 
 		# aarch64 support...
-		sed -i s#be64#aarch64#g config-aux/config.sub || exit 1
+		sed -i s#mips64vr5900el#aarch64#g config-aux/config.sub || exit 1
 
 		cd ${TARGET_BUILD} || exit 1
 		mkdir -pv libmtdev || exit 1
@@ -624,7 +721,7 @@ then
 				--target=$TGT_MACH || exit 1
 
 		make ${NBCORE}  || exit 1
-		make ${NBCORE} install-lib install-dev || exit 1
+		make ${NBCORE} install || exit 1
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -661,9 +758,9 @@ then
 		export PKGCONFIGDIR=/lib/pkgconfig
 		export lib=lib
 
-		make prefix="${TARGET_ROOTFS}" BUILD_CC=gcc CC=${TGT_MACH}-gcc AR=${TGT_MACH}-ar RANLIB=${TGT_MACH}-ranlib || exit 1
+		make prefix="${TARGET_ROOTFS}" BUILD_CC=gcc CROSS_COMPILE=${TGT_MACH}- || exit 1
 
-		make install prefix="${TARGET_ROOTFS}" BUILD_CC=gcc  CC=${TGT_MACH}-gcc AR=${TGT_MACH}-ar RANLIB=${TGT_MACH}-ranlib
+		make install prefix="${TARGET_ROOTFS}" BUILD_CC=gcc CROSS_COMPILE=${TGT_MACH}- || exit 1
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -1044,6 +1141,42 @@ then
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH \
 				--disable-documentation --disable-debug-gui --disable-tests --disable-libwacom || exit 1
+
+		make ${NBCORE}  || exit 1
+		make ${NBCORE} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+
+) || exit 1
+fi
+
+####################################################################
+# haveged
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_HAVEGED:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		echo "*************"
+		echo "*  haveged  *"
+		echo "*************"
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_BUILD} || exit 1
+		mkdir -pv haveged || exit 1
+		cd haveged || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" \
+				--host=$TGT_MACH || exit 1
 
 		make ${NBCORE}  || exit 1
 		make ${NBCORE} install || exit 1

@@ -119,6 +119,68 @@ then
 ) || exit 1
 fi
 
+####################################################################
+# LILO
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_LILO:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		make  || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# SYSLINUX
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_SYSLINUX:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		if [ -f ${TARGET_CONFIG}/patches/syslinux.patch ]
+		then
+		(
+			patch -s -p0 < ${TARGET_CONFIG}/patches/syslinux.patch  || exit 1
+		) || exit 1
+		fi
+
+		make ${NBCORE} CROSS_COMPILE="${TGT_MACH}-"  || exit 1
+		make ${NBCORE} CROSS_COMPILE="${TGT_MACH}-"  install INSTALLROOT=${TARGET_ROOTFS} || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
 
 ####################################################################
 # PCI UTILS
@@ -235,7 +297,7 @@ then
 
 		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		tar --strip-components=1 -zxf ${TARGET_DOWNLOAD}/${SRC_PACKAGE_PERLCROSS##*/}
+		tar --strip-components=1 -zxf ${COMMON_DOWNLOAD}/${SRC_PACKAGE_PERLCROSS##*/}
 
 		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix=/usr \
@@ -305,6 +367,7 @@ then
 		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
+				--disable-udev \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH \
 				|| exit 1
@@ -537,6 +600,42 @@ then
 fi
 
 ####################################################################
+# exfatprogs
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_EXFATPROGS:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_BUILD} || exit 1
+		mkdir exfatprogs
+		cd exfatprogs || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" \
+				--build=$MACHTYPE \
+				--host=$TGT_MACH \
+				--target=$TGT_MACH \
+				--with-crond-dir=no \
+				|| exit 1
+
+		make ${NBCORE} || exit 1
+		make ${NBCORE} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
 # FSWEBCAM
 ####################################################################
 
@@ -561,6 +660,201 @@ then
 
 		make ${NBCORE} || exit 1
 		make ${NBCORE} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# DDRESCUE
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_DDRESCUE:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		export CXX=${TGT_MACH}-g++
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+			CXX=${TGT_MACH}-g++ \
+			--prefix="${TARGET_ROOTFS}" \
+			--build=$MACHTYPE \
+			--host=$TGT_MACH \
+			--target=$TGT_MACH \
+			|| exit 1
+
+			export CXX=${TGT_MACH}-g++
+			export CC=${TGT_MACH}-gcc
+			export LD=${TGT_MACH}-ld
+			export AS=${TGT_MACH}-as
+			export AR=${TGT_MACH}-ar
+
+			make ${NBCORE} || exit 1
+			make ${NBCORE} install || exit 1
+
+			echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# OpenOCD
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_OPENOCD:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		if [ -f ${TARGET_CONFIG}/patches/openocd.patch ]
+		then
+		(
+			patch -s -p0 < ${TARGET_CONFIG}/patches/openocd.patch  || exit 1
+		) || exit 1
+		fi
+
+		cd ${TARGET_BUILD} || exit 1
+		mkdir openocd
+		cd openocd || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--enable-sysfsgpio \
+				--enable-bcm2835gpio \
+				--prefix="${TARGET_ROOTFS}" \
+				--build=$MACHTYPE \
+				--host=$TGT_MACH \
+				--target=$TGT_MACH \
+				|| exit 1
+
+		make ${NBCORE}         || exit 1
+		make ${NBCORE} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# USB modeswitch
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_USBMODESWITCH:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		make ${NBCORE} DESTDIR=${TARGET_ROOTFS} prefix=${TARGET_ROOTFS} || exit 1
+		make ${NBCORE} DESTDIR=${TARGET_ROOTFS} prefix=${TARGET_ROOTFS} install  || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# lib fftw
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_FFTW:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" \
+				--enable-shared \
+				--enable-threads \
+				--enable-float \
+				--build=$MACHTYPE \
+				--host=$TGT_MACH \
+				--target=$TGT_MACH \
+				|| exit 1
+
+		make ${NBCORE} || exit 1
+		make ${NBCORE} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# hackrf
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_HACKRF:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/host || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+		export DESTDIR=${TARGET_ROOTFS}
+
+		cmake -DCMAKE_SYSTEM_PREFIX_PATH=${TARGET_ROOTFS} -DFFTW_LIBRARIES=${TARGET_ROOTFS}/lib/libfftw3.a .
+
+		make ${NBCORE} clean DESTDIR=${TARGET_ROOTFS} prefix=${TARGET_ROOTFS} || exit 1
+
+		make ${NBCORE} DESTDIR=${TARGET_ROOTFS} prefix=${TARGET_ROOTFS} || exit 1
+		make ${NBCORE} DESTDIR=${TARGET_ROOTFS} prefix=${TARGET_ROOTFS} install  || exit 1
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 

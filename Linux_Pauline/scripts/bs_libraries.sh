@@ -52,6 +52,37 @@ then
 fi
 
 ####################################################################
+# LZ4
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_LZ4:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		make ${NBCORE}         || exit 1
+		make ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
 # XML EXPAT
 ####################################################################
 
@@ -107,6 +138,34 @@ then
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH CC=${TGT_MACH}-gcc \
 				--disable-stripping STRIPPROG=${TGT_MACH}-strip \
+				--with-shared \
+				--without-normal \
+				--with-cxx-shared \
+				--without-debug \
+				--without-ada \
+				--without-manpages \
+				--with-curses-h \
+				--enable-pc-files \
+				--with-termlib \
+				--with-pkg-config-libdir=${TARGET_ROOTFS}/lib/pkgconfig || exit 1
+
+		make ${NBCORE} all     || exit 1
+		make ${NBCORE} install || exit 1
+
+		make ${NBCORE} clean   || exit 1
+
+		# rebuild without termlib to fix the missing "cursrc" symbol issue with nano...
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" \
+				--host=$TGT_MACH CC=${TGT_MACH}-gcc \
+				--disable-stripping STRIPPROG=${TGT_MACH}-strip \
+				--with-shared \
+				--without-normal \
+				--with-cxx-shared \
+				--without-debug \
+				--without-manpages \
+				--without-ada \
 				--with-curses-h \
 				--enable-pc-files \
 				--with-pkg-config-libdir=${TARGET_ROOTFS}/lib/pkgconfig || exit 1
@@ -171,11 +230,11 @@ then
 
 		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		if [ -f ${TARGET_CONFIG}/patchs/ffi.patch ]
+		if [ -f ${TARGET_CONFIG}/patches/ffi.patch ]
 		then
 		(
 			cd src/aarch64 || exit 1
-			patch -Zf < ${TARGET_CONFIG}/patchs/ffi.patch  || exit 1
+			patch -Zf < ${TARGET_CONFIG}/patches/ffi.patch  || exit 1
 		) || exit 1
 		fi
 
@@ -318,6 +377,102 @@ then
 
 		make || exit 1
 		make install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+
+####################################################################
+# gpg-error
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_GPGERROR:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_BUILD} || exit 1
+		mkdir libgpgerror
+		cd libgpgerror || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+					--enable-install-gpg-error-config \
+					--prefix="${TARGET_ROOTFS}" \
+					--host=$TGT_MACH || exit 1
+
+		make ${NBCORE}         || exit 1
+		make ${NBCORE} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# libassuan
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_LIBASSUAN:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_BUILD} || exit 1
+		mkdir libassuan
+		cd libassuan || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+					--prefix="${TARGET_ROOTFS}" \
+					--host=$TGT_MACH \
+					--with-libgpg-error-prefix="${TARGET_ROOTFS}" || exit 1
+
+		make ${NBCORE}         || exit 1
+		make ${NBCORE} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# gpgme
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_GPGME:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_BUILD} || exit 1
+		mkdir libgpgme
+		cd libgpgme || exit 1
+
+		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+					--prefix="${TARGET_ROOTFS}" \
+					--host=$TGT_MACH || exit 1
+
+		make ${NBCORE}         || exit 1
+		make ${NBCORE} install || exit 1
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 

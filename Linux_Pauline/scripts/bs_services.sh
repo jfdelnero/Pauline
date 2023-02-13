@@ -10,6 +10,8 @@ source ${SCRIPTS_HOME}/unpack.sh || exit 1
 
 source ${TARGET_CONFIG}/config.sh || exit 1
 
+source ${SCRIPTS_HOME}/apply_patches.sh || exit 1
+
 echo "****************"
 echo "*   Services   *"
 echo "****************"
@@ -33,6 +35,7 @@ then
 		sed -i s#echo\ \"/lib#echo\ \"${TARGET_ROOTFS}/lib#g vsf_findlibs.sh || exit 1
 		sed -i s#define\ VSF_BUILD_PAM#undef\ VSF_BUILD_PAM#g builddefs.h || exit 1
 		sed -i s#open_mode\ \=\ kVSFSysStrOpenUnknown#open_mode\ \=\ \(enum\ EVSFSysUtilOpenMode\)kVSFSysStrOpenUnknown#g sysstr.c || exit 1
+		#sed -i s#-fstack-protector##g Makefile || exit 1
 
 		#FIXME ! potential security vulnerability : stack-protector not available with ppc arch !
 		[[ $TGT_MACH == *@(ppc*) ]] && sed -i s#-fstack-protector##g Makefile
@@ -72,6 +75,7 @@ then
 				--host=$TGT_MACH \
 				--target=$TGT_MACH \
 				--without-pcre \
+				--without-pcre2 \
 				--without-bzip2 || exit 1
 
 		make ${NBCORE}         || exit 1
@@ -271,6 +275,7 @@ then
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
+				--without-gssapi \
 				--target=$TGT_MACH || exit 1
 
 		make ${NBCORE}         || exit 1
@@ -316,6 +321,34 @@ then
 fi
 
 ####################################################################
+# Ripmime
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_RIPMIME:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}  || exit 1
+
+		sed -i 's/strip/${TGT_MACH}-strip/g' Makefile
+
+		make CC=${TGT_MACH}-gcc || exit 1
+		make install LOCATION="${TARGET_ROOTFS}/usr" CC=${TGT_MACH}-gcc || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
 # Samba
 ####################################################################
 
@@ -331,29 +364,39 @@ then
 
 		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}  || exit 1
 
-		cd source3 || exit 1
+		# cp ${COMMON_CONFIG}/../patches/samba4/samba_cross.py ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/buildtools/wafsamba
+		cp ${COMMON_CONFIG}/../patches/samba4/cache.txt ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}
+		echo 'Checking uname machine type: "'$SAMBA_ARCH'"' >> ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/cache.txt;
 
-		./autogen.sh  || exit 1
+		apply_patches ${COMMON_PATCHES}/samba4
 
-		cat "config.sub" | sed s#armv\\[345\\]\\[lb\\]#armv\\[3457\\]\\[alb\\]#g > "config_new.sub" || exit 1
-		cp config_new.sub config.sub
+		export CC=${TGT_MACH}-gcc
 
-		./configure --without-krb5 --without-ldap --without-ads --without-sys-quotas --without-quotas\
-				--disable-cups --enable-swat=no --with-winbind=no \
-				--build=$MACHTYPE \
-				--target=$TGT_MACH --host=$TGT_MACH \
-				--with-configdir=/etc \
-				samba_cv_CC_NEGATIVE_ENUM_VALUES=yes \
-				libreplace_cv_HAVE_GETADDRINFO=no \
-				ac_cv_file__proc_sys_kernel_core_pattern=yes || exit 1
+		./configure --hostcc=gcc --cross-compile --cross-answers=${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/cache.txt \
+			--without-acl-support --disable-cups --disable-avahi --without-fam \
+			--prefix=/usr \
+			--sysconfdir=/etc \
+			--localstatedir=/var \
+			--with-libiconv=${TARGET_ROOTFS}/usr \
+			--enable-fhs \
+			--disable-rpath \
+			--disable-rpath-install \
+			--disable-iprint \
+			--without-pam \
+			--without-dmapi \
+			--without-gpgme \
+			--without-json \
+			--without-ad-dc \
+			--without-libarchive \
+			--without-ldap \
+			--without-ads \
+			--disable-glusterfs \
+			--disable-python \
+			--with-cluster-support \
+			--with-shared-modules='!vfs_snapper' \
+			--bundled-libraries='!asn1_compile,!compile_et' || exit 1
 
-		mkdir ${TARGET_ROOTFS}/bin/smbd
-		mkdir ${TARGET_ROOTFS}/bin/smbclient
-
-		echo "#define USE_SETRESUID 1" >> "include/config.h"
-		echo "" >> "include/config.h"
-
-		make ${NBCORE} || exit 1
+		make ${NBCORE} CC=${TGT_MACH}-gcc || exit 1
 		make ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
