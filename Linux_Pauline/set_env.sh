@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2018 Jean-François DEL NERO
+# (c)2014-2023 Jean-François DEL NERO
 #
 # Set env script
 #
@@ -37,12 +37,21 @@ else
 		export COMMON_PATCHES="${COMMON_HOME}/patches"
 		export COMMON_DOWNLOAD="${COMMON_HOME}/download"
 
+		export BUILD_MODE="BUILD_MODE_SHM"
+		export MAKE_FLAGS="-s"
+
+		if [ -z "$LD_LIBRARY_PATH" ]; then
+			export LD_LIBRARY_PATH=${TARGET_CROSS_TOOLS}/lib:${TARGET_CROSS_TOOLS}/lib64
+		else
+			export LD_LIBRARY_PATH=${TARGET_CROSS_TOOLS}/lib:${TARGET_CROSS_TOOLS}/lib64:${LD_LIBRARY_PATH}
+		fi
+
+		export PATH="${TARGET_CROSS_TOOLS}/bin:${TARGET_CROSS_TOOLS}/usr/bin:${TARGET_CROSS_TOOLS}/sbin:${PATH}:${BASE_DIR}/scripts:"
+
 		source ${TARGET_CONFIG}/config.sh
 
 		export CROSS_BUILD_SIGN="CROSS_ENV_SET"
 
-
-		export PATH="${TARGET_CROSS_TOOLS}/bin:${PATH}:${BASE_DIR}/scripts:"
 		export BUILDMACH=$MACHTYPE
 
 		export NBCORE=-j`nproc`

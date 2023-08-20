@@ -1,13 +1,13 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2018 Jean-François DEL NERO
+# (c)2014-2023 Jean-François DEL NERO
 #
 # Network support
 #
 
 source ${SCRIPTS_HOME}/unpack.sh || exit 1
-
+source ${SCRIPTS_HOME}/utils.sh || exit 1
 source ${TARGET_CONFIG}/config.sh || exit 1
 
 source ${SCRIPTS_HOME}/apply_patches.sh || exit 1
@@ -28,20 +28,26 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+		create_build_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir libmnl
 		cd libmnl || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
  				--build=$MACHTYPE \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH || exit 1
 
-		make ${NBCORE}         || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -62,23 +68,29 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+		create_build_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir libnftnl
 		cd libnftnl || exit 1
 
 		export LIBMNL_LIBS="-L${TARGET_ROOTFS}/lib/libmnl.so"
 		export LIBMNL_CFLAGS="-I${TARGET_ROOTFS}/include"
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH || exit 1
 
-		make ${NBCORE}         || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -99,17 +111,20 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+		create_build_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		apply_patches ${COMMON_PATCHES}/iptables
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir iptables
 		cd iptables || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
@@ -117,8 +132,11 @@ then
 				CFLAGS=-DPATH_MAX=4096 \
 				LDFLAGS="${TARGET_ROOTFS}/lib/libmnl.so  ${TARGET_ROOTFS}/lib/libnftnl.so"  || exit 1
 
-		make ${NBCORE}  || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}  || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -139,17 +157,20 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+		create_build_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		apply_patches ${COMMON_PATCHES}/ntp
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir ntp
 		cd ntp || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
@@ -157,8 +178,11 @@ then
 				CFLAGS="-DMAX_PATH=4096 -DMB_LEN_MAX=16"\
 				--with-yielding-select=yes || exit 1
 
-		make ${NBCORE}         || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -179,18 +203,22 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix= \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH || exit 1
 
-		make ${NBCORE}         || exit 1
-		make ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -210,9 +238,11 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		export CROSS=${TGT_MACH}
 		export CC="${TGT_MACH}-gcc -latomic"
@@ -240,7 +270,7 @@ then
 		sed -i s#u_int16_t\ remote_port#u_int16_t\ remote_port___#g relay/dhcrelay.c || exit 1
 		sed -i s#omapi_object_type_t#//omapi_object_type_t#g server/mdb.c || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix= \
 				--sysconfdir=${TARGET_ROOTFS}/etc/dhcp \
 				--localstatedir=/var \
@@ -253,10 +283,12 @@ then
 				BUILD_CC=gcc \
 				--with-randomdev=no || exit 1
 
-		make -j1         || exit 1
-		make -j1 install DESTDIR=${TARGET_ROOTFS} || exit 1
+		make ${MAKE_FLAGS} -j1         || exit 1
+		make ${MAKE_FLAGS} -j1 install DESTDIR=${TARGET_ROOTFS} || exit 1
 
 		touch ${TARGET_ROOTFS}/var/db/dhcpd.leases
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -281,9 +313,11 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		export CROSS=${TGT_MACH}
 		export CC=${TGT_MACH}-gcc
@@ -293,10 +327,12 @@ then
 		export TARGET_DIR=${TARGET_ROOTFS}
 		export PREFIX=${TARGET_ROOTFS}
 
-		make ${NBCORE} CC=${TGT_MACH}-gcc         || exit 1
-		make ${NBCORE} install CC=${TGT_MACH}-gcc || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} CC=${TGT_MACH}-gcc         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install CC=${TGT_MACH}-gcc || exit 1
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+		delete_src_dir
 
 	) || exit 1
 	fi
@@ -315,19 +351,23 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH \
 				CFLAGS="-DNAME_MAX=255"\
 				|| exit 1
 
 
-		make ${NBCORE}           || exit 1
-		make ${NBCORE} install   || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}           || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install   || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -348,18 +388,22 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH \
 				CFLAGS="-DNAME_MAX=255"\
 				|| exit 1
 
-		make ${NBCORE}           || exit 1
-		make ${NBCORE} install   || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}           || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install   || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -380,12 +424,16 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		make ${NBCORE} CC=${TGT_MACH}-gcc                      || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} CC=${TGT_MACH}-gcc                      || exit 1
 		cp iw ${TARGET_ROOTFS}/sbin/                || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -406,9 +454,11 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		cd wpa_supplicant     || exit 1
 
@@ -421,8 +471,10 @@ then
 		export INCDIR=/include/
 		export BINDIR=/sbin/
 
-		make ${NBCORE} CC=${TGT_MACH}-gcc LDFLAGS+=-ldl || exit 1
-		make ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} CC=${TGT_MACH}-gcc LDFLAGS+=-ldl || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -443,9 +495,11 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		cd hostapd     || exit 1
 
@@ -455,8 +509,10 @@ then
 		export INCDIR=/include/
 		export BINDIR=/sbin/
 
-		make ${NBCORE} CC=${TGT_MACH}-gcc LDFLAGS+=-ldl || exit 1
-		make ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} CC=${TGT_MACH}-gcc LDFLAGS+=-ldl || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -477,12 +533,16 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		make ${NBCORE} CC=${TGT_MACH}-gcc              || exit 1
-		make ${NBCORE} install PREFIX=${TARGET_ROOTFS}
+		make ${MAKE_FLAGS} ${NBCORE} CC=${TGT_MACH}-gcc              || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install PREFIX=${TARGET_ROOTFS}
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -503,17 +563,21 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH \
 				|| exit 1
 
-		make ${NBCORE}           || exit 1
-		make ${NBCORE} install   || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}           || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install   || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -534,17 +598,21 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH \
 				|| exit 1
 
-		make ${NBCORE}           || exit 1
-		make ${NBCORE} install   || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}           || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install   || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -565,17 +633,21 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH \
 				|| exit 1
 
-		make ${NBCORE}           || exit 1
-		make ${NBCORE} install   || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}           || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install   || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -596,17 +668,21 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH \
 				|| exit 1
 
-		make ${NBCORE}           || exit 1
-		make ${NBCORE} install   || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}           || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install   || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -627,9 +703,11 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		export CROSS=${TGT_MACH}
 		export CC=${TGT_MACH}-gcc
@@ -639,13 +717,15 @@ then
 		export TARGET_DIR=${TARGET_ROOTFS}
 		export PREFIX=${TARGET_ROOTFS}
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH \
 				|| exit 1
 
-		make ${NBCORE}           || exit 1
-		make ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}           || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 

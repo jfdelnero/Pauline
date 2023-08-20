@@ -1,13 +1,13 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2018 Jean-François DEL NERO
+# (c)2014-2023 Jean-François DEL NERO
 #
 # System shell and tools
 #
 
 source ${SCRIPTS_HOME}/unpack.sh || exit 1
-
+source ${SCRIPTS_HOME}/utils.sh || exit 1
 source ${TARGET_CONFIG}/config.sh || exit 1
 
 echo "*********************************"
@@ -25,14 +25,16 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES} || exit 1
+		cd ${TMP_SRC_FOLDER} || exit 1
 		mv ${TMP_ARCHIVE_FOLDER} busybox
 		cd busybox || exit 1
 
-		make ${NBCORE} ARCH=${KERNEL_ARCH} CROSS_COMPILE=${TGT_MACH}-  defconfig || exit 1
-		#make ${NBCORE}  ARCH=${KERNEL_ARCH}  CROSS_COMPILE=${TGT_MACH}-  menuconfig || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} ARCH=${KERNEL_ARCH} CROSS_COMPILE=${TGT_MACH}-  defconfig || exit 1
+		#make ${MAKE_FLAGS} ${NBCORE}  ARCH=${KERNEL_ARCH}  CROSS_COMPILE=${TGT_MACH}-  menuconfig || exit 1
 
 		if [ -f ${TARGET_CONFIG}/busybox_config ]
 		then
@@ -43,8 +45,10 @@ then
 		)
 		fi
 
-		make ${NBCORE} ARCH=${KERNEL_ARCH} CROSS_COMPILE=${TGT_MACH}-  || exit 1
-		make ${NBCORE} ARCH=${KERNEL_ARCH} CROSS_COMPILE=${TGT_MACH}-  install CONFIG_PREFIX=${TARGET_ROOTFS} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} ARCH=${KERNEL_ARCH} CROSS_COMPILE=${TGT_MACH}-  || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} ARCH=${KERNEL_ARCH} CROSS_COMPILE=${TGT_MACH}-  install CONFIG_PREFIX=${TARGET_ROOTFS} || exit 1
+
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -65,9 +69,12 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+		create_build_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_BUILD}
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir util-linux
 		cd util-linux || exit 1
 
@@ -83,8 +90,11 @@ then
 						--disable-makeinstall-setuid \
 						|| exit 1
 
-		make ${NBCORE}         || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 

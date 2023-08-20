@@ -1,13 +1,13 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2018 Jean-François DEL NERO
+# (c)2014-2023 Jean-François DEL NERO
 #
 # Games
 #
 
 source ${SCRIPTS_HOME}/unpack.sh || exit 1
-
+source ${SCRIPTS_HOME}/utils.sh || exit 1
 source ${TARGET_CONFIG}/config.sh || exit 1
 
 echo "*************"
@@ -26,9 +26,12 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+		create_build_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		########################################################################################################################
 		# Mame hack/patch :
@@ -82,10 +85,13 @@ then
 
 		########################################################################################################################
 
-		make steamlink REGENIE=1 SOURCES=src/mame/drivers/pacman.cpp -j3  NO_USE_MIDI=1 NO_X11=1 || exit 1
+		make ${MAKE_FLAGS} steamlink REGENIE=1 SOURCES=src/mame/drivers/pacman.cpp -j3  NO_USE_MIDI=1 NO_X11=1 || exit 1
 
 		mkdir ${TARGET_ROOTFS}/mame
 		cp mame ${TARGET_ROOTFS}/mame || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -106,21 +112,27 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+		create_build_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir doom
 		cd doom || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH \
 				|| exit 1
 
-		make ${NBCORE} || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
@@ -141,18 +153,24 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
+		create_src_dir
+		create_build_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		export CC=${TGT_MACH}-gcc
 		export LD=${TGT_MACH}-ld
 		export AS=${TGT_MACH}-as
 		export AR=${TGT_MACH}-ar
 
-		make ${NBCORE} -f Makefile COPYDIR="$BASEQ3_DIR" ARCH=arm \
+		make ${MAKE_FLAGS} ${NBCORE} -f Makefile COPYDIR="$BASEQ3_DIR" ARCH=arm \
 			CC="${TGT_MACH}-gcc" USE_SVN=0 USE_CURL=0 USE_OPENAL=0 \
 			CFLAGS="-DVCMODS_MISC -DVCMODS_OPENGLES -DVCMODS_DEPTH -DVCMODS_REPLACETRIG $INCLUDES -lSDL -lvchostif -lvcfiled_check -lbcm_host -lkhrn_static -lvchiq_arm -lopenmaxil -lEGL -lGLESv2 -lvcos -lrt" || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 

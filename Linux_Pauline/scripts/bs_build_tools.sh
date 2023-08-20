@@ -1,13 +1,13 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2018 Jean-François DEL NERO
+# (c)2014-2023 Jean-François DEL NERO
 #
 # Local build tools
 #
 
 source ${SCRIPTS_HOME}/unpack.sh || exit 1
-
+source ${SCRIPTS_HOME}/utils.sh || exit 1
 source ${TARGET_CONFIG}/config.sh || exit 1
 
 echo "*******************"
@@ -30,19 +30,70 @@ then
 		echo "*  Local Gperf   *"
 		echo "******************"
 
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
 		unset PKG_CONFIG_LIBDIR
 
-		cd ${TARGET_BUILD} || exit 1
+		create_build_dir
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir -pv gperf_local
 		cd gperf_local || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--datarootdir="${TARGET_CROSS_TOOLS}" \
 				--exec-prefix="${TARGET_CROSS_TOOLS}" || exit 1
 
-		make all install || exit 1
+		make ${MAKE_FLAGS} all install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
+	) || exit 1
+	fi
+
+) || exit 1
+fi
+
+####################################################################
+# texinfo
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_BUILD_TEXINFO:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
+	then
+	(
+		echo "*****************"
+		echo "* Local texinfo *"
+		echo "*****************"
+
+		create_src_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		unset PKG_CONFIG_LIBDIR
+
+		create_build_dir
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir -pv texinfo_local
+		cd texinfo_local || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				--datarootdir="${TARGET_CROSS_TOOLS}" \
+				--exec-prefix="${TARGET_CROSS_TOOLS}" || exit 1
+
+		make ${MAKE_FLAGS} all install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
 	) || exit 1
@@ -63,23 +114,28 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
 		unset PKG_CONFIG_LIBDIR
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		create_build_dir
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir libffi_local
 		cd libffi_local || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_CROSS_TOOLS}" \
 				--datarootdir="${TARGET_CROSS_TOOLS}" \
 				--exec-prefix="${TARGET_CROSS_TOOLS}" || exit 1
 
-		make ${NBCORE}         || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
 
@@ -100,22 +156,29 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
 		unset PKG_CONFIG_LIBDIR
 
-		cd ${TARGET_BUILD} || exit 1
+		create_build_dir
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir expat_local
 		cd expat_local || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--without-docbook \
 				--prefix="${TARGET_CROSS_TOOLS}" \
 				--datarootdir="${TARGET_CROSS_TOOLS}" \
 				--exec-prefix="${TARGET_CROSS_TOOLS}" || exit 1
 
-		make ${NBCORE} all     || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} all     || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
 
@@ -136,22 +199,67 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
 		unset PKG_CONFIG_LIBDIR
 
-		cd ${TARGET_BUILD} || exit 1
+		create_build_dir
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir libxml2_local
 		cd libxml2_local || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 					--prefix="${TARGET_CROSS_TOOLS}" \
 					--datarootdir="${TARGET_CROSS_TOOLS}" \
 					--exec-prefix="${TARGET_CROSS_TOOLS}" \
 					--without-python || exit 1
 
-		make ${NBCORE}         || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# OpenSSL
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_BUILD_OPENSSL:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
+	then
+	(
+		create_src_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		unset PKG_CONFIG_LIBDIR
+
+		create_build_dir
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}  || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/Configure \
+				shared --prefix="${TARGET_CROSS_TOOLS}" || exit 1
+
+		make ${MAKE_FLAGS} || exit 1
+		make ${MAKE_FLAGS} install_sw || exit 1
+		make ${MAKE_FLAGS} clean
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
 
@@ -172,21 +280,26 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
 		unset PKG_CONFIG_LIBDIR
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		create_build_dir
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir cmake_local
 		cd cmake_local || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_CROSS_TOOLS}" || exit 1
 
-		make ${NBCORE}         || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
 
@@ -207,21 +320,96 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
 		unset PKG_CONFIG_LIBDIR
 
-		cd ${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER} || exit 1
+		create_build_dir
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir make_local
 		cd make_local || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_CROSS_TOOLS}" || exit 1
 
-		make ${NBCORE}         || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# NCURSES
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_BUILD_LIBNCURSES:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
+	then
+	(
+		create_src_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		unset PKG_CONFIG_LIBDIR
+
+		create_build_dir
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir ncurses_local
+		cd ncurses_local || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_CROSS_TOOLS}" \
+				--disable-stripping STRIPPROG=strip \
+				--with-shared \
+				--without-normal \
+				--with-cxx-shared \
+				--without-debug \
+				--without-manpages \
+				--without-ada \
+				--with-curses-h \
+				--enable-pc-files \
+				--with-versioned-syms \
+				--with-pkg-config-libdir=${TARGET_CROSS_TOOLS}/lib/pkgconfig || exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE} all     || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE} clean   || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_CROSS_TOOLS}" \
+				--with-shared \
+				--without-normal \
+				--with-cxx-shared \
+				--without-debug \
+				--without-ada \
+				--without-manpages \
+				--with-curses-h \
+				--enable-pc-files \
+				--with-termlib \
+				--with-versioned-syms \
+				--with-pkg-config-libdir=${TARGET_CROSS_TOOLS}/lib/pkgconfig || exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE} all     || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
 
@@ -234,21 +422,28 @@ fi
 # heimdal
 ####################################################################
 
-CUR_PACKAGE=${SRC_PACKAGE_HEIMDAL:-"UNDEF"}
+CUR_PACKAGE=${SRC_PACKAGE_BUILD_HEIMDAL:-"UNDEF"}
 CUR_PACKAGE="${CUR_PACKAGE##*/}"
 if [ "$CUR_PACKAGE" != "UNDEF" ]
 then
 (
-	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
 	then
 	(
+		create_src_dir
+
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TARGET_BUILD} || exit 1
+		create_build_dir
+
+		export PKG_CONFIG_PATH=${TARGET_CROSS_TOOLS}/lib/pkgconfig
+		export LIBRARY_PATH=${TARGET_CROSS_TOOLS}/lib/
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir heimdal
 		cd heimdal || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_CROSS_TOOLS}" \
 				--disable-shared \
 				--enable-static \
@@ -267,19 +462,174 @@ then
 				--disable-ndbm-db \
 				--disable-heimdal-documentation || exit 1
 
-		make ${NBCORE} || exit 1
-		make ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
 
 		cp ./lib/com_err/compile_et ${TARGET_CROSS_TOOLS}/bin
 		cp -a ./lib/com_err/.libs ${TARGET_CROSS_TOOLS}/bin
 
 		ln -sf ${TARGET_CROSS_TOOLS}/libexec/heimdal/asn1_compile	${TARGET_CROSS_TOOLS}/bin/asn1_compile
-		ln -sf ${TARGET_CROSS_TOOLS}/bin/compile_et ${TARGET_CROSS_TOOLS}/libexec/heimdal/compile_et
+        #ln -sf ${TARGET_CROSS_TOOLS}/bin/compile_et ${TARGET_CROSS_TOOLS}/libexec/heimdal/compile_et     
 
-		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
 
 	) || exit 1
 	fi
 ) || exit 1
 fi
 
+####################################################################
+# PYTHON
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_BUILD_PYTHON:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
+	then
+	(
+		create_src_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		create_build_dir
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir python_local
+		cd python_local || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_CROSS_TOOLS}" \
+				--enable-ipv6 \
+				--enable-optimizations \
+				--enable-shared \
+				|| exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} altinstall DESTDIR=${TARGET_CROSS_TOOLS} || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# dos2unix
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_BUILD_DOS2UNIX:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
+	then
+	(
+		create_src_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE} DESTDIR=${TARGET_CROSS_TOOLS}  || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} DESTDIR=${TARGET_CROSS_TOOLS} install  || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
+
+		delete_src_dir
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# Bash
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_BUILD_BASH:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
+	then
+	(
+		echo "*****************"
+		echo "*   Local bash  *"
+		echo "*****************"
+
+		create_src_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		unset PKG_CONFIG_LIBDIR
+
+		create_build_dir
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir -pv bash_local
+		cd bash_local || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				--datarootdir="${TARGET_CROSS_TOOLS}" \
+				--exec-prefix="${TARGET_CROSS_TOOLS}" || exit 1
+
+		make ${MAKE_FLAGS} all install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
+	) || exit 1
+	fi
+
+) || exit 1
+fi
+
+####################################################################
+# Nano
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_BUILD_NANOEDITOR:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir nano_local
+		cd nano_local || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_CROSS_TOOLS}" \
+				|| exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi

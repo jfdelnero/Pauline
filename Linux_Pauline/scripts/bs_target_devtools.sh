@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2019 Jean-François DEL NERO
+# (c)2014-2023 Jean-François DEL NERO
 #
 # Target compiler
 # Binutils + GCC + GCC Libs
 #
 
 source ${SCRIPTS_HOME}/unpack.sh || exit 1
-
+source ${SCRIPTS_HOME}/utils.sh || exit 1
 source ${TARGET_CONFIG}/config.sh || exit 1
 
 echo "******************"
@@ -31,16 +31,19 @@ then
 		echo "*   Target Binutils...   *"
 		echo "**************************"
 
-		mkdir ${TARGET_SOURCES}/target_devtools
+		create_src_dir
+		create_build_dir
+
+		mkdir ${TMP_SRC_FOLDER}/target_devtools
 		unpack ${CUR_PACKAGE} "target_devtools"
 
 		unset PKG_CONFIG_LIBDIR
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir -pv binutils_target
 		cd binutils_target || exit 1
 
-		${TARGET_SOURCES}/target_devtools/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/target_devtools/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}/usr" \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH \
@@ -48,7 +51,10 @@ then
 				--disable-multilib \
 				|| exit 1
 
-		make all install || exit 1
+		make ${MAKE_FLAGS} all install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_TARGET_DONE
 	) || exit 1
@@ -72,14 +78,17 @@ then
 		echo "*   Target GCC...   *"
 		echo "*********************"
 
-		mkdir ${TARGET_SOURCES}/target_devtools
+		create_src_dir
+		create_build_dir
+
+		mkdir ${TMP_SRC_FOLDER}/target_devtools
 		unpack ${CUR_PACKAGE} "target_devtools"
 
 		unset PKG_CONFIG_LIBDIR
 
 		CUR_SRC_MAIN_FOLDER=target_devtools/$TMP_ARCHIVE_FOLDER
 
-		cd ${TARGET_SOURCES}/target_devtools/${TMP_ARCHIVE_FOLDER}   || exit 1
+		cd ${TMP_SRC_FOLDER}/target_devtools/${TMP_ARCHIVE_FOLDER}   || exit 1
 
 		TMP_PACKAGE="${SRC_PACKAGE_TARGET_GCC_MPFR##*/}"
 		unpack ${TMP_PACKAGE} ${CUR_SRC_MAIN_FOLDER}
@@ -101,13 +110,13 @@ then
 		#unpack ${TMP_PACKAGE} ${CUR_SRC_MAIN_FOLDER}
 		#mv -v ${TMP_ARCHIVE_FOLDER} cloog || exit 1
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir -pv target_gcc || exit 1
 		cd target_gcc || exit 1
 
 		TMP_ARCHIVE_FOLDER=$CUR_SRC_MAIN_FOLDER
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}/usr" \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH          \
@@ -123,13 +132,16 @@ then
 		# echo > ${TARGET_ROOTFS}/include/limits.h
 		# ln -s ${TARGET_ROOTFS}/include ${TARGET_ROOTFS}/sys-include
 
-		make ${NBCORE} all-gcc || exit 1
-		make ${NBCORE} install-gcc|| exit 1
+		make ${MAKE_FLAGS} ${NBCORE} all-gcc || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install-gcc|| exit 1
 
 		# rm ${TARGET_ROOTFS}/sys-include
 
 		# Install the GCC libraries
 		cp  -aR  ${TARGET_CROSS_TOOLS}/lib/gcc/${TGT_MACH} ${TARGET_ROOTFS}/usr/lib/gcc/
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_TARGET_DONE
 
@@ -155,16 +167,19 @@ then
 		echo "*   Target Binutils cross-compiler...   *"
 		echo "****************************************"
 
-		mkdir ${TARGET_SOURCES}/target_devtools/crosscompiler
+		create_src_dir
+		create_build_dir
+
+		mkdir ${TMP_SRC_FOLDER}/target_devtools/crosscompiler
 		unpack ${CUR_PACKAGE} "target_devtools/crosscompiler"
 
 		unset PKG_CONFIG_LIBDIR
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir -pv binutils_cross_target
 		cd binutils_cross_target || exit 1
 
-		${TARGET_SOURCES}/target_devtools/crosscompiler/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/target_devtools/crosscompiler/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}/usr" \
 				--host=$TGT_MACH \
 				--target=$CROSS_TGT_MACH \
@@ -174,7 +189,10 @@ then
 				--disable-multilib \
 				|| exit 1
 
-		make all install || exit 1
+		make ${MAKE_FLAGS} all install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_TARGET_CROSS_DONE
 	) || exit 1
@@ -198,14 +216,17 @@ then
 		echo "*   Target GCC cross-compiler...  *"
 		echo "***********************************"
 
-		mkdir ${TARGET_SOURCES}/target_devtools/crosscompiler
+		create_src_dir
+		create_build_dir
+
+		mkdir ${TMP_SRC_FOLDER}/target_devtools/crosscompiler
 		unpack ${CUR_PACKAGE} "target_devtools/crosscompiler"
 
 		unset PKG_CONFIG_LIBDIR
 
 		CUR_SRC_MAIN_FOLDER=target_devtools/crosscompiler/$TMP_ARCHIVE_FOLDER
 
-		cd ${TARGET_SOURCES}/target_devtools/crosscompiler/${TMP_ARCHIVE_FOLDER}   || exit 1
+		cd ${TMP_SRC_FOLDER}/target_devtools/crosscompiler/${TMP_ARCHIVE_FOLDER}   || exit 1
 
 		TMP_PACKAGE="${SRC_PACKAGE_TARGET_CROSS_GCC_MPFR##*/}"
 		unpack ${TMP_PACKAGE} ${CUR_SRC_MAIN_FOLDER}
@@ -227,13 +248,13 @@ then
 		#unpack ${TMP_PACKAGE} ${CUR_SRC_MAIN_FOLDER}
 		#mv -v ${TMP_ARCHIVE_FOLDER} cloog || exit 1
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir -pv target_cross_gcc || exit 1
 		cd target_cross_gcc || exit 1
 
 		TMP_ARCHIVE_FOLDER=$CUR_SRC_MAIN_FOLDER
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}/usr" \
 				--host=$TGT_MACH                \
 				--target=$CROSS_TGT_MACH        \
@@ -277,17 +298,19 @@ then
 			echo > ${TARGET_CROSS_TOOLS}/bin/${CROSS_TGT_MACH}-gcc
 			chmod +x ${TARGET_CROSS_TOOLS}/bin/${CROSS_TGT_MACH}-gcc
 
-			make ${NBCORE} all-gcc || exit 1
-			make ${NBCORE} install-gcc|| exit 1
+			make ${MAKE_FLAGS} ${NBCORE} all-gcc || exit 1
+			make ${MAKE_FLAGS} ${NBCORE} install-gcc|| exit 1
 
 			rm ${TARGET_CROSS_TOOLS}/bin/${CROSS_TGT_MACH}-gcc
 		else
 
-			make ${NBCORE} all-gcc || exit 1
-			make ${NBCORE} install-gcc|| exit 1
+			make ${MAKE_FLAGS} ${NBCORE} all-gcc || exit 1
+			make ${MAKE_FLAGS} ${NBCORE} install-gcc|| exit 1
 
 		fi
 
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_TARGET_CROSS_DONE
 
@@ -313,21 +336,27 @@ then
 		echo "*   Target Make...   *"
 		echo "**********************"
 
+		create_src_dir
+		create_build_dir
+
 		unpack ${CUR_PACKAGE} ""
 
 		unset PKG_CONFIG_LIBDIR
 
-		cd ${TARGET_BUILD} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir -pv make_target
 		cd make_target || exit 1
 
-		${TARGET_SOURCES}/${TMP_ARCHIVE_FOLDER}/configure \
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}/usr" \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH \
 				|| exit 1
 
-		make all install || exit 1
+		make ${MAKE_FLAGS} all install || exit 1
+
+		delete_build_dir
+		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_TARGET_DONE
 	) || exit 1
