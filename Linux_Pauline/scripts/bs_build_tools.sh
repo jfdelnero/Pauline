@@ -663,7 +663,7 @@ then
 		delete_build_dir
 		delete_src_dir
 
-		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_BUILD_DONE
 
 	) || exit 1
 	fi
