@@ -374,15 +374,15 @@ then
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_CROSS_TOOLS}" \
-				--disable-stripping STRIPPROG=strip \
 				--with-shared \
 				--without-normal \
 				--with-cxx-shared \
 				--without-debug \
-				--without-manpages \
 				--without-ada \
+				--without-manpages \
 				--with-curses-h \
 				--enable-pc-files \
+				--with-termlib \
 				--with-versioned-syms \
 				--with-pkg-config-libdir=${TARGET_CROSS_TOOLS}/lib/pkgconfig || exit 1
 
@@ -393,15 +393,15 @@ then
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_CROSS_TOOLS}" \
+				--disable-stripping STRIPPROG=strip \
 				--with-shared \
 				--without-normal \
 				--with-cxx-shared \
 				--without-debug \
-				--without-ada \
 				--without-manpages \
+				--without-ada \
 				--with-curses-h \
 				--enable-pc-files \
-				--with-termlib \
 				--with-versioned-syms \
 				--with-pkg-config-libdir=${TARGET_CROSS_TOOLS}/lib/pkgconfig || exit 1
 
