@@ -33,7 +33,7 @@ https://www.laludotheque.fr/projets-en-cours/preservation-des-disquettes-pauline
 This use the HxCFloppyEmulator software repository as submodule so the proper way to clone the project is :
 
 ```c
-git clone --recursive https://github.com/Pauline
+git clone --recursive https://github.com/jfdelnero/Pauline.git
 ```
 
 To update the repository :
