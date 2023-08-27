@@ -28,6 +28,21 @@ https://www.laludotheque.fr/projets-en-cours/preservation-des-disquettes-pauline
 
  And many more !
 
+### How to build it ?
+
+This use the HxCFloppyEmulator software repository as submodule so the proper way to clone the project is :
+
+```c
+git clone --recursive https://github.com/Pauline
+```
+
+To update the repository :
+
+```c
+git pull
+git submodule update --init --recursive
+```
+
 -------------------------------------------------------------------------------
 
 HxC Floppy Emulator project

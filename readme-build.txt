@@ -6,7 +6,7 @@
 -------H----H---X-----X---CCCCC-----22222----0000-----0000----11111-----------
 ------------------------------------------------------------------------------
 ------ Contact: hxc2001 at hxc2001.com ----------- https://hxc2001.com -------
------- (c) 2019-2020 Jean-François DEL NERO ----------------------------------
+------ (c) 2019-2023 Jean-François DEL NERO ----------------------------------
 -============================================================================-
 - Pauline
 - Floppy disks archiving, creation and drives simulator system.
@@ -38,11 +38,11 @@
         ( example : ALTERA_BASEDIR=/home/user_home/intelFPGA_lite/19.1)
 
     - ALTERA_DE10_GHRD_BASEDIR path environment variable pointing to the Pauline FPGA project
-        ( example : ALTERA_DE10_GHRD_BASEDIR=/your_path_to/HxCFloppyEmulator/Pauline/trunk/FPGA_Pauline/Rev_A/)
+        ( example : ALTERA_DE10_GHRD_BASEDIR=/your_path_to/Pauline/FPGA_Pauline/Rev_A/)
 
-    - The whole HxC Floppy Emulator repository is present on the machine.
-        ( svn checkout https://svn.code.sf.net/p/hxcfloppyemu/code/ hxcfloppyemu-code )
-        ( To install the subversion/svn tools : sudo apt-get install subversion )
+    - The whole Pauline repository is present on the machine.
+        ( git clone --recursive  https://github.com/jfdelnero/Pauline.git )
+        ( To install the git tool : sudo apt-get install git )
 
 -============================================================================-
 -                       FPGA core bitstream generation                       -
@@ -55,12 +55,12 @@ In this part we are building the FPGA SoC bitstream.
     1.2) Open the Pauline project
         - Menu "File"
         - "Open project"
-        - Select FPGA_Pauline_Rev_A.qpf in the HxCFloppyEmulator/Pauline/trunk/FPGA_Pauline/Rev_A/ folder.
+        - Select FPGA_Pauline_Rev_A.qpf in the Pauline/FPGA_Pauline/Rev_A/ folder.
 
     1.3) Start Plateform Designer
         - Menu "Tools"
         - "Plateform Designer"
-        - Select soc_system.qsys  in the HxCFloppyEmulator/Pauline/trunk/FPGA_Pauline/Rev_A/ folder.
+        - Select soc_system.qsys in the Pauline/FPGA_Pauline/Rev_A/ folder.
 
     1.4) Generate the SoC VHDL
         - Press "Generate HDL" button in Plateform Designer main window.
@@ -83,7 +83,7 @@ Cross Compiler, System librairies, Linux kernel, Compiler, tools...
     2.1) Open a terminal console window
 
     2.2) Move to the Pauline Linux folder
-        - Type this command  : cd "/your_path_to/HxCFloppyEmulator/Pauline/trunk/Linux_Pauline"
+        - Type this command  : cd "/your_path_to/Pauline/Linux_Pauline"
         (Change the example with your path)
 
     2.3) Enable the Pauline build environment
@@ -104,7 +104,7 @@ Cross Compiler, System librairies, Linux kernel, Compiler, tools...
         and build the SDCard image. the root passsword is asked during the process.
 
         Once done the SD card image pauline_sdcard.img can be found
-        in the /your_path_to/HxCFloppyEmulator/Pauline/trunk/Linux_Pauline/output_objects folder.
+        in the /your_path_to/Pauline/Linux_Pauline/output_objects folder.
 
         You can write it to the SD Card:
 
