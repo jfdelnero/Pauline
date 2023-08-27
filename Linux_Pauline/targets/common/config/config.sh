@@ -145,7 +145,6 @@ SRC_PACKAGE_GNUTLS="@COMMON@""https://www.gnupg.org/ftp/gcrypt/gnutls/v3.7/gnutl
 SRC_PACKAGE_MSMTP="@COMMON@""https://marlam.de/msmtp/releases/msmtp-1.8.22.tar.xz"
 SRC_PACKAGE_SAMBA="@COMMON@""https://download.samba.org/pub/samba/stable/samba-4.18.6.tar.gz" 
 
-
 #
 # Graphic Stack
 #
