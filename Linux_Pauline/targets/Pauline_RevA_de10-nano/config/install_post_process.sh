@@ -183,13 +183,6 @@ fi
 
 mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "Boot Script Name" -d ${TARGET_CONFIG}/boot.script ${TARGET_HOME}/output_objects/u-boot.scr
 
-cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/preloader-mkpimage.bin ${TARGET_HOME}/output_objects/  || exit 1
-
-# copy u-boot and the kernel to the output folder.
-
-cp ${TARGET_SOURCES}/u-boot-socfpga-rel_socfpga_v2013.01.01_19.03.02_pr/u-boot.img ${TARGET_HOME}/output_objects/  || exit 1
-cp ${TARGET_SOURCES}/linux-kernel/arch/arm/boot/zImage ${TARGET_HOME}/output_objects/  || exit 1
-
 # convert the fpga sof file to rbf.
 
 ${ALTERA_TOOLS_ROOT}/quartus/bin/quartus_cpf -c -o bitstream_compression=on ${FPGA_GHRD_FOLDER}/output_files/FPGA_Pauline_Rev_A.sof ${TARGET_HOME}/output_objects/soc_system.rbf || exit 1
