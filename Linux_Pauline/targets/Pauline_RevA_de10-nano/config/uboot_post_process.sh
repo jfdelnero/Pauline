@@ -8,4 +8,6 @@
 
 source ${TARGET_CONFIG}/config.sh || exit 1
 
-cp ./u-boot.img ${TARGET_HOME}/output_objects/  || exit 1
+cp ./tools/mkimage ${TARGET_CROSS_TOOLS}/bin || exit 1
+cp ./u-boot.img ${TARGET_HOME}/output_objects/ || exit 1
+
