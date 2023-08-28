@@ -221,5 +221,7 @@ if [ ! -f $1 ]; then
 	sudo umount $1
 fi
 
+delete_tmprootfs_dir
+
 echo  Done !
 
