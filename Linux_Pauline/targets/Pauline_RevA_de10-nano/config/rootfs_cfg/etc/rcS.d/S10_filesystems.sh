@@ -44,15 +44,15 @@ mkdir /var/log/samba
 mkdir /var/lib/samba/
 mkdir /var/lib/samba/private/
 
-chgrp smbuser /var/log/samba
+chgrp samba /var/log/samba
 chown smbuser /var/log/samba
-chgrp smbuser /var/cache/samba
+chgrp samba /var/cache/samba
 chown smbuser /var/cache/samba
-chgrp smbuser /var/lock/samba
+chgrp samba /var/lock/samba
 chown smbuser /var/lock/samba
-chgrp smbuser /var/lib/samba
+chgrp samba /var/lib/samba
 chown smbuser /var/lib/samba
-chgrp smbuser /var/lib/samba/private
+chgrp samba /var/lib/samba/private
 chown smbuser /var/lib/samba/private
 
 #######################################
