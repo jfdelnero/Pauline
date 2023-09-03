@@ -37,9 +37,6 @@
     - ALTERA_BASEDIR path environment variable pointing to the Quartus installation
         ( example : ALTERA_BASEDIR=/home/user_home/intelFPGA_lite/19.1)
 
-    - ALTERA_DE10_GHRD_BASEDIR path environment variable pointing to the Pauline FPGA project
-        ( example : ALTERA_DE10_GHRD_BASEDIR=/your_path_to/Pauline/FPGA_Pauline/Rev_A/)
-
     - The whole Pauline repository is present on the machine.
         ( git clone --recursive  https://github.com/jfdelnero/Pauline.git )
         ( To install the git tool : sudo apt-get install git )
@@ -108,7 +105,7 @@ Cross Compiler, System librairies, Linux kernel, Compiler, tools...
 
         You can write it to the SD Card:
 
-        sudo dd if=pauline_sdcard.img of=/dev/your_sd_card_reader status=progress bs=4M ; sync
+        sudo dd if=/your_path_to/Pauline/Linux_Pauline/output_objects/pauline_sdcard.img of=/dev/your_sd_card_reader status=progress bs=4M ; sync
 
         (Or use any other software under Windows (https://rufus.ie/,...))
 
