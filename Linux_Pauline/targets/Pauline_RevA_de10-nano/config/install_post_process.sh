@@ -308,6 +308,10 @@ sudo chmod ugo-rwx ${TARGET_HOME}/output_objects/tmp_mount_point/etc/passwd
 sudo chmod u+rw    ${TARGET_HOME}/output_objects/tmp_mount_point/etc/passwd
 sudo chmod go+r    ${TARGET_HOME}/output_objects/tmp_mount_point/etc/passwd
 
+cd ${TARGET_HOME}/output_objects/tmp_mount_point
+${SCRIPTS_HOME}/fix_fs_perm.sh
+cd ${PAULINE_BASE}
+
 sudo umount ${TARGET_HOME}/output_objects/tmp_mount_point
 sudo losetup -d /dev/loop6
 
