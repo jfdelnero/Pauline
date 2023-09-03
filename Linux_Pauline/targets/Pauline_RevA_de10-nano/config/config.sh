@@ -29,6 +29,8 @@ source ${BASE_DIR}/targets/common/config/config.sh || exit 1
 # Quartus II Folder (../intelFPGA_lite/XX.X/)
 export ALTERA_TOOLS_ROOT=${ALTERA_BASEDIR}
 
+export ALTERA_DE10_GHRD_BASEDIR=${BASE_DIR}/../FPGA_Pauline/Rev_A/
+
 # GHRD (Golden Hardware Reference Design) DE10-nano project folder (DE10_NANO_SoC_GHRD folder)
 export FPGA_GHRD_FOLDER=${ALTERA_DE10_GHRD_BASEDIR}
 
