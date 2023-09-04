@@ -193,18 +193,18 @@ ${ALTERA_TOOLS_ROOT}/quartus/bin/quartus_cpf -c -o bitstream_compression=off ${F
 ############################################################################################
 # Create the update ramdisk image
 
-export TARGET_UPDATE_RD_ROOTFS=${TARGET_HOME}/update_ramdisk
+#export TARGET_UPDATE_RD_ROOTFS=${TARGET_HOME}/update_ramdisk
 
-rm -Rf ${TARGET_UPDATE_RD_ROOTFS}
+#rm -Rf ${TARGET_UPDATE_RD_ROOTFS}
 
-mkdir  ${TARGET_UPDATE_RD_ROOTFS}
-cd     ${TARGET_UPDATE_RD_ROOTFS}
+#mkdir  ${TARGET_UPDATE_RD_ROOTFS}
+#cd     ${TARGET_UPDATE_RD_ROOTFS}
 
-cp -av ${TARGET_ROOTFS_MIRROR}/* .
+#cp -av ${TARGET_ROOTFS_MIRROR}/* .
 
-rm -rf boot home/www include libexec media opt share usr/armv7a-hardfloat-linux-gnueabi usr/lib usr/bin usr/local usr/share www etc/fonts etc/libnl etc/lighttpd etc/netword etc/share etc/ssh etc/ssl etc/umtprd bin/smbclient bin/smbd bin/mu-mh lib/audit lib/cmake lib/engines lib/gconv lib/libffi-3.2 lib/libnl lib/mailutils lib/*.a lib/*.o lib/modules  usr/include usr/libexec var/db
+#rm -rf boot home/www include libexec media opt share usr/armv7a-hardfloat-linux-gnueabi usr/lib usr/bin usr/local usr/share www etc/fonts etc/libnl etc/lighttpd etc/netword etc/share etc/ssh etc/ssl etc/umtprd bin/smbclient bin/smbd bin/mu-mh lib/audit lib/cmake lib/engines lib/gconv lib/libffi-3.2 lib/libnl lib/mailutils lib/*.a lib/*.o lib/modules  usr/include usr/libexec var/db
 
-find . | cpio --dereference -H newc -o | gzip -9 > ${TARGET_HOME}/output_objects/update_rd.img
+#find . | cpio --dereference -H newc -o | gzip -9 > ${TARGET_HOME}/output_objects/update_rd.img
 
 ############################################################################################
 # Create SD Card image
@@ -222,19 +222,19 @@ sudo losetup -d /dev/loop6
 #sudo losetup -d /dev/loop6
 
 #1040384
-dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=2088960  conv=notrunc && sync
-dd if=${TARGET_HOME}/output_objects/u-boot.img of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=2089472 conv=notrunc && sync
+dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=2088960  conv=notrunc || exit 1 && sync
+dd if=${TARGET_HOME}/output_objects/u-boot.img of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=2089472 conv=notrunc || exit 1 && sync
 
-fdisk -l ${TARGET_HOME}/output_objects/pauline_sdcard.img
+fdisk -l ${TARGET_HOME}/output_objects/pauline_sdcard.img || exit 1
 
 ############################################################################################
 
 sleep 1
-sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
+sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/pauline_sdcard.img || exit 1
 sleep 1
 
-sudo mkfs.vfat /dev/loop6p1
-sudo mkfs.ext2 /dev/loop6p2
+sudo mkfs.vfat /dev/loop6p1 || exit 1
+sudo mkfs.ext2 /dev/loop6p2 || exit 1
 sudo losetup -d /dev/loop6
 
 ############################################################################################
@@ -245,12 +245,12 @@ sleep 1
 sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
 sleep 1
 
-sudo mount /dev/loop6p1 ${TARGET_HOME}/output_objects/tmp_mount_point
-sudo cp ${TARGET_HOME}/output_objects/u-boot.scr        ${TARGET_HOME}/output_objects/tmp_mount_point  && sync
-sudo cp ${TARGET_HOME}/output_objects/soc_system.rbf    ${TARGET_HOME}/output_objects/tmp_mount_point  && sync
-sudo cp ${TARGET_HOME}/output_objects/soc_system.dtb    ${TARGET_HOME}/output_objects/tmp_mount_point  && sync
-sudo cp ${TARGET_HOME}/output_objects/soc_system.dts    ${TARGET_HOME}/output_objects/tmp_mount_point  && sync
-sudo cp ${TARGET_HOME}/output_objects/zImage            ${TARGET_HOME}/output_objects/tmp_mount_point  && sync
+sudo mount /dev/loop6p1 ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1
+sudo cp ${TARGET_HOME}/output_objects/u-boot.scr        ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1 && sync
+sudo cp ${TARGET_HOME}/output_objects/soc_system.rbf    ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1 && sync
+sudo cp ${TARGET_HOME}/output_objects/soc_system.dtb    ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1 && sync
+sudo cp ${TARGET_HOME}/output_objects/soc_system.dts    ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1 && sync
+sudo cp ${TARGET_HOME}/output_objects/zImage            ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1 && sync
 sudo umount ${TARGET_HOME}/output_objects/tmp_mount_point
 sudo losetup -d /dev/loop6
 
