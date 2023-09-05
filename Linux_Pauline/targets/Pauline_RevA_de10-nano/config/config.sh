@@ -6,6 +6,16 @@
 # DE10-Nano target setup
 #
 
+TMP_ALTERA_BASEDIR=${ALTERA_BASEDIR:-"UNDEF"}
+TMP_ALTERA_BASEDIR="${TMP_ALTERA_BASEDIR##*/}"
+if [ "$TMP_ALTERA_BASEDIR" == "UNDEF" ]
+then
+(
+    echo ALTERA_BASEDIR is not specified !
+    exit 1
+) || exit 1
+fi
+
 export KERNEL_ARCH=arm
 export TGT_MACH=armv7a-hardfloat-linux-gnueabi
 export SSL_ARCH=linux-armv4
@@ -46,6 +56,7 @@ SRC_PACKAGE_PERLCROSS=
 
 #uboot
 export UBOOT_DEFCONF=socfpga_cyclone5_config
+
 SRC_PACKAGE_UBOOT="https://github.com/altera-opensource/u-boot-socfpga/archive/rel_socfpga_v2013.01.01_19.03.02_pr.tar.gz"
 
 SRC_PACKAGE_FTRACE="http://ftp.debian.org/debian/pool/main/t/trace-cmd/trace-cmd_2.9.1.orig.tar.gz"
