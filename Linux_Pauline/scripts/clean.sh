@@ -43,7 +43,7 @@ source ${TARGET_CONFIG}/config.sh || exit 1
 
 echo Cleanup target ${TARGET_NAME}
 
-rm -Rf ${TARGET_BUILD} ${TARGET_SOURCES} ${TARGET_HOME}/cross-tools ${TARGET_HOME}/root-fs ${TARGET_HOME}/fs_mirror
+rm -Rf ${TARGET_BUILD} ${TARGET_SOURCES} ${TARGET_HOME}/cross-tools ${TARGET_HOME}/root-fs ${TARGET_HOME}/fs_mirror ${TARGET_HOME}/output_objects
 
 FIRSTPARAM=${1:-"UNDEF"}
 FIRSTPARAM="${FIRSTPARAM##*/}"
