@@ -179,7 +179,7 @@ then
 		make ${MAKE_FLAGS} ${NBCORE} install   || exit 1
 
 		# u-boot is using "cc"
-		cp ${TARGET_CROSS_TOOLS}/bin/gcc ${TARGET_CROSS_TOOLS}/bin/cc
+		ln -s ${TARGET_CROSS_TOOLS}/bin/gcc ${TARGET_CROSS_TOOLS}/bin/cc
 
 		delete_build_dir
 		delete_src_dir
