@@ -100,7 +100,7 @@ fi
 # Generate the dts and build the dtb
 #
 
-echo --- Generate the dts and build the dtb ---
+#echo --- Generate the dts and build the dtb ---
 
 #cd ${FPGA_GHRD_FOLDER} || exit 1
 #sopc2dts --input soc_system.sopcinfo --output ${TARGET_HOME}/output_objects/soc_system.dts --type dts --board software/spl_bsp/soc_system_board_info.xml --board #software/spl_bsp/hps_common_board_info.xml --bridge-removal all --clocks  || exit 1
@@ -249,7 +249,6 @@ sudo mount /dev/loop6p1 ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1
 sudo cp ${TARGET_HOME}/output_objects/u-boot.scr        ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1 && sync
 sudo cp ${TARGET_HOME}/output_objects/soc_system.rbf    ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1 && sync
 sudo cp ${TARGET_HOME}/output_objects/soc_system.dtb    ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1 && sync
-sudo cp ${TARGET_HOME}/output_objects/soc_system.dts    ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1 && sync
 sudo cp ${TARGET_HOME}/output_objects/zImage            ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1 && sync
 sudo umount ${TARGET_HOME}/output_objects/tmp_mount_point
 sudo losetup -d /dev/loop6
