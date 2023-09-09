@@ -606,7 +606,7 @@ then
 
 		# Don't let u-boot build system using the cross-compiled libraries
 		# (fix issue with ncurses -> ".config" not found error...)
-		unset PKG_CONFIG_LIBDIR
+		#unset PKG_CONFIG_LIBDIR
 
 		export CROSS_COMPILE="$TGT_MACH"-
 
@@ -632,6 +632,7 @@ then
 		)
 		fi
 
+		#make SHELL="/bin/bash -x" || exit 1 # see commands
 		make ${MAKE_FLAGS} || exit 1
 
 		if [ -f ${TARGET_CONFIG}/uboot_post_process.sh ]
