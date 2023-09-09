@@ -1,0 +1,38 @@
+
+&fpga_bridge0 {
+  status = "okay";
+  bridge-enable = <1>;
+};
+
+&fpga_bridge1 {
+  status = "okay";
+  bridge-enable = <1>;
+};
+
+&fpga_bridge2 {
+  status = "okay";
+  bridge-enable = <1>;
+};
+
+&fpga_bridge3 {
+  status = "okay";
+  bridge-enable = <1>;
+};
+
+/ {
+fragment@0 {
+		target = <&base_fpga_region>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <1>;
+            external-fpga-config;
+			//firmware-name = "soc_system.rbf";
+			fpga-bridges = <&fpga_bridge1>;
+			ranges = <0x20000 0xff200000 0x100000>,
+				 <0x0 0xc0000000 0x20000000>;
+		};
+	};
+};
+
