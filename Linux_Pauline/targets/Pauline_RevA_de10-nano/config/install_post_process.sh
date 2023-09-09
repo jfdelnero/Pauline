@@ -102,10 +102,10 @@ fi
 
 echo --- Generate the dts and build the dtb ---
 
-cd ${FPGA_GHRD_FOLDER} || exit 1
-sopc2dts --input soc_system.sopcinfo --output ${TARGET_HOME}/output_objects/soc_system.dts --type dts --board software/spl_bsp/soc_system_board_info.xml --board software/spl_bsp/hps_common_board_info.xml --bridge-removal all --clocks  || exit 1
-cat ${TARGET_CONFIG}/patches/sh1106_128x64_oled.dts >> ${TARGET_HOME}/output_objects/soc_system.dts || exit 1
-dtc -I dts -O dtb -o ${TARGET_HOME}/output_objects/soc_system.dtb ${TARGET_HOME}/output_objects/soc_system.dts  || exit 1
+#cd ${FPGA_GHRD_FOLDER} || exit 1
+#sopc2dts --input soc_system.sopcinfo --output ${TARGET_HOME}/output_objects/soc_system.dts --type dts --board software/spl_bsp/soc_system_board_info.xml --board #software/spl_bsp/hps_common_board_info.xml --bridge-removal all --clocks  || exit 1
+#cat ${TARGET_CONFIG}/patches/sh1106_128x64_oled.dts >> ${TARGET_HOME}/output_objects/soc_system.dts || exit 1
+#dtc -I dts -O dtb -o ${TARGET_HOME}/output_objects/soc_system.dtb ${TARGET_HOME}/output_objects/soc_system.dts  || exit 1
 
 #
 # Generate bsp files

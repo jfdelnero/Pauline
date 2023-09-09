@@ -49,15 +49,16 @@ export PAULINE_BASE=${BASE_DIR}/../
 
 # Kernel
 
-SRC_PACKAGE_KERNEL="https://github.com/altera-opensource/linux-socfpga/archive/rel_socfpga-4.14.73-ltsi-rt_19.03.01_pr.tar.gz"
+KERNEL_DTBS="YES"
+SRC_PACKAGE_KERNEL="https://github.com/altera-opensource/linux-socfpga/archive/refs/tags/rel_socfpga-6.1.20-lts_23.09.01_pr.tar.gz"
 
 SRC_PACKAGE_PERL=
 SRC_PACKAGE_PERLCROSS=
 
 #uboot
-export UBOOT_DEFCONF=socfpga_cyclone5_config
+export UBOOT_DEFCONF=socfpga_de10_nano_defconfig
 
-SRC_PACKAGE_UBOOT="https://github.com/altera-opensource/u-boot-socfpga/archive/rel_socfpga_v2013.01.01_19.03.02_pr.tar.gz"
+SRC_PACKAGE_UBOOT="https://github.com/altera-opensource/u-boot-socfpga/archive/refs/tags/rel_socfpga_v2023.01_23.09.01_pr.tar.gz"
 
 SRC_PACKAGE_FTRACE="http://ftp.debian.org/debian/pool/main/t/trace-cmd/trace-cmd_2.9.1.orig.tar.gz"
 #SRC_PACKAGE_VALGRIND=

@@ -10,3 +10,5 @@
 source ${TARGET_CONFIG}/config.sh || exit 1
 
 cp ./arch/arm/boot/zImage ${TARGET_HOME}/output_objects/  || exit 1
+cp ./arch/arm/boot/dts/socfpga_cyclone5_de0_nano_soc.dtb ${TARGET_HOME}/output_objects/soc_system.dtb  || exit 1
+
