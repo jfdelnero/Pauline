@@ -1,31 +1,26 @@
 
-/ {
-	sopc0: sopc@0 {
+&i2c2 {
+		status = "okay";
+		clock-frequency = <100000>;
+		i2c-sda-hold-time-ns = <300>;
 
-		hps_0_i2c2: i2c@0xffc06000 {
+		ssd1306: oled@3c {
+				compatible = "solomon,ssd1306fb-i2c";
+				reg = <0x3c>;
+				solomon,width = <128>;
+				solomon,height = <64>;
+				/*solomon,com-lrremap;*/
+				/*solomon,com-seq;*/
+				solomon,segment-no-remap;
+				solomon,page-offset = <0>;
+				// When segment-offset is not assigned,
+				// the segment offset is automatically set
+				// according to the detected controller :
+				// SH1106 : 2 pixels offset, SSD130X : 0 pixel offset.
+				/*solomon,segment-offset = <0>;*/
+				/*solomon,com-invdir;*/
+				solomon,com-offset = <0>;
+				solomon,lookup-table = /bits/ 8 <0x3f 0x3f 0x3f 0x3f>;
+		};
+};
 
-			i2c-sda-hold-time-ns = <300>;
-
-			ssd1306: oled@3c {
-					compatible = "solomon,ssd1306fb-i2c";
-					reg = <0x3c>;
-					solomon,width = <128>;
-					solomon,height = <64>;
-					/*solomon,com-lrremap;*/
-					/*solomon,com-seq;*/
-					solomon,segment-no-remap;
-					solomon,page-offset = <0>;
-					// When segment-offset is not assigned,
-					// the segment offset is automatically set
-					// according to the detected controller :
-					// SH1106 : 2 pixels offset, SSD130X : 0 pixel offset.
-					/*solomon,segment-offset = <0>;*/
-					/*solomon,com-invdir;*/
-					solomon,com-offset = <0>;
-					solomon,lookup-table = /bits/ 8 <0x3f 0x3f 0x3f 0x3f>;
-			};
-		}; //end i2c@0xffc06000 (hps_0_i2c2)
-
-	}; //end sopc@0 (sopc0)
-
-}; //end /
