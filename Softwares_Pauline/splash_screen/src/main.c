@@ -1,6 +1,6 @@
 /*
 //
-// Copyright (C) 2019-2021 Jean-François DEL NERO
+// Copyright (C) 2019-2023 Jean-François DEL NERO
 //
 // This file is part of the Pauline splash screen software
 //
@@ -51,10 +51,27 @@ void fbcon_cursor (int blank)
 	if(fd)
 	{
 		ret = write(fd, "\033[?25", 5);
+		if(ret < 0)
+			goto error;
+
 		ret = write(fd, blank ? "h" : "l", 1);
+		if(ret < 0)
+			goto error;
 
 		close(fd);
 	}
+	else
+		goto error;
+
+	return;
+
+error:
+	if(fd)
+		close(fd);
+
+	fprintf(stderr,"ERROR : Can't write to the screen tty !\n");
+
+	return;
 }
 
 int getpixstate(bitmap_data * bdata, int xpos, int ypos)
@@ -124,8 +141,13 @@ int main(int argc, char *argv[])
 				if(fd)
 				{
 					ret = write(fd, buffer, (FB_XSIZE*FB_YSIZE)/8);
+					if(ret < 0)
+						fprintf(stderr,"ERROR : Error while writing to the frame buffer !\n");
+
 					close(fd);
 				}
+				else
+					fprintf(stderr,"ERROR : Can't write to the frame buffer !\n");
 
 				if(bmp.data)
 					free(bmp.data);
