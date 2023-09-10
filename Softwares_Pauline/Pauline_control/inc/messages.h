@@ -29,7 +29,7 @@ typedef struct _msg_ctx
 {
 	msg_buffer clients_out_buffer[MAX_NB_CLIENTS];
 
-	uint32_t handle_to_index[MAX_NB_CLIENTS];
+	void * handle_to_index[MAX_NB_CLIENTS];
 
 	int in_buffer_mutex;
 	msg_buffer in_buffer;
@@ -43,9 +43,9 @@ typedef struct _msg_ctx
 
 void init_srv_msg();
 
-int  handle_to_index(uint32_t handle);
+int  handle_to_index(void * handle);
 
-int  add_client(uint32_t handle);
+int  add_client(void * handle);
 void remove_client(int client_id);
 
 // stdout -> clients

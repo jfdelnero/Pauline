@@ -1,6 +1,6 @@
 /*
 //
-// Copyright (C) 2019-2021 Jean-François DEL NERO
+// Copyright (C) 2019-2023 Jean-François DEL NERO
 //
 // This file is part of the Pauline control software
 //
@@ -170,7 +170,7 @@ void *connection_thread(void *threadid)
 						{
 							printf("Exiting !\n");
 
-							exitwait(handle_to_index(tp->connection_id | 0x80000000));
+							exitwait(handle_to_index((void*)((uintptr_t)(tp->connection_id | 0x80000000))));
 
 							close(threadparams_cmd[tp->index]->hSocket);
 
@@ -182,7 +182,7 @@ void *connection_thread(void *threadid)
 						}
 						else
 						{
-							msg_push_in_msg(handle_to_index(tp->connection_id | 0x80000000), fullline);
+							msg_push_in_msg(handle_to_index((void*)((uintptr_t)(tp->connection_id | 0x80000000))), fullline);
 							line_index = 0;
 						}
 						i++;
@@ -192,7 +192,7 @@ void *connection_thread(void *threadid)
 
 		} while (iResult > 0);
 
-		exitwait(handle_to_index(tp->connection_id | 0x80000000));
+		exitwait(handle_to_index((void*)((uintptr_t)(tp->connection_id | 0x80000000))));
 
 		close(threadparams_cmd[tp->index]->hSocket);
 
@@ -484,12 +484,14 @@ void *tcp_listener(void *threadid)
 				  , ntohs(Address.sin_port)
 				);
 
-				snprintf(threadparams_data[connection]->clientname,1024,"%d.%d.%d.%d:%d - %s - %s -"
+				snprintf(threadparams_data[connection]->clientname,2048 - 1,"%d.%d.%d.%d:%d - %s - %s -"
 				  , (Address.sin_addr.s_addr>>0)&0xFF,(Address.sin_addr.s_addr>>8)&0xFF,(Address.sin_addr.s_addr>>16)&0xFF,(Address.sin_addr.s_addr>>24)&0xFF
 				  , ntohs(Address.sin_port)
 				  , hostname
 				  , servname
 				);
+
+				threadparams_data[connection]->clientname[2048 - 1] = 0;
 
 				threadparams_data[connection]->connection_id = connection;
 
@@ -507,14 +509,16 @@ void *tcp_listener(void *threadid)
 				  , ntohs(Address.sin_port)
 				);
 
-				snprintf(threadparams_cmd[connection]->clientname,1024,"%d.%d.%d.%d:%d - %s - %s -"
+				snprintf(threadparams_cmd[connection]->clientname,2048 - 1,"%d.%d.%d.%d:%d - %s - %s -"
 				  , (Address.sin_addr.s_addr>>0)&0xFF,(Address.sin_addr.s_addr>>8)&0xFF,(Address.sin_addr.s_addr>>16)&0xFF,(Address.sin_addr.s_addr>>24)&0xFF
 				  , ntohs(Address.sin_port)
 				  , hostname
 				  , servname
 				);
 
-				index = add_client( 0x80000000 | connection );
+				threadparams_data[connection]->clientname[2048 - 1] = 0;
+
+				index = add_client( (void*)((uintptr_t)(0x80000000 | connection)) );
 
 				threadparams_cmd[connection]->connection_id = connection;
 
@@ -538,18 +542,15 @@ void *tcp_listener(void *threadid)
 
 void *network_txthread(void *threadid)
 {
-	int fd;
 	char msg[MAX_MESSAGES_SIZE];
 
 	pthread_detach(pthread_self());
 
-	fd = (int) threadid;
+	printf("netword_txthread : handle %p, index %d\n",threadid,handle_to_index(threadid));
 
-	printf("netword_txthread : handle %d, index %d\n",fd,handle_to_index(fd));
-
-	while( msg_out_wait(handle_to_index(fd), (char*)&msg) > 0 )
+	while( msg_out_wait(handle_to_index(threadid), (char*)&msg) > 0 )
 	{
-		print_socket(fd & (~0x80000000), (char *)msg);
+		print_socket( ((uintptr_t)threadid) & (~0x80000000), (char *)msg);
 	}
 
 	pthread_exit(NULL);

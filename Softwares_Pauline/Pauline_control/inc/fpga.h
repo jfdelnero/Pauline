@@ -1,6 +1,6 @@
 /*
 //
-// Copyright (C) 2019-2021 Jean-François DEL NERO
+// Copyright (C) 2019-2023 Jean-François DEL NERO
 //
 // This file is part of the Pauline control software
 //
@@ -398,6 +398,7 @@ void floppy_ctrl_selectbyte(fpga_state * state, unsigned char byte);
 void floppy_ctrl_writeprotect(fpga_state * state, int drive, int writeprotect);
 int  floppy_head_recalibrate(fpga_state * state, int drive);
 int  floppy_head_maxtrack(fpga_state * state, int maxtrack, int drive);
+int  floppy_head_at_track00(fpga_state * state, int drive);
 
 void floppy_ctrl_x68000_option_select_drive(fpga_state * state, int drive, int enable);
 void floppy_ctrl_x68000_eject(fpga_state * state, int drive);

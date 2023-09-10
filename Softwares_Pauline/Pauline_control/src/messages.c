@@ -1,6 +1,6 @@
 /*
 //
-// Copyright (C) 2019-2021 Jean-François DEL NERO
+// Copyright (C) 2019-2023 Jean-François DEL NERO
 //
 // This file is part of the Pauline control software
 //
@@ -120,7 +120,7 @@ void init_srv_msg()
 	}
 }
 
-int handle_to_index(uint32_t handle)
+int handle_to_index(void * handle)
 {
 	int i;
 
@@ -160,7 +160,7 @@ int count_client()
 	return cnt;
 }
 
-int add_client(uint32_t handle)
+int add_client(void * handle)
 {
 	int i;
 

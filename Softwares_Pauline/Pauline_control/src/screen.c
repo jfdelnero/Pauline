@@ -1,6 +1,6 @@
 /*
 //
-// Copyright (C) 2019-2021 Jean-François DEL NERO
+// Copyright (C) 2019-2023 Jean-François DEL NERO
 //
 // This file is part of the Pauline splash screen software
 //

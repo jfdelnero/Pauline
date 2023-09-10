@@ -77,14 +77,20 @@ void sig_handler(int sig)
 	// print out all the frames to stderr
 	sprintf(tmpstr, "\n-----------------------\nError: signal %d:\n", sig);
 
-	ret = write(stderr,tmpstr, strlen(tmpstr));
-	backtrace_symbols_fd(array, size, STDERR_FILENO);
+	ret = write(STDERR_FILENO,tmpstr, strlen(tmpstr));
+	if(ret >= 0)
+	{ 
+		backtrace_symbols_fd(array, size, STDERR_FILENO);
+	}
 
 	flog = open(CRASH_LOGS_FILE, O_CREAT | O_WRONLY | O_APPEND, (S_IRUSR | S_IWUSR));
 	if( flog > 0 )
 	{
 		ret = write(flog,tmpstr, strlen(tmpstr));
-		backtrace_symbols_fd(array, size, flog);
+		if(ret >= 0)
+		{
+			backtrace_symbols_fd(array, size, flog);
+		}
 		close(flog);
 	}
 
@@ -423,7 +429,7 @@ int main(int argc, char* argv[])
 	home_folder[0] = '\0';
 
 	printf("HxC Floppy Emulator : Pauline floppy drive simulator / floppy drive dumper control software v"STR_FILE_VERSION2"\n");
-	printf("Copyright (C) 2006-2021 Jean-Francois DEL NERO\n");
+	printf("Copyright (C) 2006-2023 Jean-Francois DEL NERO\n");
 	printf("This program comes with ABSOLUTELY NO WARRANTY\n");
 	printf("This is free software, and you are welcome to redistribute it\n");
 	printf("under certain conditions;\n\n");

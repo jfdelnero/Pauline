@@ -1,6 +1,6 @@
 /*
 //
-// Copyright (C) 2019-2021 Jean-François DEL NERO
+// Copyright (C) 2019-2023 Jean-François DEL NERO
 //
 // This file is part of the Pauline control software
 //
@@ -70,6 +70,7 @@
 #include "messages.h"
 
 #define MAX_CHUNK_BLOCKS_PER_PICTURE 16
+#define WSOCK_TIMEOUT 0
 
 extern fpga_state * fpga;
 int    img_connection = 0;
@@ -101,79 +102,74 @@ static void hxc_msleep (unsigned int ms) {
 
 void *websocket_txthread(void *threadid)
 {
-	int fd;
+	ws_cli_conn_t * cli;
 	char msg[MAX_MESSAGES_SIZE];
 
 	pthread_detach(pthread_self());
 
-	fd = (int) threadid;
+	cli = (ws_cli_conn_t *) threadid;
 
-	printf("websocket_txthread : handle %d, index %d\n",fd,handle_to_index(fd));
+	printf("websocket_txthread : handle %p, index %d\n",cli,handle_to_index((void*)cli));
 
-	while( msg_out_wait(handle_to_index(fd), (char*)&msg) > 0 )
+	while( msg_out_wait(handle_to_index((void*)cli), (char*)&msg) > 0 )
 	{
-		ws_sendframe_txt(fd, (char *)msg, false);
+		ws_sendframe_txt( cli, (char *)msg);
 	}
 
 	pthread_exit(NULL);
 }
 
-void onopen(int fd)
+void onopen(ws_cli_conn_t *client)
 {
 	char *cli;
 	int index;
 
-	cli = ws_getaddress(fd);
+	cli = ws_getaddress(client);
 	if(cli)
 	{
-		index = add_client(fd);
+		index = add_client(client);
 
 		display_bmp("/data/pauline_splash_bitmaps/connected.bmp");
 
-		printf("Connection opened, client: %d | addr: %s, index : %d\n", fd, cli,index);
+		printf("Connection opened, client: %p | addr: %s, index : %d\n", client, cli,index);
 
 		if(index >= 0)
 		{
-			pthread_create(&ws_thread[index], NULL, websocket_txthread, (void*)fd);
+			pthread_create(&ws_thread[index], NULL, websocket_txthread, (void*)client);
 		}
-
-		free(cli);
 	}
 }
 
-void onclose(int fd)
+void onclose(ws_cli_conn_t *client)
 {
 	char *cli;
 	int index;
 
-	cli = ws_getaddress(fd);
+	cli = ws_getaddress(client);
 
 	if( cli )
 	{
-		index = handle_to_index(fd);
+		index = handle_to_index(client);
 
 		exitwait(index);
 
 		remove_client(index);
 
-		printf("Connection closed, client: %d | addr: %s\n", fd, cli);
-		free(cli);
+		printf("Connection closed, client: %p | addr: %s\n", client, cli);
 	}
 }
 
-void onmessage(int fd, const unsigned char *msg, size_t size, int type)
+void onmessage(ws_cli_conn_t *client, const unsigned char *msg, uint64_t size, int type)
 {
 	char *cli;
 
-	cli = ws_getaddress(fd);
+	cli = ws_getaddress(client);
 
 	if(cli)
 	{
 		//printf("I receive a message: %s, from: %s/%d\n", msg, cli, fd);
 
-		msg_push_in_msg(handle_to_index(fd), (char*)msg);
-
-		free(cli);
+		msg_push_in_msg(handle_to_index(client), (char*)msg);
 	}
 
 	//msg_printf(" Hello ! :) ");
@@ -184,29 +180,33 @@ void *websocket_listener(void *threadid)
 {
 	struct ws_events evs;
 
+	printf("Entering websocket_listener...\n");
+
 	pthread_detach(pthread_self());
 
 	evs.onopen    = &onopen;
 	evs.onclose   = &onclose;
 	evs.onmessage = &onmessage;
-	ws_socket(&evs, 8080);
+	ws_socket(&evs, 8080, 0, WSOCK_TIMEOUT);
+
+	printf("Leaving websocket_listener...\n");
 
 	pthread_exit(NULL);
 }
 
 
-void onopen_img(int fd)
+void onopen_img(ws_cli_conn_t *client)
 {
 	img_connection++;
 }
 
-void onclose_img(int fd)
+void onclose_img(ws_cli_conn_t *client)
 {
 	if(img_connection>0)
 		img_connection--;
 }
 
-void onmessage_img(int fd, const unsigned char *msg, size_t size, int type)
+void onmessage_img(ws_cli_conn_t *cli, const unsigned char *msg, uint64_t size, int type)
 {
 	FILE *f;
 	int fsize;
@@ -226,7 +226,7 @@ void onmessage_img(int fd, const unsigned char *msg, size_t size, int type)
 			{
 				fread(ptr,fsize,1,f);
 
-				ws_sendframe_bin(fd, (char *)ptr, fsize, false);				
+				ws_sendframe_bin(cli, (char *)ptr, fsize);
 
 				free(ptr);
 			}
@@ -250,7 +250,7 @@ void *websocket_image_listener(void *threadid)
 	evs.onopen    = &onopen_img;
 	evs.onclose   = &onclose_img;
 	evs.onmessage = &onmessage_img;
-	ws_socket(&evs, 8081);
+	ws_socket(&evs, 8081, 0, WSOCK_TIMEOUT);
 
 	pthread_exit(NULL);
 }
