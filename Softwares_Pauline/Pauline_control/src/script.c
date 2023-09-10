@@ -560,11 +560,21 @@ static int readdisk(int drive, int dump_start_track,int dump_max_track,int dump_
 		state.time_per_track = dump_time_per_track;
 		state.doublestep = doublestep;
 		state.index_to_dump_delay = index_to_dump_delay;
-		strncpy( (char*)&state.dump_name, name, 512 - 1);
-		strncpy( (char*)&state.dump_comment, comment , 512 - 1 );
-		strncpy( (char*)&state.dump_comment2, comment2 , 512 - 1 );
-		strncpy( (char*)&state.dump_driveref, driveref , 512 - 1 );
-		strncpy( (char*)&state.dump_operator, operator , 512 - 1 );
+
+		strncpy( (char*)&state.dump_name, name, MAX_FPGA_STRLEN);
+		state.dump_name[MAX_FPGA_STRLEN-1] = 0;
+
+		strncpy( (char*)&state.dump_comment, comment, MAX_FPGA_STRLEN);
+		state.dump_comment[MAX_FPGA_STRLEN-1] = 0;
+
+		strncpy( (char*)&state.dump_comment2, comment2, MAX_FPGA_STRLEN);
+		state.dump_comment2[MAX_FPGA_STRLEN-1] = 0;
+
+		strncpy( (char*)&state.dump_driveref, driveref, MAX_FPGA_STRLEN);
+		state.dump_driveref[MAX_FPGA_STRLEN-1] = 0;
+
+		strncpy( (char*)&state.dump_operator, operator, MAX_FPGA_STRLEN);
+		state.dump_operator[MAX_FPGA_STRLEN-1] = 0;
 
 		sprintf(temp,"DRIVE_%d_DESCRIPTION",drive);
 		var = hxcfe_getEnvVar( fpga->libhxcfe, (char *)temp, NULL );

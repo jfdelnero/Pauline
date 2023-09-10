@@ -26,6 +26,7 @@
 */
 
 #define MAX_DRIVES 16
+#define MAX_FPGA_STRLEN 512
 
 #define REG_BASE 0xFF200000
 #define REG_BASE_SIZE 4096
@@ -348,12 +349,12 @@ typedef struct _fpga_state
 typedef struct dump_state_
 {
 	int drive_number;
-	char drive_description[512];
-	char dump_name[512];
-	char dump_comment[512];
-	char dump_comment2[512];
-	char dump_operator[512];
-	char dump_driveref[512];
+	char drive_description[MAX_FPGA_STRLEN];
+	char dump_name[MAX_FPGA_STRLEN];
+	char dump_comment[MAX_FPGA_STRLEN];
+	char dump_comment2[MAX_FPGA_STRLEN];
+	char dump_operator[MAX_FPGA_STRLEN];
+	char dump_driveref[MAX_FPGA_STRLEN];
 	int start_track;
 	int max_track;
 	int start_side;
