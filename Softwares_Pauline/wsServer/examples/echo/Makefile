@@ -13,25 +13,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-WSDIR   = $(CURDIR)/../
-EXAMPLE = $(WSDIR)/examples/echo/echo
-JSON    = $(CURDIR)/wsserver_autobahn/index.json
+CC      ?= gcc
+WSDIR    = $(CURDIR)/../../
+INCLUDE  = -I $(WSDIR)/include
+CFLAGS   =  -Wall -Wextra -O2
+CFLAGS  +=  $(INCLUDE) -std=c99 -pthread -pedantic
+LIB      =  $(WSDIR)/libws.a
 
-# Conflicts
-.PHONY: all run_autobahn check_results clean
+# Check if verbose examples
+ifeq ($(VERBOSE_EXAMPLES), no)
+	CFLAGS += -DDISABLE_VERBOSE
+endif
+
+.PHONY: all clean
 
 # Examples
-all: run_autobahn
-	$(MAKE) check_results
+all: echo
 
-# Run autobahn
-run_autobahn:
-	@bash run-autobahn.sh
-
-# Check results
-check_results:
-	@python validate_output.py
+# Echo
+echo: echo.c $(LIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) echo.c -o echo $(LIB)
 
 # Clean
 clean:
-	@rm -rf wsserver_autobahn/report
+	@rm -f echo

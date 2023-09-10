@@ -16,9 +16,12 @@
 # Ignore object files, executables and the library.
 *.o
 *.a
-send_receive
 ws_file
+toyws_test
 build/
 doc/doxygen/html
 doc/doxygen/xml
-tests/out/
+tests/wsserver_autobahn/report
+tests/fuzzy/out/
+examples/echo/echo
+examples/ping/ping

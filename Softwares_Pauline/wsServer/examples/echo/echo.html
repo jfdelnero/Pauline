@@ -54,10 +54,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 		};
 
 		/* Close events. */
-		ws.onclose = function()
+		ws.onclose = function(event)
 		{
 			document.getElementById("btConn").value = "Connect!";
-			document.getElementById("taLog").value += ("Connection closed\n");
+			document.getElementById("taLog").value +=
+				("Connection closed: wasClean: " + event.wasClean + ", evCode: "
+					+ event.code + "\n");
 			scoll_to_bottom();
 			connected = false;
 		};
@@ -120,7 +122,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 		<label for="port1">ws:// (8080)</label>
 
 		<input type="radio" name="port" id="port2" value="wss:// (443)"
-			onclick="document.getElementById('txtServer').value='ws://localhost:443'">
+			onclick="document.getElementById('txtServer').value='wss://localhost:443'">
 		<label for="port2">wss:// (443)</label>
 
 		<br /> <br />

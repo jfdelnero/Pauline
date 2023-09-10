@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2022 Davidson Francis <davidsondfgl@gmail.com>
+# Copyright (C) 2016-2021  Davidson Francis <davidsondfgl@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,25 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-WSDIR   = $(CURDIR)/../
-EXAMPLE = $(WSDIR)/examples/echo/echo
-JSON    = $(CURDIR)/wsserver_autobahn/index.json
+if(ENABLE_WSSERVER_TEST)
 
-# Conflicts
-.PHONY: all run_autobahn check_results clean
+	find_program(SHELL sh)
 
-# Examples
-all: run_autobahn
-	$(MAKE) check_results
+	if(SHELL)
+		add_test(NAME Autobahn|Testsuite
+			COMMAND "${SHELL}" "${CMAKE_CURRENT_SOURCE_DIR}/run-autobahn.sh" "CMAKE"
+		)
+	else()
+		message(FATAL_ERROR "Unable to locate shell")
+	endif(SHELL)
 
-# Run autobahn
-run_autobahn:
-	@bash run-autobahn.sh
-
-# Check results
-check_results:
-	@python validate_output.py
-
-# Clean
-clean:
-	@rm -rf wsserver_autobahn/report
+endif(ENABLE_WSSERVER_TEST)

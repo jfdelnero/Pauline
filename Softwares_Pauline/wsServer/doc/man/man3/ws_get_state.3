@@ -16,28 +16,31 @@
 .\"
 .TH man 3 "04 Apr 2022" "1.0" "wsServer man page"
 .SH NAME
-ws_sendframe_txt \- Sends a WebSocket text frame.
+ws_get_state \- Get a client current state
 .SH SYNOPSIS
 .nf
 .B #include <ws.h>
 .sp
-.BI "int ws_sendframe_txt(ws_cli_conn_t " *client ", const char " *msg ");
+.BI "int ws_get_state(ws_cli_conn_t " *client ");
 .fi
 .SH DESCRIPTION
-.BR ws_sendframe_txt ()
-sends a given text message
-.I msg
-to the client
+.BR ws_get_state ()
+for a given client
 .I client
-.SH NOTES
+, gets the current state. Valid states are:
 .PP
-If the parameter
-.I client
-is NULL, a broadcast message will be sent instead.
+.RS 2
+.IP \(em 2
+WS_STATE_CONNECTING (0)
+.IP \(em 2
+WS_STATE_OPEN (1)
+.IP \(em 2
+WS_STATE_CLOSING (2)
+.IP \(em 2
+WS_STATE_CLOSED (3)
+.PP
+Anything other than that should be considered an error.
 .SH RETURN VALUE
-Returns the number of bytes written.
-.SH SEE ALSO
-.BR ws_sendframe (3),
-.BR ws_sendframe_bin (3)
+Returns the client state or -1 if error.
 .SH AUTHOR
 Davidson Francis (davidsondfgl@gmail.com)

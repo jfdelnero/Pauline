@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2020  Davidson Francis <davidsondfgl@gmail.com>
+ * Copyright (C) 2016-2022  Davidson Francis <davidsondfgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,13 @@
 #ifndef WS_H
 #define WS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 	#include <stdbool.h>
 	#include <stdint.h>
+	#include <inttypes.h>
 
 	/**
 	 * @name Global configurations
@@ -35,14 +40,9 @@
 	/**
 	 * @brief Max clients connected simultaneously.
 	 */
+#ifndef MAX_CLIENTS
 	#define MAX_CLIENTS    8
-
-	/**
-	 * @brief Max number of `ws_server` instances running
-	 * at the same time.
-	 */
-	#define MAX_PORTS      16
-	/**@}*/
+#endif
 
 	/**
 	 * @name Key and message configurations.
@@ -161,6 +161,46 @@
 	 */
 	#define WS_CLSE_PROTERR 1002
 	/**@}*/
+	/**
+	 * @brief Inconsistent message (invalid utf-8)
+	 */
+	#define WS_CLSE_INVUTF8 1007
+
+	/**
+	 * @name Connection states
+	 */
+	/**@{*/
+	/**
+	 * @brief Connection not established yet.
+	 */
+	#define WS_STATE_CONNECTING 0
+	/**
+	 * @brief Communicating.
+	 */
+	#define WS_STATE_OPEN       1
+	/**
+	 * @brief Closing state.
+	 */
+	#define WS_STATE_CLOSING    2
+	/**
+	 * @brief Closed.
+	 */
+	#define WS_STATE_CLOSED     3
+	/**@}*/
+
+	/**
+	 * @name Timeout util
+	 */
+	/**@{*/
+	/**
+	 * @brief Nanoseconds macro converter
+	 */
+	#define MS_TO_NS(x) ((x)*1000000)
+	/**
+	 * @brief Timeout in milliseconds.
+	 */
+	#define TIMEOUT_MS (500)
+	/**@}*/
 
 	/**
 	 * @name Handshake constants.
@@ -177,10 +217,15 @@
 	/**@}*/
 
 	#ifndef AFL_FUZZ
-	#define CLI_SOCK(sock) (sock)
+	#define SEND(client,buf,len) send_all((client), (buf), (len), MSG_NOSIGNAL)
+	#define RECV(fd,buf,len) recv((fd)->client_sock, (buf), (len), 0)
 	#else
-	#define CLI_SOCK(sock) (fileno(stdout))
+	#define SEND(client,buf,len) write(fileno(stdout), (buf), (len))
+	#define RECV(fd,buf,len) read((fd)->client_sock, (buf), (len))
 	#endif
+
+	/* Opaque client connection type. */
+	typedef struct ws_connection ws_cli_conn_t;
 
 	/**
 	 * @brief events Web Socket events types.
@@ -190,32 +235,51 @@
 		/**
 		 * @brief On open event, called when a new client connects.
 		 */
-		void (*onopen)(int);
+		void (*onopen)(ws_cli_conn_t *client);
 
 		/**
 		 * @brief On close event, called when a client disconnects.
 		 */
-		void (*onclose)(int);
+		void (*onclose)(ws_cli_conn_t *client);
 
 		/**
 		 * @brief On message event, called when a client sends a text
 		 * or binary message.
 		 */
-		void (*onmessage)(int, const unsigned char *, size_t, int);
+		void (*onmessage)(ws_cli_conn_t *client,
+			const unsigned char *msg, uint64_t msg_size, int type);
+
+//STRT Multi ports support patch
+		int port_in;
+//END
 	};
 
 	/* Forward declarations. */
+
+	/* Internal usage. */
 	extern int get_handshake_accept(char *wsKey, unsigned char **dest);
 	extern int get_handshake_response(char *hsrequest, char **hsresponse);
-	extern char *ws_getaddress(int fd);
+
+	/* External usage. */
+	extern char *ws_getaddress(ws_cli_conn_t *client);
 	extern int ws_sendframe(
-		int fd, const char *msg, ssize_t size, bool broadcast, int type);
-	extern int ws_sendframe_txt(int fd, const char *msg, bool broadcast);
-	extern int ws_sendframe_bin(int fd, const char *msg, size_t size, bool broadcast);
-	extern int ws_socket(struct ws_events *evs, uint16_t port);
+		ws_cli_conn_t *cli, const char *msg, uint64_t size, int type);
+	extern int ws_sendframe_txt(ws_cli_conn_t *cli, const char *msg);
+	extern int ws_sendframe_bin(ws_cli_conn_t *cli, const char *msg, uint64_t size);
+	extern int ws_get_state(ws_cli_conn_t *cli);
+	extern int ws_close_client(ws_cli_conn_t *cli);
+	extern int ws_socket(struct ws_events *evs, uint16_t port, int thread_loop,
+		uint32_t timeout_ms);
+
+	/* Ping routines. */
+	extern void ws_ping(ws_cli_conn_t *cli, int threshold);
 
 #ifdef AFL_FUZZ
 	extern int ws_file(struct ws_events *evs, const char *file);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* WS_H */

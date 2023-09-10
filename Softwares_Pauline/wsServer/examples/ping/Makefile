@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2022 Davidson Francis <davidsondfgl@gmail.com>
+# Copyright (C) 2022 Davidson Francis <davidsondfgl@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,25 +13,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-WSDIR   = $(CURDIR)/../
-EXAMPLE = $(WSDIR)/examples/echo/echo
-JSON    = $(CURDIR)/wsserver_autobahn/index.json
+CC      ?= gcc
+WSDIR    = $(CURDIR)/../../
+INCLUDE  = -I $(WSDIR)/include
+CFLAGS   =  -Wall -Wextra -O2
+CFLAGS  +=  $(INCLUDE) -std=c99 -pthread -pedantic
+LDLIBS  +=  $(WSDIR)/libws.a
+TARGET   =  ping
 
-# Conflicts
-.PHONY: all run_autobahn check_results clean
+.PHONY: all clean
 
-# Examples
-all: run_autobahn
-	$(MAKE) check_results
+# Build objects rule
+%.o: %.c
+	$(CC) $< $(CFLAGS) $(INCLUDE) -c -o $@
 
-# Run autobahn
-run_autobahn:
-	@bash run-autobahn.sh
+all: $(TARGET)
 
-# Check results
-check_results:
-	@python validate_output.py
+# Ping
+$(TARGET): $(TARGET).o $(LDLIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 # Clean
 clean:
-	@rm -rf wsserver_autobahn/report
+	@rm -f $(TARGET)
+	@rm -f *.o

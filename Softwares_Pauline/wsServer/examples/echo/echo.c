@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2020 Davidson Francis <davidsondfgl@gmail.com>
+ * Copyright (C) 2016-2021 Davidson Francis <davidsondfgl@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,49 +22,55 @@
 #include <ws.h>
 
 /**
- * @dir example/
+ * @dir examples/
  * @brief wsServer examples folder
- *
- * @file send_receive.c
- * @brief Simple send/receiver example.
+ */
+
+/*
+ * @dir examples/echo
+ * @brief Echo example directory.
+ * @file echo.c
+ * @brief Simple echo example.
  */
 
 /**
  * @brief Called when a client connects to the server.
  *
- * @param fd File Descriptor belonging to the client. The @p fd parameter
- * is used in order to send messages and retrieve informations
- * about the client.
+ * @param client Client connection. The @p client parameter is used
+ * in order to send messages and retrieve informations about the
+ * client.
  */
-void onopen(int fd)
+void onopen(ws_cli_conn_t *client)
 {
 	char *cli;
-	cli = ws_getaddress(fd);
-	printf("Connection opened, client: %d | addr: %s\n", fd, cli);
-	free(cli);
+	cli = ws_getaddress(client);
+#ifndef DISABLE_VERBOSE
+	printf("Connection opened, addr: %s\n", cli);
+#endif
 }
 
 /**
  * @brief Called when a client disconnects to the server.
  *
- * @param fd File Descriptor belonging to the client. The @p fd parameter
- * is used in order to send messages and retrieve informations
- * about the client.
+ * @param client Client connection. The @p client parameter is used
+ * in order to send messages and retrieve informations about the
+ * client.
  */
-void onclose(int fd)
+void onclose(ws_cli_conn_t *client)
 {
 	char *cli;
-	cli = ws_getaddress(fd);
-	printf("Connection closed, client: %d | addr: %s\n", fd, cli);
-	free(cli);
+	cli = ws_getaddress(client);
+#ifndef DISABLE_VERBOSE
+	printf("Connection closed, addr: %s\n", cli);
+#endif
 }
 
 /**
  * @brief Called when a client connects to the server.
  *
- * @param fd File Descriptor belonging to the client. The
- * @p fd parameter is used in order to send messages and
- * retrieve informations about the client.
+ * @param client Client connection. The @p client parameter is used
+ * in order to send messages and retrieve informations about the
+ * client.
  *
  * @param msg Received message, this message can be a text
  * or binary message.
@@ -73,13 +79,15 @@ void onclose(int fd)
  *
  * @param type Message type.
  */
-void onmessage(int fd, const unsigned char *msg, size_t size, int type)
+void onmessage(ws_cli_conn_t *client,
+	const unsigned char *msg, uint64_t size, int type)
 {
 	char *cli;
-	cli = ws_getaddress(fd);
-	printf("I receive a message: %s (size: %zu, type: %d), from: %s/%d\n", msg, size,
-		type, cli, fd);
-	free(cli);
+	cli = ws_getaddress(client);
+#ifndef DISABLE_VERBOSE
+	printf("I receive a message: %s (size: %" PRId64 ", type: %d), from: %s\n",
+		msg, size, type, cli);
+#endif
 
 	/**
 	 * Mimicks the same frame type received and re-send it again
@@ -88,8 +96,10 @@ void onmessage(int fd, const unsigned char *msg, size_t size, int type)
 	 * or ws_sendframe_bin() here, but we're just being safe
 	 * and re-sending the very same frame type and content
 	 * again.
+	 *
+	 * Client equals to NULL: broadcast
 	 */
-	ws_sendframe(fd, (char *)msg, size, true, type);
+	ws_sendframe(NULL, (char *)msg, size, type);
 }
 
 /**
@@ -104,7 +114,12 @@ int main(void)
 	evs.onopen    = &onopen;
 	evs.onclose   = &onclose;
 	evs.onmessage = &onmessage;
-	ws_socket(&evs, 8080); /* Never returns. */
+	ws_socket(&evs, 8080, 0, 1000); /* Never returns. */
+
+	/*
+	 * If you want to execute code past ws_socket, invoke it like:
+	 *   ws_socket(&evs, 8080, 1, 1000)
+	 */
 
 	return (0);
 }

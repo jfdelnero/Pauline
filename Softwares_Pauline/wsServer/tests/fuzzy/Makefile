@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2022 Davidson Francis <davidsondfgl@gmail.com>
+# Copyright (C) 2016-2020 Davidson Francis <davidsondfgl@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,25 +13,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-WSDIR   = $(CURDIR)/../
-EXAMPLE = $(WSDIR)/examples/echo/echo
-JSON    = $(CURDIR)/wsserver_autobahn/index.json
+CC       = afl-gcc
+WSDIR    = $(CURDIR)/../../
+INCLUDE  = -I $(WSDIR)/include
+CFLAGS  +=  -Wall -Wextra -g -DVERBOSE_MODE -DAFL_FUZZ
+CFLAGS  +=  $(INCLUDE) -std=c99 -pthread -pedantic
+LIB      =  $(WSDIR)/libws.a
 
-# Conflicts
-.PHONY: all run_autobahn check_results clean
+.PHONY: all run_fuzzy clean
 
 # Examples
-all: run_autobahn
-	$(MAKE) check_results
+all: ws_file run_fuzzy
 
-# Run autobahn
-run_autobahn:
-	@bash run-autobahn.sh
+# ws_file
+ws_file: ws_file.c $(LIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) ws_file.c -o ws_file $(LIB)
 
-# Check results
-check_results:
-	@python validate_output.py
+# Run fuzzing tests
+run_fuzzy: ws_file
+	@bash run-fuzzy.sh
 
 # Clean
 clean:
-	@rm -rf wsserver_autobahn/report
+	@rm -f ws_file

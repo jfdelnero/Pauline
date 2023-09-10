@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2020 Davidson Francis <davidsondfgl@gmail.com>
+# Copyright (C) 2016-2022 Davidson Francis <davidsondfgl@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ LIB       =  libws.a
 MCSS_DIR ?= /usr/bin/
 MANPAGES  = $(CURDIR)/doc/man/man3
 AFL_FUZZ ?= no
+VERBOSE_EXAMPLES ?= yes
+VALIDATE_UTF8 ?= yes
 
 # Prefix
 ifeq ($(PREFIX),)
@@ -46,23 +48,31 @@ ifeq ($(AFL_FUZZ), yes)
     $(info [+] AFL Fuzzing build enabled)
 endif
 
+# Check if UTF-8 validation is enabled
+ifeq ($(VALIDATE_UTF8), yes)
+	CFLAGS += -DVALIDATE_UTF8
+endif
+
 # Source
-C_SRC = $(wildcard $(SRC)/base64/*.c)    \
-		$(wildcard $(SRC)/handshake/*.c) \
-		$(wildcard $(SRC)/sha1/*.c)      \
-		$(wildcard $(SRC)/*.c)
+C_SRC = $(SRC)/base64.c \
+	$(SRC)/handshake.c \
+	$(SRC)/sha1.c \
+	$(SRC)/utf8.c \
+	$(SRC)/ws.c
 
 OBJ = $(C_SRC:.c=.o)
 
 # Conflicts
-.PHONY: doc
-.PHONY: tests
+.PHONY: doc fuzzy
 
 # Paths
 INCDIR = $(PREFIX)/include
 BINDIR = $(PREFIX)/bin
 MANDIR = $(PREFIX)/man
 PKGDIR = $(LIBDIR)/pkgconfig
+
+# Extra paths
+TOYWS  = $(CURDIR)/extra/toyws
 
 # General objects
 %.o: %.c
@@ -72,7 +82,7 @@ PKGDIR = $(LIBDIR)/pkgconfig
 ifeq ($(AFL_FUZZ),no)
 all: libws.a examples
 else
-all: libws.a tests
+all: libws.a fuzzy
 endif
 
 # Library
@@ -81,14 +91,24 @@ libws.a: $(OBJ)
 
 # Examples
 examples: libws.a
-	$(MAKE) -C example/
+	$(MAKE) -C examples/
+
+# Autobahn tests
+tests: examples
+	$(MAKE) all -C tests/ VERBOSE_EXAMPLES="$(VERBOSE_EXAMPLES)"
+tests_check:
+	$(MAKE) check_results -C tests/
 
 # Fuzzing tests
-tests: libws.a
-	$(MAKE) -C tests/
+fuzzy: libws.a
+	$(MAKE) -C tests/fuzzy
+
+# ToyWS client
+toyws_test: $(TOYWS)/tws_test.o $(TOYWS)/toyws.o
+	$(CC) $^ $(CFLAGS) -I $(TOYWS) -o $@
 
 # Install rules
-install: all wsserver.pc
+install: libws.a wsserver.pc
 	@#Library
 	install -d $(DESTDIR)$(LIBDIR)
 	install -m 644 $(LIB) $(DESTDIR)$(LIBDIR)
@@ -97,19 +117,19 @@ install: all wsserver.pc
 	install -m 644 $(INCLUDE)/*.h $(DESTDIR)$(INCDIR)/wsserver
 	@#Manpages
 	install -d $(DESTDIR)$(MANDIR)/man3
-	install -m 0644 $(MANPAGES)/ws_getaddress.3 $(DESTDIR)$(MANDIR)/man3/
-	install -m 0644 $(MANPAGES)/ws_sendframe.3 $(DESTDIR)$(MANDIR)/man3/
-	install -m 0644 $(MANPAGES)/ws_sendframe_bin.3 $(DESTDIR)$(MANDIR)/man3/
-	install -m 0644 $(MANPAGES)/ws_sendframe_txt.3 $(DESTDIR)$(MANDIR)/man3/
-	install -m 0644 $(MANPAGES)/ws_socket.3 $(DESTDIR)$(MANDIR)/man3/
+	install -m 0644 $(MANPAGES)/*.3 $(DESTDIR)$(MANDIR)/man3/
 
 # Uninstall rules
 uninstall:
 	rm -f  $(DESTDIR)$(LIBDIR)/$(LIB)
-	rf -rf $(DESTDIR)$(INCDIR)/wsserver
-	rm -f  $(DESTDIR)$(MANDIR)/man3/{ws_getaddress.3, ws_sendframe.3}
-	rm -f  $(DESTDIR)$(MANDIR)/man3/{ws_sendframe_bin.3, ws_sendframe_txt.3}
-	rm -f  $(DESTDIR)$(MANDIR)/man3/{ws_socket.3}
+	rm -rf $(DESTDIR)$(INCDIR)/wsserver
+	rm -f  $(DESTDIR)$(MANDIR)/man3/ws_getaddress.3
+	rm -f  $(DESTDIR)$(MANDIR)/man3/ws_sendframe.3
+	rm -f  $(DESTDIR)$(MANDIR)/man3/ws_sendframe_bin.3
+	rm -f  $(DESTDIR)$(MANDIR)/man3/ws_sendframe_txt.3
+	rm -f  $(DESTDIR)$(MANDIR)/man3/ws_socket.3
+	rm -f  $(DESTDIR)$(MANDIR)/man3/ws_close_client.3
+	rm -f  $(DESTDIR)$(MANDIR)/man3/ws_get_state.3
 	rm -f  $(DESTDIR)$(PKGDIR)/wsserver.pc
 
 # Generate wsserver.pc
@@ -121,7 +141,7 @@ wsserver.pc:
 	@echo 'Name: wsServer'                >> $(DESTDIR)$(PKGDIR)/wsserver.pc
 	@echo 'Description: Tiny WebSocket Server Library' >> $(DESTDIR)$(PKGDIR)/wsserver.pc
 	@echo 'Version: 1.0'                  >> $(DESTDIR)$(PKGDIR)/wsserver.pc
-	@echo 'Libs: -L$${libdir} -lws'       >> $(DESTDIR)$(PKGDIR)/wsserver.pc
+	@echo 'Libs: -L$${libdir} -lws -pthread' >> $(DESTDIR)$(PKGDIR)/wsserver.pc
 	@echo 'Libs.private:'                 >> $(DESTDIR)$(PKGDIR)/wsserver.pc
 	@echo 'Cflags: -I$${includedir}/wsserver' >> $(DESTDIR)$(PKGDIR)/wsserver.pc
 
@@ -141,10 +161,9 @@ doc:
 
 # Clean
 clean:
-	@rm -f $(SRC)/base64/*.o
-	@rm -f $(SRC)/handshake/*.o
-	@rm -f $(SRC)/sha1/*.o
-	@rm -f $(SRC)/*.o
+	@rm -f $(OBJ)
 	@rm -f $(LIB)
-	@$(MAKE) clean -C example/
+	@rm -f $(TOYWS)/toyws.o $(TOYWS)/tws_test.o toyws_test
+	@$(MAKE) clean -C examples/
 	@$(MAKE) clean -C tests/
+	@$(MAKE) clean -C tests/fuzzy
