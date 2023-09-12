@@ -630,7 +630,7 @@ int save_stream_hfe(fpga_state * state,int drive, char * imgfile)
 
 	fclose(hxcstreamhfefile);
 
-	printf("%d tracks written to the file",FILEHEADER->number_of_track);
+	printf("%d tracks written to %s\n", FILEHEADER->number_of_track, imgfile);
 
 	free(FILEHEADER);
 
