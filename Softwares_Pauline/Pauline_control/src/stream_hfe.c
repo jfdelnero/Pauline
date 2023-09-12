@@ -260,6 +260,7 @@ unsigned char * convert_track(fpga_state * state, int drive, int track, int side
 	uint32_t track_size,trackbase;
 	uint16_t *tmp_ptr, tmp_data;
 
+	// Track size (both sides ! 4 bytes aligned)
 	track_size = state->regs->image_track_size_reg[drive];
 	trackbase = (track_size/sizeof(unsigned short)) * track;
 	tmp_ptr = (uint16_t * )&state->disk_image[drive][trackbase+side];
@@ -268,6 +269,7 @@ unsigned char * convert_track(fpga_state * state, int drive, int track, int side
 
 	final_track_len = (track_size*8)/2;
 
+	// 16 bits per side alignement (32 bits per track)
 	if(final_track_len & 0xF)
 		final_track_len = (final_track_len & ~0xF) + 0x10;
 
@@ -365,14 +367,14 @@ unsigned char * fast_convert_track(fpga_state * state, int drive, int track, int
 	uint16_t *tmp_ptr, tmp_data;
 	uint16_t lutval;
 
-	track_size = state->regs->image_track_size_reg[drive];
+	track_size = state->regs->image_track_size_reg[drive]; // Both sides track size : 32 bits aligned (16 bits per sides) - In bytes !
 	trackbase = (track_size/sizeof(unsigned short)) * track;
 	tmp_ptr = (uint16_t * )&state->disk_image[drive][trackbase+side];
 
-	final_track_len = (track_size/2);
+	final_track_len = (track_size/2); // length for one side - must be 16 bits / 2 bytes aligned !
 
-	if(final_track_len & 0xF)
-		final_track_len = (final_track_len & ~0xF) + 0x10;
+	if(final_track_len & 0x1)
+		final_track_len = (final_track_len & ~0x1) + 0x1;
 
 	data_track = malloc(final_track_len);
 	start_data_track = data_track;
@@ -443,7 +445,6 @@ unsigned char * fast_convert_track(fpga_state * state, int drive, int track, int
 				}
 				else
 				{
-//printf("!!! 0x%.4X !!!!\n",tmp_data);
 
 					if( bits_delta < 0x00000080)
 					{
