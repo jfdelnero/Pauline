@@ -238,6 +238,7 @@ void printhelp(char* argv[])
 	printf("  13: EXTERNAL IO (J5 - Pin 4)\n");
 
 	printf("\n");
+
 	printf("Drive Simulation status lines ID (-pin02mode & -pin34mode ID):\n");
 	printf("  0 : Low state\n");
 	printf("  1 : High state\n");
@@ -289,6 +290,13 @@ void printhelp(char* argv[])
 	printf(" 29 : IO input 3\n");
 	printf(" 30 : IO input 4\n");
 	printf(" 31 : IO input 5\n");
+
+	printf("\n");
+
+	printf("Command examples:\n\n");
+	printf("Start Floppy Emulation from 2 disk images:\n\n");
+	printf("pauline -reset -load:\"stream_hfe_disk1.hfe\" -drive:0 -pin34mode:2 -pin02mode:6 -selsrc:8 -motsrc:12 -enabledrive -led1src:16 -led2src:17\n");
+	printf("pauline -load:\"stream_hfe_disk2.hfe\" -drive:1 -pin34mode:2 -pin02mode:6 -selsrc:9 -motsrc:12 -enabledrive -led1src:16 -led2src:17\n");
 
 	printf("\n");
 }
