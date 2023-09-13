@@ -880,7 +880,7 @@ void index_cfg(fpga_state * state, int drive, int hs_cnt, int sep_index, int ind
 {
 	uint32_t tmp,i;
 	uint32_t track_size;
-	uint32_t hs_step, hs_pos;
+	uint32_t hs_step, idx_pos;
 
 	if(state)
 	{
@@ -904,16 +904,24 @@ void index_cfg(fpga_state * state, int drive, int hs_cnt, int sep_index, int ind
 			// Main index at 0, must be between the last and first hard sector pulse
 			if(hs_cnt && hs_cnt <= 32)
 			{
-				hs_pos = hs_step / 2;
 				for( i = 0; i < hs_cnt; i++)
 				{
-					hs_pos = ( ( ( (float)track_size / (float)hs_cnt ) * (float)(i + 1) ) - ( ( (float)track_size / (float)hs_cnt ) / 2.0 ) );
-					state->regs->hs_index_positions[i] = (hs_pos & ~0x3);
+					idx_pos = ( ( ( (float)track_size / (float)hs_cnt ) * (float)(i) ) );
+					state->regs->hs_index_positions[i] = (idx_pos & ~0x3);
 				}
 			}
 		}
 
-		state->regs->drv_track_index_start[drive] = 0;
+		if(hs_cnt && hs_cnt <= 32)
+		{
+			// Main Index on the last sector to reset the machine sector number counter.
+			// Next secot is the first one.
+			idx_pos = ( ( ( (float)track_size / (float)hs_cnt ) * (float)(hs_cnt - 1) ) + ( ( (float)track_size / (float)hs_cnt ) / 2.0 ) );
+			state->regs->drv_track_index_start[drive] = (idx_pos & ~0x3);
+		}
+		else
+			state->regs->drv_track_index_start[drive] = 0;
+
 		state->regs->drv_index_len[drive] = indexlen;
 
 		tmp = state->regs->drive_config[drive];
