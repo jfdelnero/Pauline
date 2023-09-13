@@ -79,7 +79,7 @@ void sig_handler(int sig)
 
 	ret = write(STDERR_FILENO,tmpstr, strlen(tmpstr));
 	if(ret >= 0)
-	{ 
+	{
 		backtrace_symbols_fd(array, size, STDERR_FILENO);
 	}
 
@@ -194,11 +194,13 @@ void printhelp(char* argv[])
 	printf("  -load:[filename]\t\t: Load an image\n");
 	printf("  -save:[filename]\t\t: Save an image\n");
 	printf("  -headrecal\t\t\t: Recalibrate the head\n");
-	printf("  -headstep:[tracknb][\t\t: Move the head\n");
+	printf("  -headstep:[tracknb]\t\t: Move the head\n");
 	printf("  -selsrc:[id]\t\t\t: Drive simulation select source line\n");
 	printf("  -motsrc:[id]\t\t\t: Drive simulation motor source line\n");
 	printf("  -pin02mode:[id]\t\t: Drive simulation pin 2 status line mode\n");
 	printf("  -pin34mode:[id]\t\t: Drive simulation pin 34 status line mode\n");
+	printf("  -hardsector:[count]\t\t: Drive simulation hard-sectors index pulses generation\n");
+	printf("  -indexlen:[uS]\t\t: Index pulses length\n");
 	printf("  -writeprotectdrive:[0/1]\t: Drive simulation write protect (0 or 1)\n");
 	printf("  -enabledrive\t\t\t: Drive enable\n");
 	printf("  -disabledrive\t\t\t: Drive disable\n");
@@ -418,6 +420,7 @@ int main(int argc, char* argv[])
 	int dump_time_per_track;
 	int high_res_mode;
 	int ret,index_to_dump_delay;
+	int hardsectorscnt;
 	HXCFE* libhxcfe;
 
 	pthread_t listener_thread;
@@ -660,6 +663,23 @@ int main(int argc, char* argv[])
 		pin34mode = atoi(temp);
 		set_pin34_mode(fpga, drive, pin34mode);
 		printf("Pin 34 Mode : %d\n", pin34mode);
+	}
+
+	if(isOption(argc,argv,"hardsector",(char*)&temp)>0)
+	{
+		hardsectorscnt = atoi(temp);
+		if(drive < 4)
+		{
+			fpga->hardsector_count[drive] = hardsectorscnt;
+			fpga->separate_hardsector_signal = 0;
+			printf("Hardsectors : %d\n", hardsectorscnt);
+		}
+	}
+
+	if(isOption(argc,argv,"indexlen",(char*)&temp)>0)
+	{
+		fpga->index_len = atoi(temp);
+		printf("Index length : %d uS\n", fpga->index_len);
 	}
 
 	// Interface mode option

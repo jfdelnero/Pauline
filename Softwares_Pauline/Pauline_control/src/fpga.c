@@ -258,10 +258,11 @@ fpga_state * init_fpga()
 		state->drive_X68000_opt_sel_bit_mask[i] = 0x00000000;
 
 		state->drive_type[i] = DRIVES_INTERFACE_GENERIC_MODE;
-
 	}
 
 	state->step_rate = 24*1000;
+
+	state->index_len = DEFAULT_INDEX_TIME;
 
 	pthread_mutex_init ( &state->io_fpga_mutex, NULL);
 
@@ -286,12 +287,11 @@ void reset_fpga(fpga_state * state)
 	state->regs->image_base_address_reg[2] = DRV2_IMAGE_BASE;
 	state->regs->image_base_address_reg[3] = DRV3_IMAGE_BASE;
 
-	for(i=0;i<1;i++)
+	for(i=0;i<4;i++)
 	{
 		state->regs->image_track_size_reg[i] = DEFAULT_TRACK_SIZE;
 		state->regs->image_max_track_reg[i] = DEFAULT_MAX_TRACK;
-		state->regs->drv_track_index_start[i] = 0;
-		state->regs->drv_index_len[i] = DEFAULT_INDEX_LEN;
+		index_cfg(state, i, 0, 1, (((int)( (float)(BIT_CLOCK/16) * ((float)state->index_len/(float)1000) ) / 1000 ) * 4) );
 	}
 
 	state->regs->drv0_qdstopmotor_len = 0;
@@ -871,6 +871,64 @@ void set_pin34_mode(fpga_state * state, int drive, int mode)
 		tmp &= ~(0xF << 4);
 		tmp |= ((mode&0xF) << 4);
 		state->regs->drive_config[drive&3] = tmp;
+
+		pthread_mutex_unlock( &state->io_fpga_mutex );
+	}
+}
+
+void index_cfg(fpga_state * state, int drive, int hs_cnt, int sep_index, int indexlen)
+{
+	uint32_t tmp,i;
+	uint32_t track_size;
+	uint32_t hs_step, hs_pos;
+
+	if(state)
+	{
+		pthread_mutex_lock( &state->io_fpga_mutex );
+
+		track_size  = state->regs->image_track_size_reg[drive];
+		hs_step = track_size;
+		if(hs_cnt && hs_cnt <= 32)
+		{
+			hs_step = track_size / hs_cnt;
+		}
+
+		// default hard sectors indexes position
+		if(drive == 0)
+		{
+			for( i = 0;i<32;i++)
+			{
+				state->regs->hs_index_positions[i] = 0;
+			}
+
+			// Main index at 0, must be between the last and first hard sector pulse
+			if(hs_cnt && hs_cnt <= 32)
+			{
+				hs_pos = hs_step / 2;
+				for( i = 0; i < hs_cnt; i++)
+				{
+					hs_pos = ( ( ( (float)track_size / (float)hs_cnt ) * (float)(i + 1) ) - ( ( (float)track_size / (float)hs_cnt ) / 2.0 ) );
+					state->regs->hs_index_positions[i] = (hs_pos & ~0x3);
+				}
+			}
+		}
+
+		state->regs->drv_track_index_start[drive] = 0;
+		state->regs->drv_index_len[drive] = indexlen;
+
+		tmp = state->regs->drive_config[drive];
+
+		if(hs_cnt)
+			tmp |=  (0x1<<(27));
+		else
+			tmp &= ~(0x1<<(27));
+
+		if(sep_index)
+			tmp &= ~(0x1<<(28));
+		else
+			tmp |=  (0x1<<(28));
+
+		state->regs->drive_config[drive] = tmp;
 
 		pthread_mutex_unlock( &state->io_fpga_mutex );
 	}

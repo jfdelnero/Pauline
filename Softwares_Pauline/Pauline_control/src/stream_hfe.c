@@ -182,8 +182,8 @@ unsigned short * load_stream_hfe(fpga_state * state,int drive, char * imgfile, i
 			goto error;
 
 		state->regs->image_track_size_reg[drive] = (trackoffsetlist[0].track_len / 8) * 2;
-		state->regs->drv_track_index_start[drive] = 0;
-		state->regs->drv_index_len[drive] = DEFAULT_INDEX_LEN;
+
+		index_cfg(state, drive, state->hardsector_count[drive], state->separate_hardsector_signal, (((int)( (float)(BIT_CLOCK/16) * ((float)state->index_len/(float)1000) ) / 1000 ) * 4) );
 
 		alloc_image(state, drive, (trackoffsetlist[0].track_len / 8) * 2, header.number_of_track + 2, state->regs->image_base_address_reg[drive],1);
 

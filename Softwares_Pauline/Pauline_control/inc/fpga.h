@@ -47,9 +47,7 @@
 
 #define DEFAULT_MAX_TRACK 80
 
-#define DEFAULT_INDEX_TIME 2 // 2ms
-
-#define DEFAULT_INDEX_LEN (( (BIT_CLOCK/16) * (DEFAULT_INDEX_TIME) ) / 1000)
+#define DEFAULT_INDEX_TIME 1500 // 1.5ms
 
 #define PIN_CFG_LOW         0
 #define PIN_CFG_HIGH        1
@@ -297,6 +295,14 @@ typedef struct _floppy_ip_regs
 	volatile uint32_t step_phases_width;
 	volatile uint32_t step_phases_stop_width;
 
+	volatile uint32_t drives_datasep_config_regs;
+	volatile uint32_t drives_datasep_config2_regs;
+	volatile uint32_t drives_datasep_config3_regs;
+
+	volatile uint32_t unused[10];
+
+	volatile uint32_t hs_index_positions[32];
+
 }floppy_ip_regs;
 
 #pragma pack()
@@ -307,6 +313,10 @@ typedef struct _fpga_state
 	int fd;
 
 	unsigned short * disk_image[4];
+
+	int hardsector_count[4];
+	int separate_hardsector_signal;
+	int index_len;
 
 	unsigned short * dump_buffer;
 	int dump_buffer_size;
@@ -378,6 +388,7 @@ void set_select_src(fpga_state * state, int drive, int src);
 void set_motor_src(fpga_state * state, int drive, int src);
 void set_pin02_mode(fpga_state * state, int drive, int mode);
 void set_pin34_mode(fpga_state * state, int drive, int mode);
+void index_cfg(fpga_state * state, int drive, int hs_cnt, int sep_index, int indexlen);
 void enable_drive(fpga_state * state, int drive, int enable);
 
 void set_led_src(fpga_state * state, int led, int src);
