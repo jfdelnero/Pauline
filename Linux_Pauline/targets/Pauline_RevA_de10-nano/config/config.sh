@@ -65,3 +65,5 @@ SRC_PACKAGE_FTRACE="http://ftp.debian.org/debian/pool/main/t/trace-cmd/trace-cmd
 
 # misc
 SRC_PACKAGE_FSWEBCAM="@COMMON@""https://www.sanslogic.co.uk/fswebcam/files/fswebcam-20140113.tar.gz"
+
+SRC_PACKAGE_DDRESCUE="https://github.com/mruffalo/ddrescue/archive/refs/tags/v1.25-rc1.tar.gz"
