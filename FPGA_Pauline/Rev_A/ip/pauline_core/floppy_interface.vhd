@@ -587,14 +587,14 @@ begin
 	dump_sample_rate_divisor <= ctrl_control_reg(22);
 	ignore_index_trigger <= ctrl_control_reg(23);
 
-	hs_index <= hs_index_state(0) or hs_index_state(1) or hs_index_state(2) or hs_index_state(3) or
+	hs_index <= ( hs_index_state(0) or hs_index_state(1) or hs_index_state(2) or hs_index_state(3) or
 				hs_index_state(4) or hs_index_state(5) or hs_index_state(6) or hs_index_state(7) or
 				hs_index_state(8) or hs_index_state(9) or hs_index_state(10) or hs_index_state(11) or
 				hs_index_state(12) or hs_index_state(13) or hs_index_state(14) or hs_index_state(15) or
 				hs_index_state(16) or hs_index_state(17) or hs_index_state(18) or hs_index_state(19) or
 				hs_index_state(20) or hs_index_state(21) or hs_index_state(22) or hs_index_state(23) or
 				hs_index_state(24) or hs_index_state(25) or hs_index_state(26) or hs_index_state(27) or
-				hs_index_state(28) or hs_index_state(29) or hs_index_state(30) or hs_index_state(31);
+				hs_index_state(28) or hs_index_state(29) or hs_index_state(30) or hs_index_state(31) ) and drives_config_regs(0)(27);
 
 	process(in_mux_selectors_regs ,gpio_reg ,mux_out_bus )
 	begin
@@ -852,7 +852,7 @@ begin
 				when "0001" =>
 					coe_c1_host_o_x68000_diskindrive <= drv_option_diskindrive(0) xor out_signal_polarity_reg(6);
 					coe_c1_host_o_x68000_insertfault <= drv_option_insertfault(0) xor out_signal_polarity_reg(7);
-					coe_c1_host_o_x68000_int <= (drv_option_int(0) or hs_index) xor out_signal_polarity_reg(8);
+					coe_c1_host_o_x68000_int <= ( drv_option_int(0) or ( hs_index and not(drives_config_regs(0)(28)) ) ) xor out_signal_polarity_reg(8);
 
 				when "0010" =>
 					coe_c1_host_o_x68000_diskindrive <= drv_option_diskindrive(1) xor out_signal_polarity_reg(6);
@@ -1382,7 +1382,7 @@ floppy_drive_x : floppy_drive
 		pop_fifo_in_databus_b          => pop_fifos_in_databus_bus(i_drive),
 		pop_fifo_in_ctrlbus_b          => pop_fifos_in_ctrlbus_bus(i_drive),
 		pop_fifo_in_statusbus_b        => pop_fifos_in_statusbus_bus(i_drive),
-		pop_fifo_in_status_byte        => "000000" & qd_stopmotor_state & index_state(i_drive),
+		pop_fifo_in_status_byte        => "000000" & qd_stopmotor_state & ( index_state(i_drive) or ( hs_index and drives_config_regs(0)(28) ) ) ,
 
 		push_fifo_out_databus_b        => push_fifos_out_databus_bus(i_drive),
 		push_fifo_out_ctrlbus_b        => push_fifos_out_ctrlbus_bus(i_drive),
