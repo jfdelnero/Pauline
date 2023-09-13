@@ -880,18 +880,13 @@ void index_cfg(fpga_state * state, int drive, int hs_cnt, int sep_index, int ind
 {
 	uint32_t tmp,i;
 	uint32_t track_size;
-	uint32_t hs_step, idx_pos;
+	uint32_t idx_pos;
 
 	if(state)
 	{
 		pthread_mutex_lock( &state->io_fpga_mutex );
 
 		track_size  = state->regs->image_track_size_reg[drive];
-		hs_step = track_size;
-		if(hs_cnt && hs_cnt <= 32)
-		{
-			hs_step = track_size / hs_cnt;
-		}
 
 		// default hard sectors indexes position
 		if(drive == 0)
