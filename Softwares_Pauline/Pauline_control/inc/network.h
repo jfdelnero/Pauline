@@ -34,7 +34,7 @@ typedef struct thread_params_
 	int index;
 	int tid;
 	char clientname[2048];
-	char clientip[24];
+	char clientip[32];
 	int connection_id;
 }thread_params;
 
