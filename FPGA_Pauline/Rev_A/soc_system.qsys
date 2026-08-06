@@ -369,13 +369,13 @@
  <module
    name="ILC"
    kind="interrupt_latency_counter"
-   version="19.1"
+   version="25.1"
    enabled="1">
   <parameter name="CLOCK_RATE" value="50000000" />
   <parameter name="INTR_TYPE" value="0" />
   <parameter name="IRQ_PORT_CNT" value="3" />
  </module>
- <module name="button_pio" kind="altera_avalon_pio" version="19.1" enabled="1">
+ <module name="button_pio" kind="altera_avalon_pio" version="25.1" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="true" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="true" />
@@ -389,13 +389,13 @@
   <parameter name="simDrivenValue" value="0" />
   <parameter name="width" value="2" />
  </module>
- <module name="clk_0" kind="clock_source" version="19.1" enabled="1">
+ <module name="clk_0" kind="clock_source" version="25.1" enabled="1">
   <parameter name="clockFrequency" value="50000000" />
   <parameter name="clockFrequencyKnown" value="true" />
   <parameter name="inputClockFrequency" value="0" />
   <parameter name="resetSynchronousEdges" value="NONE" />
  </module>
- <module name="dipsw_pio" kind="altera_avalon_pio" version="19.1" enabled="1">
+ <module name="dipsw_pio" kind="altera_avalon_pio" version="25.1" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="true" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="true" />
@@ -412,7 +412,7 @@
  <module
    name="f2sdram_only_master"
    kind="altera_jtag_avalon_master"
-   version="19.1"
+   version="25.1"
    enabled="1">
   <parameter name="AUTO_DEVICE" value="5CSEBA6U23I7" />
   <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
@@ -431,7 +431,7 @@
  <module
    name="fpga_only_master"
    kind="altera_jtag_avalon_master"
-   version="19.1"
+   version="25.1"
    enabled="1">
   <parameter name="AUTO_DEVICE" value="5CSEBA6U23I7" />
   <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
@@ -442,7 +442,7 @@
   <parameter name="PLI_PORT" value="50000" />
   <parameter name="USE_PLI" value="0" />
  </module>
- <module name="hps_0" kind="altera_hps" version="19.1" enabled="1">
+ <module name="hps_0" kind="altera_hps" version="25.1" enabled="1">
   <parameter name="ABSTRACT_REAL_COMPARE_TEST" value="false" />
   <parameter name="ABS_RAM_MEM_INIT_FILENAME" value="meminit" />
   <parameter name="ACV_PHY_CLK_ADD_FR_PHASE" value="0.0" />
@@ -975,7 +975,7 @@
  <module
    name="hps_only_master"
    kind="altera_jtag_avalon_master"
-   version="19.1"
+   version="25.1"
    enabled="1">
   <parameter name="AUTO_DEVICE" value="5CSEBA6U23I7" />
   <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
@@ -989,12 +989,13 @@
  <module
    name="jtag_uart"
    kind="altera_avalon_jtag_uart"
-   version="19.1"
+   version="25.1"
    enabled="1">
   <parameter name="allowMultipleConnections" value="true" />
   <parameter name="avalonSpec" value="2.0" />
   <parameter name="clkFreq" value="50000000" />
   <parameter name="hubInstanceID" value="0" />
+  <parameter name="printingMethod" value="false" />
   <parameter name="readBufferDepth" value="64" />
   <parameter name="readIRQThreshold" value="8" />
   <parameter name="simInputCharacterStream" value="" />
@@ -1005,7 +1006,7 @@
   <parameter name="writeBufferDepth" value="64" />
   <parameter name="writeIRQThreshold" value="8" />
  </module>
- <module name="led_pio" kind="altera_avalon_pio" version="19.1" enabled="1">
+ <module name="led_pio" kind="altera_avalon_pio" version="25.1" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="false" />
@@ -1022,7 +1023,7 @@
  <module
    name="mm_bridge_0"
    kind="altera_avalon_mm_bridge"
-   version="19.1"
+   version="25.1"
    enabled="1">
   <parameter name="ADDRESS_UNITS" value="SYMBOLS" />
   <parameter name="ADDRESS_WIDTH" value="10" />
@@ -1040,13 +1041,13 @@
  <module
    name="sysid_qsys"
    kind="altera_avalon_sysid_qsys"
-   version="19.1"
+   version="25.1"
    enabled="1">
   <parameter name="id" value="-1395322110" />
  </module>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="hps_0.h2f_lw_axi_master"
    end="mm_bridge_0.s0">
   <parameter name="arbitrationPriority" value="1" />
@@ -1055,7 +1056,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="mm_bridge_0.m0"
    end="jtag_uart.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
@@ -1064,7 +1065,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="mm_bridge_0.m0"
    end="ILC.avalon_slave">
   <parameter name="arbitrationPriority" value="1" />
@@ -1073,21 +1074,21 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="mm_bridge_0.m0"
    end="sysid_qsys.control_slave">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x1000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
- <connection kind="avalon" version="19.1" start="mm_bridge_0.m0" end="led_pio.s1">
+ <connection kind="avalon" version="25.1" start="mm_bridge_0.m0" end="led_pio.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x3000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="mm_bridge_0.m0"
    end="dipsw_pio.s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -1096,7 +1097,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="mm_bridge_0.m0"
    end="button_pio.s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -1105,7 +1106,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="mm_bridge_0.m0"
    end="floppy_interface_0.s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -1114,7 +1115,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="floppy_interface_0.m1"
    end="hps_0.f2h_sdram0_data">
   <parameter name="arbitrationPriority" value="1" />
@@ -1123,7 +1124,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="fpga_only_master.master"
    end="jtag_uart.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
@@ -1132,7 +1133,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="fpga_only_master.master"
    end="ILC.avalon_slave">
   <parameter name="arbitrationPriority" value="1" />
@@ -1141,7 +1142,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="fpga_only_master.master"
    end="sysid_qsys.control_slave">
   <parameter name="arbitrationPriority" value="1" />
@@ -1150,7 +1151,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="hps_only_master.master"
    end="hps_0.f2h_axi_slave">
   <parameter name="arbitrationPriority" value="1" />
@@ -1159,7 +1160,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="fpga_only_master.master"
    end="button_pio.s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -1168,7 +1169,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="fpga_only_master.master"
    end="led_pio.s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -1177,7 +1178,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="fpga_only_master.master"
    end="dipsw_pio.s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -1186,7 +1187,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="19.1"
+   version="25.1"
    start="fpga_only_master.master"
    end="floppy_interface_0.s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -1195,132 +1196,132 @@
  </connection>
  <connection
    kind="clock"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk"
    end="floppy_interface_0.ci" />
  <connection
    kind="clock"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk"
    end="hps_only_master.clk" />
- <connection kind="clock" version="19.1" start="clk_0.clk" end="sysid_qsys.clk" />
- <connection kind="clock" version="19.1" start="clk_0.clk" end="led_pio.clk" />
+ <connection kind="clock" version="25.1" start="clk_0.clk" end="sysid_qsys.clk" />
+ <connection kind="clock" version="25.1" start="clk_0.clk" end="led_pio.clk" />
  <connection
    kind="clock"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk"
    end="fpga_only_master.clk" />
- <connection kind="clock" version="19.1" start="clk_0.clk" end="dipsw_pio.clk" />
- <connection kind="clock" version="19.1" start="clk_0.clk" end="button_pio.clk" />
- <connection kind="clock" version="19.1" start="clk_0.clk" end="jtag_uart.clk" />
+ <connection kind="clock" version="25.1" start="clk_0.clk" end="dipsw_pio.clk" />
+ <connection kind="clock" version="25.1" start="clk_0.clk" end="button_pio.clk" />
+ <connection kind="clock" version="25.1" start="clk_0.clk" end="jtag_uart.clk" />
  <connection
    kind="clock"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk"
    end="f2sdram_only_master.clk" />
- <connection kind="clock" version="19.1" start="clk_0.clk" end="mm_bridge_0.clk" />
- <connection kind="clock" version="19.1" start="clk_0.clk" end="ILC.clk" />
+ <connection kind="clock" version="25.1" start="clk_0.clk" end="mm_bridge_0.clk" />
+ <connection kind="clock" version="25.1" start="clk_0.clk" end="ILC.clk" />
  <connection
    kind="clock"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk"
    end="hps_0.f2h_axi_clock" />
  <connection
    kind="clock"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk"
    end="hps_0.f2h_sdram0_clock" />
  <connection
    kind="clock"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk"
    end="hps_0.h2f_axi_clock" />
  <connection
    kind="clock"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk"
    end="hps_0.h2f_lw_axi_clock" />
  <connection
    kind="interrupt"
-   version="19.1"
+   version="25.1"
    start="hps_0.f2h_irq0"
    end="button_pio.irq">
   <parameter name="irqNumber" value="1" />
  </connection>
  <connection
    kind="interrupt"
-   version="19.1"
+   version="25.1"
    start="hps_0.f2h_irq0"
    end="dipsw_pio.irq">
   <parameter name="irqNumber" value="0" />
  </connection>
  <connection
    kind="interrupt"
-   version="19.1"
+   version="25.1"
    start="hps_0.f2h_irq1"
    end="floppy_interface_0.irq_s1">
   <parameter name="irqNumber" value="2" />
  </connection>
- <connection kind="interrupt" version="19.1" start="ILC.irq" end="jtag_uart.irq">
+ <connection kind="interrupt" version="25.1" start="ILC.irq" end="jtag_uart.irq">
   <parameter name="irqNumber" value="2" />
  </connection>
- <connection kind="interrupt" version="19.1" start="ILC.irq" end="button_pio.irq">
+ <connection kind="interrupt" version="25.1" start="ILC.irq" end="button_pio.irq">
   <parameter name="irqNumber" value="1" />
  </connection>
- <connection kind="interrupt" version="19.1" start="ILC.irq" end="dipsw_pio.irq">
+ <connection kind="interrupt" version="25.1" start="ILC.irq" end="dipsw_pio.irq">
   <parameter name="irqNumber" value="0" />
  </connection>
  <connection
    kind="reset"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk_reset"
    end="floppy_interface_0.ci_reset" />
  <connection
    kind="reset"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk_reset"
    end="hps_only_master.clk_reset" />
  <connection
    kind="reset"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk_reset"
    end="fpga_only_master.clk_reset" />
  <connection
    kind="reset"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk_reset"
    end="f2sdram_only_master.clk_reset" />
  <connection
    kind="reset"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk_reset"
    end="sysid_qsys.reset" />
  <connection
    kind="reset"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk_reset"
    end="led_pio.reset" />
  <connection
    kind="reset"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk_reset"
    end="dipsw_pio.reset" />
  <connection
    kind="reset"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk_reset"
    end="button_pio.reset" />
  <connection
    kind="reset"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk_reset"
    end="jtag_uart.reset" />
  <connection
    kind="reset"
-   version="19.1"
+   version="25.1"
    start="clk_0.clk_reset"
    end="mm_bridge_0.reset" />
- <connection kind="reset" version="19.1" start="clk_0.clk_reset" end="ILC.reset_n" />
+ <connection kind="reset" version="25.1" start="clk_0.clk_reset" end="ILC.reset_n" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
 </system>
