@@ -6,7 +6,7 @@
 -------H----H---X-----X---CCCCC-----22222----0000-----0000----11111-----------
 ------------------------------------------------------------------------------
 ------ Contact: hxc2001 at hxc2001.com ----------- https://hxc2001.com -------
------- (c) 2019-2023 Jean-François DEL NERO ----------------------------------
+------ (c) 2019-2026 Jean-François DEL NERO ----------------------------------
 -============================================================================-
 - Pauline
 - Floppy disks archiving, creation and drives simulator system.
@@ -28,14 +28,14 @@
     - build-essential installed
         ( sudo apt-get update ; sudo apt-get install build-essential )
 
-    - Altera/Intel Quartus Prime Lite Edition installed (Lite edition v19.1 minimum)
-        ( https://fpgasoftware.intel.com/?edition=lite )
+    - Altera Quartus Prime Lite Edition installed (Lite edition v25.1 minimum)
+        ( https://www.altera.com/products/development-tools/quartus )
 
-    - Altera/Intel SoC FPGA Embedded Development Suite (Standard edition v19.1 minimum)
-        ( https://fpgasoftware.intel.com/soceds/19.1/?edition=standard&download_manager=direct&platform=linux )
+    - Altera SoC FPGA Embedded Development Suite (Standard edition v20.1 minimum)
+        ( https://www.altera.com/downloads/embedded-tools/soc-fpga-embedded-development-suite-soc-eds-standard-edition-software-version-20-1-linux )
 
     - ALTERA_BASEDIR path environment variable pointing to the Quartus installation
-        ( example : ALTERA_BASEDIR=/home/user_home/intelFPGA_lite/19.1)
+        ( example : ALTERA_BASEDIR=/home/user_home/altera_lite/25.1std)
 
     - The whole Pauline repository is present on the machine.
         ( git clone --recursive  https://github.com/jfdelnero/Pauline.git )
