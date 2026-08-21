@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2023 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # Miscellaneous stuffs
 #
@@ -109,25 +109,42 @@ then
 	then
 	(
 		create_src_dir
-		create_build_dir
 
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TMP_BUILD_FOLDER} || exit 1
-		mkdir grub
-		cd grub || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		if [ -f ${TARGET_CONFIG}/patches/grub.patch ]
+		then
+		(
+			cd conf || exit 1
+			patch -Zf < ${TARGET_CONFIG}/patches/grub.patch  || exit 1
+		) || exit 1
+		fi
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		unset PKG_CONFIG_LIBDIR
+
+		export GRUB_AUTORECONF=1
+		export GRUB_AUTOGEN=1
+
+		echo depends bli part_gpt > ./grub-core/extra_deps.lst || exit 1
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH \
+				--disable-werror \
+				--disable-efiemu \
 				|| exit 1
+
+		./autogen.sh ||  exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
 
-		delete_build_dir
 		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
@@ -155,6 +172,14 @@ then
 		unpack ${CUR_PACKAGE} ""
 
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		if [ -f ${TARGET_CONFIG}/patches/lilo.patch ]
+		then
+		(
+			cd src || exit 1
+			patch -Zf < ${TARGET_CONFIG}/patches/lilo.patch  || exit 1
+		) || exit 1
+		fi
 
 		export CC=${TGT_MACH}-gcc
 		export LD=${TGT_MACH}-ld
@@ -231,8 +256,8 @@ then
 
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		make ${MAKE_FLAGS} ${NBCORE} CROSS_COMPILE=${TGT_MACH}- PREFIX=${TARGET_ROOTFS} HOST=${TARGET_ROOTFS} || exit 1
-		make ${MAKE_FLAGS} ${NBCORE} CROSS_COMPILE=${TGT_MACH}- PREFIX=${TARGET_ROOTFS} HOST=${TARGET_ROOTFS} STRIP="-s --strip-program=${TGT_MACH}-strip"  install  || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} CROSS_COMPILE=${TGT_MACH}- PREFIX=${TARGET_ROOTFS} HOST=${TGT_MACH}-linux || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} CROSS_COMPILE=${TGT_MACH}- PREFIX=${TARGET_ROOTFS} HOST=${TGT_MACH}-linux STRIP="-s --strip-program=${TGT_MACH}-strip"  install  || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -282,6 +307,146 @@ then
 fi
 
 ####################################################################
+# readline
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_READLINE:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir readline
+		cd readline || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--build=$MACHTYPE \
+					--host=$TGT_MACH \
+					--target=$TGT_MACH \
+					--with-curses \
+					--prefix="${TARGET_ROOTFS}" \
+					|| exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE} SHLIB_LIBS="-lncursesw"         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} SHLIB_LIBS="-lncursesw" install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# XZ
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_XZ:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir xz
+		cd xz || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--build=$MACHTYPE \
+					--host=$TGT_MACH \
+					--target=$TGT_MACH \
+					--prefix="${TARGET_ROOTFS}" \
+					|| exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# BZIP2
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_BZIP2:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit
+
+		make clean
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		sed -i -e 's/CC=gcc/CC\ ?=\ gcc/g' Makefile
+		sed -i -e 's/AR=ar/AR\ ?=\ ar/g' Makefile
+		sed -i -e 's/RANLIB=ranlib/RANLIB\ ?=\ ranlib/g' Makefile
+		sed -i -e 's/CFLAGS=/CFLAGS\ ?=/g' Makefile
+		sed -i -e 's/LDFLAGS=/LDFLAGS\ ?=/g' Makefile
+		sed -i -e 's/PREFIX=/PREFIX\ ?=/g' Makefile
+
+		sed -i -e 's/CC=gcc/CC\ ?=\ gcc/g' Makefile-libbz2_so
+		sed -i -e 's/CFLAGS=/CFLAGS\ ?=/g' Makefile-libbz2_so
+
+		make ${MAKE_FLAGS} -f Makefile-libbz2_so      || exit 1
+		make ${MAKE_FLAGS} libbz2.a bzip2 bzip2recover || exit 1
+
+		make ${MAKE_FLAGS} -n install PREFIX="${TARGET_ROOTFS}" || exit 1
+		cp -v bzip2-shared ${TARGET_ROOTFS}/bin/bzip2
+		cp -av libbz2.so* ${TARGET_ROOTFS}/lib
+		ln -sv libbz2.so.1.0 ${TARGET_ROOTFS}/lib/libbz2.so
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
 # PYTHON
 ####################################################################
 
@@ -305,18 +470,21 @@ then
 
 		echo ac_cv_file__dev_ptmx=no > ./config.site
 		echo ac_cv_file__dev_ptc=no >> ./config.site
+		echo ac_cv_buggy_getaddrinfo=no >> ./config.site
+
 		export CONFIG_SITE=config.site
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix= \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
-				--target=$TGT_MACH \
-				--disable-ipv6 \
+				--with-build-python="${BUILDTOOLS_HOME}/bin/python3" \
+				--disable-test-modules \
+				--enable-ipv6 \
 				--enable-shared \
 				|| exit 1
 
-		make ${MAKE_FLAGS} ${NBCORE} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} build_all || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} altinstall DESTDIR=${TARGET_ROOTFS} || exit 1
 
 		delete_build_dir
@@ -606,7 +774,7 @@ then
 
 		# Don't let u-boot build system using the cross-compiled libraries
 		# (fix issue with ncurses -> ".config" not found error...)
-		#unset PKG_CONFIG_LIBDIR
+		# unset PKG_CONFIG_LIBDIR
 
 		export CROSS_COMPILE="$TGT_MACH"-
 
@@ -634,6 +802,15 @@ then
 
 		#make SHELL="/bin/bash -x" || exit 1 # see commands
 		make ${MAKE_FLAGS} || exit 1
+
+		cp tools/mkimage      ${BUILDTOOLS_HOME}/bin
+		cp tools/fit_info     ${BUILDTOOLS_HOME}/bin
+		cp tools/dumpimage    ${BUILDTOOLS_HOME}/bin
+		cp tools/mkenvimage   ${BUILDTOOLS_HOME}/bin
+		cp tools/mkenvimage   ${BUILDTOOLS_HOME}/bin
+		cp tools/img2srec     ${BUILDTOOLS_HOME}/bin
+		cp tools/mkenvimage   ${BUILDTOOLS_HOME}/bin
+		cp tools/gen_eth_addr ${BUILDTOOLS_HOME}/bin
 
 		if [ -f ${TARGET_CONFIG}/uboot_post_process.sh ]
 		then
@@ -675,7 +852,10 @@ then
 		mkdir e2fsprogs
 		cd e2fsprogs || exit 1
 
+		sed -e 's/HAVE_LINUX_FSVERITY_H/HAVE_LINUX_FSVERITY__H__/g'  -i ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure
+
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				CFLAGS=" -std=gnu17 -O3" \
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
@@ -979,18 +1159,101 @@ then
 
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/host || exit 1
 
-		export CC=${TGT_MACH}-gcc
-		export LD=${TGT_MACH}-ld
-		export AS=${TGT_MACH}-as
-		export AR=${TGT_MACH}-ar
-		export DESTDIR=${TARGET_ROOTFS}
+		create_cmake_crossfile cross.cmake
 
-		cmake -DCMAKE_SYSTEM_PREFIX_PATH=${TARGET_ROOTFS} -DFFTW_LIBRARIES=${TARGET_ROOTFS}/lib/libfftw3.a .
+		cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_TOOLCHAIN_FILE=cross.cmake -DCMAKE_INSTALL_PREFIX=${TARGET_ROOTFS} -DCMAKE_SYSTEM_PREFIX_PATH=${TARGET_ROOTFS} -DFFTW_LIBRARIES=${TARGET_ROOTFS}/lib/libfftw3.a .
 
 		make ${MAKE_FLAGS} ${NBCORE} clean DESTDIR=${TARGET_ROOTFS} prefix=${TARGET_ROOTFS} || exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE} DESTDIR=${TARGET_ROOTFS} prefix=${TARGET_ROOTFS} || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} DESTDIR=${TARGET_ROOTFS} prefix=${TARGET_ROOTFS} install  || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# f2fs-tools
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_F2FSTOOLS:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		./autogen.sh
+
+		./configure --prefix="${BUILDTOOLS_HOME}" || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_ROOTFS}" \
+				--build=$MACHTYPE \
+				--host=$TGT_MACH \
+				--target=$TGT_MACH \
+				|| exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE} || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		make clean
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# Squashfs-Tools
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_SQUASHFSTOOLS:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/squashfs-tools/ || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		make ${MAKE_FLAGS} ${NBCORE} GZIP_SUPPORT=0 XZ_SUPPORT=0 LZO_SUPPORT=0 LZ4_SUPPORT=0 ZSTD_SUPPORT=1 COMP_DEFAULT=zstd INSTALL_PREFIX="${TARGET_ROOTFS}"        || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} GZIP_SUPPORT=0 XZ_SUPPORT=0 LZO_SUPPORT=0 LZ4_SUPPORT=0 ZSTD_SUPPORT=1 COMP_DEFAULT=zstd INSTALL_PREFIX="${TARGET_ROOTFS}" install || exit 1
+
+		make clean
 
 		delete_build_dir
 		delete_src_dir

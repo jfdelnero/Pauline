@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2023 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # Debug & Devs tools
 #
@@ -34,25 +34,22 @@ then
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		#fake makeinfo...
-		echo '#!/bin/sh'                          >makeinfo
-		echo 'echo "makeinfo (GNU texinfo) 5.2"' >>makeinfo
-		chmod a+x makeinfo
-
+		#echo '#!/bin/sh'                          >makeinfo
+		#echo 'echo "makeinfo (GNU texinfo) 5.2"' >>makeinfo
+		#chmod a+x makeinfo
 
 		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir gdb
 		cd gdb || exit 1
 
-		export CC=${TGT_MACH}-gcc
-		export LD=${TGT_MACH}-ld
-		export AS=${TGT_MACH}-as
-		export AR=${TGT_MACH}-ar
-
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH \
-				MAKEINFO="${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/makeinfo" \
+				--with-mpc="${TARGET_ROOTFS}" \
+				--with-libgmp-prefix="${TARGET_ROOTFS}" \
+				--with-mpfr-prefix="${TARGET_ROOTFS}" \
 				|| exit 1
+
 		make ${MAKE_FLAGS} ${NBCORE} all     || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
 
@@ -98,11 +95,90 @@ then
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
 				--enable-mpers=check \
-				CFLAGS=-DIOV_MAX=1024 \
+				CFLAGS="-DIOV_MAX=1024 -std=gnu17" \
 				--target=$TGT_MACH || exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE} all     || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# Lib Trace FS (Linux kernel function trace utility)
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_LIBTRACEFS:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir -pv libtracefs || exit 1
+		cd libtracefs || exit 1
+
+		create_meson_crossfile meson_cross.txt
+
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS} --buildtype=release -Ddoc=false --cross-file meson_cross.txt \
+		|| exit 1
+
+		ninja || exit 1
+		ninja install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+
+####################################################################
+# Lib Trace Event (Linux kernel function trace utility)
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_LIBTRACEEVENT:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir -pv libtraceevent || exit 1
+		cd libtraceevent || exit 1
+
+		create_meson_crossfile meson_cross.txt
+
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS} --buildtype=release -Ddoc=false --cross-file meson_cross.txt \
+		|| exit 1
+
+		ninja || exit 1
+		ninja install || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -131,14 +207,17 @@ then
 
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir -pv ftrace || exit 1
+		cd ftrace || exit 1
 
-		export CROSS_COMPILE=${TGT_MACH}-
-		export DESTDIR=${TARGET_ROOTFS}
-		export prefix=/usr
+		create_meson_crossfile meson_cross.txt
 
-		make ${MAKE_FLAGS} ${NBCORE} trace-cmd || exit 1
-		make ${MAKE_FLAGS} ${NBCORE} install   || exit 1
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS} --buildtype=release -Ddoc=false --cross-file meson_cross.txt \
+		|| exit 1
+
+		ninja || exit 1
+		ninja install || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -225,9 +304,12 @@ then
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
-				--target=$TGT_MACH || exit 1
+				--target=$TGT_MACH \
+				--without-mpicc \
+				--disable-ubsan \
+				|| exit 1
 
-		make ${MAKE_FLAGS} ${NBCORE} all     || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} all   LD=${TGT_MACH}-ld  || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
 
 		delete_build_dir

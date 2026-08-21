@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2023 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # System shell and tools
 #
@@ -85,6 +85,7 @@ then
 						--enable-mount \
 						--enable-libmount \
 						--enable-libblkid \
+						--disable-liblastlog2 \
 						--with-bashcompletiondir=${TARGET_ROOTFS}/usr/share/bash-completion/completions/ \
 						--disable-makeinstall-chown \
 						--disable-makeinstall-setuid \

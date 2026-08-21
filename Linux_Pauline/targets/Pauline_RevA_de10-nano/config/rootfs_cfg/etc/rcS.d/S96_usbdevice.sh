@@ -5,6 +5,8 @@
 #       windows-10-vs-remote-ndis-ethernet-usbgadget-not/cb30520a-753c-4219-b908-ad3d45590447
 #
 
+modprobe udc_core
+modprobe dwc2
 modprobe libcomposite
 mount -t configfs none /sys/kernel/config
 
@@ -136,8 +138,11 @@ echo "${device}" > ${g}/UDC
 
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
-ifconfig usb0 192.168.168.1
-ifconfig usb1 192.168.169.1
+ifconfig usb0 192.168.168.1 up
+#ifconfig usb1 192.168.169.1
 
-dhcpd
+mkdir /var/lib/misc/
+echo "" > /var/lib/misc/udhcpd.leases
+
+/usr/sbin/udhcpd -f /etc/udhcpd.conf &
 

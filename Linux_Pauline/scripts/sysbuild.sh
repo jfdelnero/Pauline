@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2018 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # Main entry script
 #
@@ -53,7 +53,7 @@ then
 	stage_network="no"
 	stage_miscellaneous="no"
 	stage_games="no"
-	stage_buildtools="no"
+	stage_buildtools="yes"
 	stage_target_compiler="no"
 fi
 
@@ -67,8 +67,8 @@ MODE=${BUILD_MODE:-"UNDEF"}
 MODE="${MODE##*/}"
 if [ "$MODE" == "BUILD_MODE_SHM" ]
 then
-	rm -rf /dev/shm/LinuxFromScratch/tmp_src
-	rm -rf /dev/shm/LinuxFromScratch/tmp_build
+	rm -rf ${BUILD_TMP_OBJ_BASEFOLDER}/LinuxFromScratch/tmp_src
+	rm -rf ${BUILD_TMP_OBJ_BASEFOLDER}/LinuxFromScratch/tmp_build
 fi
 
 ####################################################################
@@ -220,5 +220,7 @@ fi
 	export build_stop_timestamp=`date +"%s"`
 	export compile_time=$(($build_stop_timestamp-$build_start_timestamp))
 	echo "Compile time : $(($compile_time/60/60))h:$((($compile_time/60) % 60))m:$(($compile_time % 60))s"
+
+	tset
 )
 

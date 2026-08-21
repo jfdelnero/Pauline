@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2022 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # Fix files permissions/owner/group
 #
@@ -13,7 +13,7 @@ cd ${TARGET_HOME}/output_objects/tmp_mount_point/ || exit 1
 if [[ ! -d "./etc" ]]
 then
 (
-    exit 1
+	exit 1
 )
 fi
 

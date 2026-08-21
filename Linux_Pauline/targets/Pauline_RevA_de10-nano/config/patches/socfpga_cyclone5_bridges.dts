@@ -19,15 +19,16 @@
   bridge-enable = <1>;
 };
 
+&usb1 {
+    status = "okay";
+};
+
 / {
-fragment@0 {
-		target = <&base_fpga_region>;
-		#address-cells = <1>;
-		#size-cells = <1>;
-		__overlay__ {
+	soc {
+		base_fpga_region {
 			#address-cells = <1>;
 			#size-cells = <1>;
-            external-fpga-config;
+			external-fpga-config;
 			//firmware-name = "soc_system.rbf";
 			fpga-bridges = <&fpga_bridge1>;
 			ranges = <0x20000 0xff200000 0x100000>,

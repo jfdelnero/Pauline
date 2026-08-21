@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2023 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # Cross compiler + System base
 # GCC + GCC Libs + GLIBC + Kernel
@@ -81,18 +81,24 @@ then
 
 		create_src_dir
 		create_build_dir
-		unpack ${CUR_PACKAGE} ""
 
-		cd ${TMP_SRC_FOLDER} || exit 1
-		mv ${TMP_ARCHIVE_FOLDER} linux-kernel  || exit 1
-		cd linux-kernel                        || exit 1
-
-		if [ -f ${TARGET_CONFIG}/kernel_pre_process.sh ]
+		if [ ! -d ${TMP_SRC_FOLDER}/linux-kernel ]
 		then
 		(
-			echo Pre process script available... executing it...
-			#To apply patches or anything else
-			source ${TARGET_CONFIG}/kernel_pre_process.sh || exit 1
+    			unpack ${CUR_PACKAGE} ""
+
+			cd ${TMP_SRC_FOLDER} || exit 1
+			mv ${TMP_ARCHIVE_FOLDER} linux-kernel  || exit 1
+			cd linux-kernel                        || exit 1
+
+			if [ -f ${TARGET_CONFIG}/kernel_pre_process.sh ]
+			then
+			(
+				echo Pre process script available... executing it...
+				#To apply patches or anything else
+				source ${TARGET_CONFIG}/kernel_pre_process.sh || exit 1
+			)
+			fi
 		)
 		fi
 
@@ -101,6 +107,10 @@ then
 		unset PKG_CONFIG_LIBDIR
 
 		cd ${TMP_SRC_FOLDER}/linux-kernel || exit 1
+
+		export KBUILD_CFLAGS="-std=gnu17"
+		export KCFLAGS="-std=gnu17" 
+		export KCPPFLAGS="-std=gnu17"
 
 		make ${MAKE_FLAGS} ${NBCORE} ARCH=${KERNEL_ARCH}  mrproper || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} ARCH=${KERNEL_ARCH}  distclean || exit 1
@@ -149,9 +159,9 @@ then
 	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
 	then
 	(
-		echo "**************"
-		echo "*   GCC...   *"
-		echo "**************"
+		echo "***********************"
+		echo "*   GCC STAGE 1 ...   *"
+		echo "***********************"
 
 		create_src_dir
 		create_build_dir
@@ -189,27 +199,31 @@ then
 
 		TMP_ARCHIVE_FOLDER=$CUR_SRC_MAIN_FOLDER
 
+		sed -i 's/<limits.h>/<linux\/limits.h>/g' ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/libsanitizer/asan/asan_linux.cpp
+
 		if [ "$CROSSCOMPILERONLY_TMP" = "1" ];
 		then
 			${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_CROSS_TOOLS}" \
 				--target=$TGT_MACH          \
-				--enable-languages=c,c++   \
-				--disable-multilib         \
+				--enable-languages=c,c++    \
+				--disable-libatomic \
+				--disable-multilib \
 				${GCC_ADD_CONF} || exit 1
 		else
 			${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_CROSS_TOOLS}" \
 				--target=$TGT_MACH          \
-				--enable-languages=c,c++   \
-				--disable-multilib         \
+				--enable-languages=c,c++    \
+				--disable-libatomic \
+				--disable-multilib \
 				--with-sysroot=${TARGET_ROOTFS} \
 				--with-native-system-header-dir=/include \
 				${GCC_ADD_CONF} || exit 1
 		fi
 
 		# To force the fixed limits.h generation...
-		echo > ${TARGET_ROOTFS}/include/limits.h
+		#echo > ${TARGET_ROOTFS}/include/limits.h
 		ln -s ${TARGET_ROOTFS}/include ${TARGET_ROOTFS}/sys-include
 
 		make ${MAKE_FLAGS} ${NBCORE} all-gcc || exit 1
@@ -257,6 +271,7 @@ then
 		cd glibc || exit 1
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				CFLAGS=" -std=gnu17 -O3" \
 				--prefix="/" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
@@ -273,11 +288,98 @@ then
 		${TGT_MACH}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o "${TARGET_ROOTFS}/lib/libc.so"
 		touch ${TARGET_ROOTFS}/include/gnu/stubs.h
 
+		cp ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/include/limits.h  ${TARGET_ROOTFS}/include/
+
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
 
 	) || exit 1
 	fi
 
+) || exit 1
+fi
+
+####################################################################
+# UCLIBC headers
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_UCLIBC:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_LIBC_DONE ]
+	then
+	(
+		echo "*********************"
+		echo "*   uclibC headers  *"
+		echo "*********************"
+
+		create_src_dir
+		unpack ${CUR_PACKAGE} ""
+
+		cd  ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		make clean || exit 1
+		make defconfig || exit 1
+
+		# use a predefined config if present.
+		if [ -f ${TARGET_CONFIG}/uclibc_config ]
+		then
+		(
+			cp ${TARGET_CONFIG}/uclibc_config .config || exit 1
+		)
+		fi
+
+		make PREFIX=${TARGET_ROOTFS} install_headers || exit 1
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# UCLIB C libraries
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_UCLIBC:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_LIBC_DONE ]
+	then
+	(
+		echo "*************"
+		echo "*   uclibC   *"
+		echo "*************"
+
+		create_src_dir
+		unpack ${CUR_PACKAGE} ""
+
+		cd  ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		make clean || exit 1
+
+		# use a predefined config if present.
+		if [ -f ${TARGET_CONFIG}/uclibc_config ]
+		then
+		(
+			cp ${TARGET_CONFIG}/uclibc_config .config || exit 1
+		)
+		fi
+
+		make oldconfig || exit 1
+
+		make PREFIX=${TARGET_ROOTFS} CROSS_COMPILE=${TGT_MACH}- || exit 1
+		make PREFIX=${TARGET_ROOTFS} install || exit 1
+
+		#echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_LIBC_DONE
+
+	) || exit 1
+	fi
 ) || exit 1
 fi
 
@@ -311,6 +413,54 @@ then
 ) || exit 1
 fi
 
+
+####################################################################
+# UCLIB C libraries
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_UCLIBC:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_LIBC_DONE ]
+	then
+	(
+		echo "*************"
+		echo "*   uclibC   *"
+		echo "*************"
+
+		create_src_dir
+		unpack ${CUR_PACKAGE} ""
+
+		cd  ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		make clean || exit 1
+
+		# use a predefined config if present.
+		if [ -f ${TARGET_CONFIG}/uclibc_config ]
+		then
+		(
+			cp ${TARGET_CONFIG}/uclibc_config .config || exit 1
+		)
+		fi
+
+		make oldconfig || exit 1
+
+		make PREFIX=${TARGET_ROOTFS} CROSS_COMPILE=${TGT_MACH}- || exit 1
+		make PREFIX=${TARGET_ROOTFS} install || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_LIBC_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
 ####################################################################
 # Standard C libraries
 ####################################################################
@@ -330,6 +480,7 @@ then
 
 		cd  ${TMP_BUILD_FOLDER}/glibc || exit 1
 
+		export  CFLAGS=" -std=gnu17 -O3 "
 		make ${MAKE_FLAGS} ${NBCORE} install_root=${TARGET_ROOTFS}           || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install_root=${TARGET_ROOTFS} install   || exit 1
 
@@ -367,6 +518,179 @@ then
 		cp  -aR  ${TARGET_CROSS_TOOLS}/${TGT_MACH}/lib/*   ${TARGET_ROOTFS}/lib
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_LIBCPP_DONE
+
+		#delete_build_dir
+		delete_src_dir
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# Newlib
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_NEWLIB:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_LIBC_DONE ]
+	then
+	(
+		echo "*************"
+		echo "*   newlib  *"
+		echo "*************"
+
+		create_src_dir
+		unpack ${CUR_PACKAGE} ""
+
+		cd  ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--prefix="${TARGET_ROOTFS}" \
+					--target=$TGT_MACH \
+					--disable-newlib-supplied-syscalls \
+					|| exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_src_dir
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# GCC Stage 2
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_GCC:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_STAGE2_DONE ]
+	then
+	(
+		echo "************************"
+		echo "*   GCC STAGE 2        *"
+		echo "************************"
+
+		create_build_dir
+		create_src_dir
+
+
+		unpack ${CUR_PACKAGE} ""
+
+		unset PKG_CONFIG_LIBDIR
+
+		CUR_SRC_MAIN_FOLDER=$TMP_ARCHIVE_FOLDER
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}   || exit 1
+
+	if [ ! -d mpfr ]
+	then
+	(
+		TMP_PACKAGE="${SRC_PACKAGE_GCC_MPFR##*/}"
+		unpack ${TMP_PACKAGE} ${CUR_SRC_MAIN_FOLDER}
+		mv -v ${TMP_ARCHIVE_FOLDER} mpfr || exit 1
+	) || exit 1
+	fi
+
+
+	if [ ! -d gmp ]
+	then
+	(
+		TMP_PACKAGE="${SRC_PACKAGE_GCC_GMP##*/}"
+		unpack ${TMP_PACKAGE} ${CUR_SRC_MAIN_FOLDER}
+		mv -v ${TMP_ARCHIVE_FOLDER} gmp || exit 1
+	) || exit 1
+	fi
+
+	if [ ! -d mpc ]
+	then
+	(
+		TMP_PACKAGE="${SRC_PACKAGE_GCC_MPC##*/}"
+		unpack ${TMP_PACKAGE} ${CUR_SRC_MAIN_FOLDER}
+		mv -v ${TMP_ARCHIVE_FOLDER} mpc || exit 1
+	) || exit 1
+	fi
+
+	if [ ! -d isl ]
+	then
+	(
+		TMP_PACKAGE="${SRC_PACKAGE_GCC_ISL##*/}"
+		unpack ${TMP_PACKAGE} ${CUR_SRC_MAIN_FOLDER}
+		mv -v ${TMP_ARCHIVE_FOLDER} isl || exit 1
+	) || exit 1
+	fi
+
+		#TMP_PACKAGE="${SRC_PACKAGE_GCC_CLOOG##*/}"
+		#unpack ${TMP_PACKAGE} ${CUR_SRC_MAIN_FOLDER}
+		#mv -v ${TMP_ARCHIVE_FOLDER} cloog || exit 1
+
+ 		cd ${TMP_BUILD_FOLDER} || exit 1
+		rm -rf gcc
+		mkdir -pv gcc || exit 1
+		cd gcc || exit 1
+
+		TMP_ARCHIVE_FOLDER=$CUR_SRC_MAIN_FOLDER
+
+		sed -i 's/<limits.h>/<linux\/limits.h>/g' ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/libsanitizer/asan/asan_linux.cpp
+
+		cd  ${TMP_BUILD_FOLDER}/gcc || exit 1
+
+		if [ "$CROSSCOMPILERONLY_TMP" = "1" ];
+		then
+			${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_CROSS_TOOLS}" \
+				--target=$TGT_MACH          \
+				--enable-languages=c,c++    \
+				--disable-multilib \
+				--enable-libatomic      \
+				${GCC_ADD_CONF} || exit 1
+		else
+			${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				--prefix="${TARGET_CROSS_TOOLS}" \
+				--target=$TGT_MACH          \
+				--enable-languages=c,c++    \
+				--disable-multilib \
+				--enable-libatomic      \
+				--with-sysroot=${TARGET_ROOTFS} \
+				--with-native-system-header-dir=/include \
+				${GCC_ADD_CONF} || exit 1
+		fi
+
+		# To force the fixed limits.h generation...
+		#echo > ${TARGET_ROOTFS}/include/limits.h
+	
+		make ${MAKE_FLAGS} ${NBCORE} all-gcc || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install-gcc || exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE} all-target-libgcc || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install-target-libgcc || exit 1
+
+		rm ${TARGET_ROOTFS}/sys-include
+
+	
+
+		make ${MAKE_FLAGS} ${NBCORE} all   || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install   || exit 1
+
+		#FIXME ! C++ libs not in the root fs ?
+		cp  -aR  ${TARGET_CROSS_TOOLS}/${TGT_MACH}/lib64/*   ${TARGET_ROOTFS}/lib
+		cp  -aR  ${TARGET_CROSS_TOOLS}/${TGT_MACH}/lib/*   ${TARGET_ROOTFS}/lib
+
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_STAGE2_DONE
 
 		delete_build_dir
 		delete_src_dir
@@ -435,17 +759,27 @@ then
 		create_build_dir
 		unpack ${CUR_PACKAGE} ""
 
+		if [ -f ${COMMON_PATCHES}/libtirpc/libtirpc.patch ]
+		then
+		(
+			echo ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/ || exit 1
+			patch -Zf -p1 --directory=${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} -i ${COMMON_PATCHES}/libtirpc/libtirpc.patch  || exit 1
+		) || exit 1
+		fi
+
 		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir libtirpc
 		cd libtirpc || exit 1
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					CFLAGS="-std=gnu17 -O3" \
 					--disable-gssapi \
+					--disable-static \
 					--prefix="${TARGET_ROOTFS}" \
 					--host=$TGT_MACH || exit 1
 
-		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
-		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} CFLAGS="-std=gnu17 -O3" ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} CFLAGS="-std=gnu17 -O3" ${NBCORE} install || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -473,12 +807,21 @@ then
 		create_build_dir
 		unpack ${CUR_PACKAGE} ""
 
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}   || exit 1
+
+		autoupdate
+		./autogen.sh
+
 		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir libnsl
 		cd libnsl || exit 1
 
+		export PKG_CONFIG_PATH=${TARGET_ROOTFS}/lib/pkgconfig
+
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--with-sysroot="${TARGET_ROOTFS}/lib" \
 					--prefix="${TARGET_ROOTFS}" \
+					PKG_CONFIG_PATH=${TARGET_ROOTFS}/lib/pkgconfig \
 					--host=$TGT_MACH || exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
@@ -518,6 +861,9 @@ then
 		cd libelf || exit 1
 
 		export CC=${TGT_MACH}-gcc
+		autoupdate
+
+		sed -i s#main\(\)\{return\(0\)\;\}#int\ main\(\)\{return\(0\)\;\}#g ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure || exit 1
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
@@ -565,11 +911,12 @@ then
 		export CC=${TGT_MACH}-gcc
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
-				--prefix="${TARGET_ROOTFS}" -host=$TGT_MACH \
+				CFLAGS="-O3 -Wno-error=unused-but-set-variable" \
+				--prefix="${TARGET_ROOTFS}" --host=$TGT_MACH \
 				--disable-libdebuginfod --disable-debuginfod || exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE}  || exit 1
-		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} -C libelf install || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -579,6 +926,47 @@ then
 	) || exit 1
 	fi
 
+) || exit 1
+fi
+
+####################################################################
+# LIBGMP
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_LIBGMP:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir libgmp
+		cd libgmp || exit 1
+
+		# gcc 15 support patch
+		sed -i 's/void g(){}/void g(int a,t1 const*b,t1 c,t2 d,t1 const*e,int f){}/' ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/acinclude.m4
+		sed -i 's/void g(){}/void g(int a,t1 const*b,t1 c,t2 d,t1 const*e,int f){}/' ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--prefix="${TARGET_ROOTFS}" \
+					--host=$TGT_MACH || exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
 ) || exit 1
 fi
 
@@ -594,20 +982,31 @@ then
 	then
 	(
 
+		echo "******************"
+		echo "*   Kernel ...   *"
+		echo "******************"
+
 		create_src_dir
 		create_build_dir
-		unpack ${CUR_PACKAGE} ""
 
-		cd ${TMP_SRC_FOLDER} || exit 1
-		mv ${TMP_ARCHIVE_FOLDER} linux-kernel  || exit 1
-		cd linux-kernel                        || exit 1
 
-		if [ -f ${TARGET_CONFIG}/kernel_pre_process.sh ]
+		if [ ! -d ${TMP_SRC_FOLDER}/linux-kernel ]
 		then
 		(
-			echo Pre process script available... executing it...
-			#To apply patches or anything else
-			source ${TARGET_CONFIG}/kernel_pre_process.sh || exit 1
+			unpack ${CUR_PACKAGE} ""
+
+			cd ${TMP_SRC_FOLDER} || exit 1
+			mv ${TMP_ARCHIVE_FOLDER} linux-kernel  || exit 1
+			cd linux-kernel                        || exit 1
+
+			if [ -f ${TARGET_CONFIG}/kernel_pre_process.sh ]
+			then
+			(
+				echo Pre process script available... executing it...
+				#To apply patches or anything else
+				source ${TARGET_CONFIG}/kernel_pre_process.sh || exit 1
+			)
+			fi
 		)
 		fi
 
@@ -616,6 +1015,10 @@ then
 		unset PKG_CONFIG_LIBDIR
 
 		cd ${TMP_SRC_FOLDER}/linux-kernel || exit 1
+
+		export KBUILD_CFLAGS="-std=gnu17"
+		export KCFLAGS="-std=gnu17" 
+		export KCPPFLAGS="-std=gnu17"
 
 		make ${MAKE_FLAGS} ${NBCORE} ARCH=${KERNEL_ARCH}  mrproper || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} ARCH=${KERNEL_ARCH}  distclean || exit 1
@@ -868,9 +1271,9 @@ then
 		export PKGCONFIGDIR=/lib/pkgconfig
 		export lib=lib
 
-		make ${MAKE_FLAGS} prefix="${TARGET_ROOTFS}" BUILD_CC=gcc CROSS_COMPILE=${TGT_MACH}- || exit 1
+		make ${MAKE_FLAGS} PAM_CAP=no prefix="${TARGET_ROOTFS}" BUILD_CC=gcc CROSS_COMPILE=${TGT_MACH}-  || exit 1
 
-		make ${MAKE_FLAGS} install prefix="${TARGET_ROOTFS}" BUILD_CC=gcc CROSS_COMPILE=${TGT_MACH}- || exit 1
+		make ${MAKE_FLAGS} PAM_CAP=no install prefix="${TARGET_ROOTFS}" BUILD_CC=gcc CROSS_COMPILE=${TGT_MACH}- || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -880,6 +1283,48 @@ then
 	) || exit 1
 	fi
 
+) || exit 1
+fi
+
+####################################################################
+# LIBXCRYPT
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_LIBXCRYPT:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		./autogen.sh
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir libxcrypt
+		cd libxcrypt || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--prefix="${TARGET_ROOTFS}" \
+					--host=$TGT_MACH || exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
 ) || exit 1
 fi
 
@@ -1046,6 +1491,7 @@ then
 				--disable-write      \
 				--disable-chsh-only-listed \
 				--disable-eject      \
+				--disable-liblastlog2 \
 				--with-bashcompletiondir=${TARGET_ROOTFS}/usr/share/bash-completion/completions/  || exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE}  || exit 1
@@ -1061,7 +1507,6 @@ then
 
 ) || exit 1
 fi
-
 
 ####################################################################
 # EUDEV
@@ -1128,14 +1573,14 @@ then
 		mkdir -pv libpam || exit 1
 		cd libpam || exit 1
 
-		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
-				--prefix="${TARGET_ROOTFS}" \
-				--host=$TGT_MACH \
-				--disable-nis \
-				|| exit 1
+		create_meson_crossfile meson_cross.txt
 
-		make ${MAKE_FLAGS} ${NBCORE}  || exit 1
-		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS}/usr --buildtype=release --cross-file meson_cross.txt \
+		-D docs=disabled \
+		|| exit 1
+
+		ninja || exit 1
+		ninja install || exit 1
 
 		cp -a ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/libpam/include/ ${TARGET_ROOTFS} || exit 1
 		cp -a ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/libpamc/include/ ${TARGET_ROOTFS} || exit 1
@@ -1151,7 +1596,6 @@ then
 
 ) || exit 1
 fi
-
 ####################################################################
 # SystemD
 ####################################################################
@@ -1175,79 +1619,69 @@ then
 		mkdir -pv systemd || exit 1
 		cd systemd || exit 1
 
-		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
-				--prefix="${TARGET_ROOTFS}" \
-				--host=$TGT_MACH            \
-				--disable-python-devel      \
-				--enable-dbus               \
-				--disable-utmp              \
-				--disable-compat-libs       \
-				--disable-coverage          \
-				--disable-kmod              \
-				--disable-xkbcommon         \
-				--enable-blkid              \
-				--disable-seccomp           \
-				--disable-ima               \
-				--disable-selinux           \
-				--disable-apparmor          \
-				--disable-xz                \
-				--disable-zlib              \
-				--enable-bzip2              \
-				--disable-lz4               \
-				--enable-pam                \
-				--disable-acl               \
-				--disable-smack             \
-				--disable-gcrypt            \
-				--disable-audit             \
-				--disable-elfutils          \
-				--disable-libcryptsetup     \
-				--disable-qrencode          \
-				--disable-microhttpd        \
-				--disable-gnutls            \
-				--disable-libcurl           \
-				--disable-libidn            \
-				--disable-libiptc           \
-				--disable-binfmt            \
-				--disable-vconsole          \
-				--disable-bootchart         \
-				--disable-quotacheck        \
-				--disable-tmpfiles          \
-				--disable-sysusers          \
-				--disable-firstboot         \
-				--disable-randomseed        \
-				--disable-backlight         \
-				--disable-rfkill            \
-				--enable-logind             \
-				--disable-machined          \
-				--disable-importd           \
-				--disable-hostnamed         \
-				--disable-timedated         \
-				--disable-timesyncd         \
-				--disable-localed           \
-				--disable-coredump          \
-				--disable-polkit            \
-				--disable-resolved          \
-				--disable-networkd          \
-				--disable-efi               \
-				--disable-gnuefi            \
-				--disable-terminal          \
-				--disable-kdbus             \
-				--disable-myhostname        \
-				--disable-hwdb              \
-				--disable-manpages          \
-				--disable-hibernate         \
-				--disable-ldconfig          \
-				--enable-split-usr          \
-				--disable-tests             \
-				--without-python            \
-				--with-bashcompletiondir="${TARGET_ROOTFS}/share/bash-completions/completions" \
-				--with-rootprefix="${TARGET_ROOTFS}" \
-				--with-sysvinit-path="${TARGET_ROOTFS}"/etc/init.d \
-				--with-sysvrcnd-path="${TARGET_ROOTFS}"/etc \
-				PKG_CONFIG_PATH=${TARGET_ROOTFS}/lib/pkgconfig \
-				ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes || exit 1
+		create_meson_crossfile meson_cross.txt
 
-		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS}/usr --buildtype=release --cross-file meson_cross.txt \
+		-D utmp=false               \
+		-D kmod=false               \
+		-D xkbcommon=false          \
+		-D seccomp=false            \
+		-D ima=false                \
+		-D selinux=false            \
+		-D apparmor=false           \
+		-D xz=false                 \
+		-D zlib=false               \
+		-D lz4=false                \
+		-D acl=false                \
+		-D smack=false              \
+		-D gcrypt=false             \
+		-D audit=false              \
+		-D elfutils=false           \
+		-D libcryptsetup=false      \
+		-D qrencode=false           \
+		-D microhttpd=false         \
+		-D gnutls=false             \
+		-D libcurl=false            \
+		-D libidn=false             \
+		-D libiptc=false            \
+		-D binfmt=false             \
+		-D vconsole=false           \
+		-D quotacheck=false         \
+		-D tmpfiles=false           \
+		-D sysusers=false           \
+		-D firstboot=false          \
+		-D randomseed=false         \
+		-D backlight=false          \
+		-D rfkill=false             \
+		-D machined=false           \
+		-D importd=false            \
+		-D hostnamed=false          \
+		-D timedated=false          \
+		-D timesyncd=false          \
+		-D localed=false            \
+		-D coredump=false           \
+		-D polkit=false             \
+		-D networkd=false           \
+		-D efi=false                \
+		-D hwdb=false               \
+		-D hibernate=false          \
+		-D ldconfig=false           \
+		-D tests=false              \
+		-D split-usr=false           \
+		-D dbus=false                \
+		-D blkid=false               \
+		-D bzip2=false              \
+		-D pam=false                 \
+		-D logind=false              \
+		-D mode=release             \
+		-D pamconfdir=no            \
+		-D dev-kvm-mode=0660        \
+		-D nobody-group=nogroup     \
+		-D sysupdate=false          \
+		 || exit 1
+
+		ninja || exit 1
+		ninja install || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -1283,13 +1717,17 @@ then
 		mkdir -pv libinput || exit 1
 		cd libinput || exit 1
 
-		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
-				--prefix="${TARGET_ROOTFS}" \
-				--host=$TGT_MACH \
-				--disable-documentation --disable-debug-gui --disable-tests --disable-libwacom || exit 1
+		create_meson_crossfile meson_cross.txt
 
-		make ${MAKE_FLAGS} ${NBCORE}  || exit 1
-		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS}/usr --buildtype=release --cross-file meson_cross.txt \
+			-D documentation=false \
+			-D debug-gui=false \
+			-D tests=false \
+			-D libwacom=false \
+		|| exit 1
+
+		ninja || exit 1
+		ninja install || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -1326,6 +1764,7 @@ then
 		cd haveged || exit 1
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				CFLAGS="-std=gnu17 -O3" \
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH || exit 1
 

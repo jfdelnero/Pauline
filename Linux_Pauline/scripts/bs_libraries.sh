@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2023 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # system librairies
 #
@@ -13,6 +13,46 @@ source ${TARGET_CONFIG}/config.sh || exit 1
 echo "****************"
 echo "*  Librairies  *"
 echo "****************"
+
+####################################################################
+# LOG4CPLUS
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_LOG4CPLUS:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir log4cplus
+		cd log4cplus || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--prefix="${TARGET_ROOTFS}" \
+					--host=$TGT_MACH \
+					|| exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
 
 ####################################################################
 # ZLIB
@@ -46,6 +86,42 @@ then
 
 		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# ZSTD
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_ZSTD:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit
+
+		make ${MAKE_FLAGS} || exit 1
+		make ${MAKE_FLAGS} install PREFIX="${TARGET_ROOTFS}" || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -153,46 +229,47 @@ then
 		mkdir ncurses
 		cd ncurses || exit 1
 
+		# wide version
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				CFLAGS="-std=gnu17" \
 				--prefix="${TARGET_ROOTFS}" \
 				--host=$TGT_MACH CC=${TGT_MACH}-gcc \
 				--disable-stripping STRIPPROG=${TGT_MACH}-strip \
+				--with-normal \
 				--with-shared \
-				--without-normal \
 				--with-cxx-shared \
+				--enable-widec \
 				--without-debug \
 				--without-ada \
 				--without-manpages \
 				--with-curses-h \
 				--enable-pc-files \
 				--with-termlib \
+				--without-terminfo \
 				--with-versioned-syms \
+				--with-tic-path=${BUILDTOOLS_HOME}/bin/tic \
 				--with-pkg-config-libdir=${TARGET_ROOTFS}/lib/pkgconfig || exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE} all     || exit 1
+
+		for lib in ncurses\+\+ ncurses form panel menu tinfo ; do
+			rm -vf                    ${TARGET_ROOTFS}/lib/lib${lib}.so
+			rm -vf                    ${TARGET_ROOTFS}/lib/lib${lib}w.so
+			rm -vf                    ${TARGET_ROOTFS}/lib/lib${lib}.a
+			rm -vf                    ${TARGET_ROOTFS}/lib/lib${lib}w.a
+			rm -vf                    ${TARGET_ROOTFS}/lib/pkgconfig/${lib}.pc
+			rm -vf                    ${TARGET_ROOTFS}/lib/pkgconfig/${lib}w.pc
+		done
+
 		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
 
-		make ${MAKE_FLAGS} ${NBCORE} clean   || exit 1
+		for lib in ncurses\+\+ ncurses form panel menu tinfo ; do
+			ln -sfv ${TARGET_ROOTFS}/lib/lib${lib}w.so ${TARGET_ROOTFS}/lib/lib${lib}.so
+			ln -sfv ${TARGET_ROOTFS}/lib/pkgconfig/${lib}w.pc ${TARGET_ROOTFS}/lib/pkgconfig/${lib}.pc
+			ln -sfv ${TARGET_ROOTFS}/lib/lib${lib}w.a ${TARGET_ROOTFS}/lib/lib${lib}.a
+		done
 
-		# rebuild without termlib to fix the missing "cursrc" symbol issue with nano...
-
-		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
-				--prefix="${TARGET_ROOTFS}" \
-				--host=$TGT_MACH CC=${TGT_MACH}-gcc \
-				--disable-stripping STRIPPROG=${TGT_MACH}-strip \
-				--with-shared \
-				--without-normal \
-				--with-cxx-shared \
-				--without-debug \
-				--without-manpages \
-				--without-ada \
-				--with-curses-h \
-				--enable-pc-files \
-				--with-versioned-syms \
-				--with-pkg-config-libdir=${TARGET_ROOTFS}/lib/pkgconfig || exit 1
-
-		make ${MAKE_FLAGS} ${NBCORE} all     || exit 1
-		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+		cp ${TARGET_ROOTFS}/include/ncursesw/* ${TARGET_ROOTFS}/include/
 
 		delete_build_dir
 		delete_src_dir
@@ -333,6 +410,47 @@ then
 fi
 
 ####################################################################
+# LIBGDM
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_LIBGDM:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir libgdm
+		cd libgdm || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--host=$TGT_MACH \
+					--prefix="${TARGET_ROOTFS}" \
+					--disable-static \
+					--enable-libgdbm-compat \
+					|| exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+
+####################################################################
 # LIBGMP
 ####################################################################
 CUR_PACKAGE=${SRC_PACKAGE_LIBGMP:-"UNDEF"}
@@ -349,8 +467,101 @@ then
 		unpack ${CUR_PACKAGE} ""
 
 		cd ${TMP_BUILD_FOLDER} || exit 1
-		mkdir libnettle
-		cd libnettle || exit 1
+		mkdir libgmp
+		cd libgmp || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--prefix="${TARGET_ROOTFS}" \
+					--host=$TGT_MACH || exit 1
+
+		# gcc 15 support patch
+		sed -i 's/void g(){}/void g(int a,t1 const*b,t1 c,t2 d,t1 const*e,int f){}/' ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/acinclude.m4
+		sed -i 's/void g(){}/void g(int a,t1 const*b,t1 c,t2 d,t1 const*e,int f){}/' ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure
+
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# MPFR
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_MPFR:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir mpfr
+		cd mpfr || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--prefix="${TARGET_ROOTFS}" \
+					--host=$TGT_MACH || exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# MPC
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_MPC:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir mpc
+		cd mpc || exit 1
+
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 					--prefix="${TARGET_ROOTFS}" \
@@ -389,6 +600,9 @@ then
 		mkdir libnettle
 		cd libnettle || exit 1
 
+		# Force cross compiling ...
+		sed -i "s/cross_compiling\=no/cross_compiling\=yes/g" ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure
+
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 					--prefix="${TARGET_ROOTFS}" \
 					--host=$TGT_MACH || exit 1
@@ -400,6 +614,44 @@ then
 		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# P11 kit
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_P11KIT:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${BUILDTOOLS_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack_buildtools ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir -pv p11kit || exit 1
+		cd p11kit || exit 1
+
+		create_meson_crossfile meson_cross.txt
+		meson setup -Dpkg_config_path=${TARGET_ROOTFS}/lib/pkgconfig ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS}/ --buildtype=release --cross-file meson_cross.txt || exit 1
+
+		ninja || exit 1
+		ninja install || exit 1
+
+		cp meson-private/p11-kit-1.pc ${TARGET_ROOTFS}/lib/pkgconfig
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${BUILDTOOLS_BUILD}/${CUR_PACKAGE}_DONE
 
 	) || exit 1
 	fi
@@ -430,8 +682,9 @@ then
 					--prefix="${TARGET_ROOTFS}" \
 					--host=$TGT_MACH \
 					--with-included-libtasn1 \
-					--with-included-unistring \
-					--without-p11-kit || exit 1
+					--disable-tests \
+					--disable-maintainer-mode \
+					--with-included-unistring || exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
@@ -483,6 +736,42 @@ then
 ) || exit 1
 fi
 
+####################################################################
+# LIBXCRYPT
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_LIBXCRYPT:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir libxcrypt
+		cd libxcrypt || exit 1
+
+		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--prefix="${TARGET_ROOTFS}" \
+					--host=$TGT_MACH || exit 1
+
+		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
 
 ####################################################################
 # gpg-error
@@ -580,7 +869,10 @@ then
 		mkdir libgpgme
 		cd libgpgme || exit 1
 
+		export YAT2M=${BUILDTOOLS_HOME}/bin/yat2m
+
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+					--without-doc \
 					--prefix="${TARGET_ROOTFS}" \
 					--host=$TGT_MACH || exit 1
 
@@ -634,3 +926,41 @@ then
 	fi
 ) || exit 1
 fi
+
+
+####################################################################
+# BOOST
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_BOOST:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		echo "using gcc : arm : "$TGT_MACH-g++ ";" > user-config.jam
+
+		./bootstrap.sh link=shared,static --prefix="${TARGET_ROOTFS}" || exit 1
+
+		./b2 install toolset=gcc-arm --without-python --user-config=user-config.jam || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+

@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2023 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # Graphic stack
 #
@@ -32,14 +32,9 @@ then
 		unpack ${CUR_PACKAGE} ""
 
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+		create_cmake_crossfile cross.cmake
 
-		export CC=${TGT_MACH}-gcc
-		export LD=${TGT_MACH}-ld
-		export AS=${TGT_MACH}-as
-		export AR=${TGT_MACH}-ar
-		export DESTDIR=${TARGET_ROOTFS}
-
-		cmake -DCMAKE_INSTALL_PREFIX= -DCMAKE_SYSTEM_PREFIX_PATH=${TARGET_ROOTFS}
+		cmake -DCMAKE_TOOLCHAIN_FILE=cross.cmake -DCMAKE_INSTALL_PREFIX=${TARGET_ROOTFS}
 
 		make ${MAKE_FLAGS} ${NBCORE} all     || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
@@ -151,21 +146,17 @@ then
 
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		sed -i s#-DDEBUG#-D__DEBUG__#g nouveau/Makefile.in || exit 1
+		create_meson_crossfile meson_cross.txt
 
 		cd ${TMP_BUILD_FOLDER} || exit 1
 		mkdir libdrm
 		cd libdrm || exit 1
 
-		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
-				--prefix="${TARGET_ROOTFS}" \
-				--host=$TGT_MACH CC=${TGT_MACH}-gcc \
-				${DRM_SUPPORT} \
-				--enable-install-test-programs \
-				|| exit 1
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS} --buildtype=release --cross-file ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/meson_cross.txt \
+		|| exit 1
 
-		make ${MAKE_FLAGS} ${NBCORE} all     || exit 1
-		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+		ninja || exit 1
+		ninja install || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -197,32 +188,40 @@ then
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		unset PKG_CONFIG_LIBDIR
-		export PKG_CONFIG_PATH=${TARGET_CROSS_TOOLS}/lib/pkgconfig
+		#export PKG_CONFIG_PATH=${TARGET_CROSS_TOOLS}/lib/pkgconfig
 
-		sed -i s#\@USE_HOST_SCANNER_TRUE\@wayland_scanner\ =\ wayland-scanner#\@USE_HOST_SCANNER_TRUE\@wayland_scanner\ =\ \'\$\(top_builddir\)/..\\/wayland_scanner/wayland-scanner\'#g Makefile.in || exit 1
+		#sed -i s#\@USE_HOST_SCANNER_TRUE\@wayland_scanner\ =\ wayland-scanner#\@USE_HOST_SCANNER_TRUE\@wayland_scanner\ =\ \'\$\(top_builddir\)/..\\/wayland_scanner/wayland-scanner\'#g Makefile.in || exit 1
 
 		cd ${TMP_BUILD_FOLDER} || exit 1
 
 		# wayland_scanner build
-		mkdir wayland_scanner
-		cd wayland_scanner || exit 1
-		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure --disable-static -disable-documentation || exit 1
-		make ${MAKE_FLAGS} || exit 1
+		#mkdir wayland_scanner
+		#cd wayland_scanner || exit 1
+		#${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure --disable-static -disable-documentation || exit 1
+		#make ${MAKE_FLAGS} || exit 1
 
-		export PKG_CONFIG_PATH=
-		export WAYLAND_SCANNER_PATH=${TMP_BUILD_FOLDER}/wayland_scanner/wayland-scanner
+		#export PKG_CONFIG_PATH=
+		#export WAYLAND_SCANNER_PATH=${TARGET_CROSS_TOOLS}/usr/bin/wayland-scanner
 
-		cd ..
+		#cd ..
 
-		export PKG_CONFIG_LIBDIR=${TARGET_ROOTFS}/lib/pkgconfig
+		#export PKG_CONFIG_LIBDIR=${TARGET_ROOTFS}/lib/pkgconfig
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		create_meson_crossfile meson_cross.txt
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
 
 		mkdir wayland_target
 		cd wayland_target || exit 1
 
-		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure --prefix="${TARGET_ROOTFS}" --with-host-scanner=yes --disable-static -disable-documentation --host=$TGT_MACH || exit 1
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS} --buildtype=release --cross-file ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/meson_cross.txt \
+		-D documentation=false \
+		|| exit 1
 
-		make ${MAKE_FLAGS} || exit 1
-		make ${MAKE_FLAGS} install || exit 1
+		ninja || exit 1
+		ninja install || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -366,6 +365,8 @@ then
 
 		unpack ${CUR_PACKAGE} ""
 
+		create_meson_crossfile ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/meson_cross.txt
+
 		cd ${TMP_BUILD_FOLDER} || exit 1
 
 		mkdir xkbcommon
@@ -373,12 +374,14 @@ then
 
 		export wayland_scanner=${TMP_BUILD_FOLDER}/wayland_scanner/wayland-scanner
 
-		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure --prefix="${TARGET_ROOTFS}" --host=$TGT_MACH --disable-x11 || exit 1
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS} --buildtype=release --cross-file ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/meson_cross.txt \
+		-D enable-x11=false \
+		|| exit 1
 
-		sed -i s#wayland_scanner\ \=#wayland_scanner\ \=${wayland_scanner}\ \\##g Makefile || exit 1
+		ninja || exit 1
+		ninja install || exit 1
 
-		make ${MAKE_FLAGS} || exit 1
-		make ${MAKE_FLAGS} install || exit 1
+		#sed -i s#wayland_scanner\ \=#wayland_scanner\ \=${wayland_scanner}\ \\##g Makefile || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -774,27 +777,27 @@ then
 				--disable-video-x11 \
 				--disable-x11-shared \
 				--disable-video-x11-xcursor \
- 				--disable-video-x11-xinerama \
- 				--disable-video-x11-xinput \
- 				--disable-video-x11-xrandr \
- 				--disable-video-x11-scrnsaver \
- 				--disable-video-x11-xshape \
- 				--disable-video-x11-vm \
- 				--disable-esd \
- 				--disable-video-mir \
- 				--enable-video-wayland \
- 				--enable-video-rpi \
- 				--enable-video-opengl \
- 				--enable-video-opengles \
- 				--enable-video-opengles1 \
- 				--enable-video-opengles2 \
- 				--enable-video-dummy \
- 				--enable-video-directfb \
- 				--enable-video-kmsdrm \
- 				--disable-haptic \
- 				--disable-directfb-shared \
- 				--disable-pulseaudio \
- 				CFLAGS="-DPATH_MAX=4096 -DMESA_EGL_NO_X11_HEADERS" || exit 1
+				--disable-video-x11-xinerama \
+				--disable-video-x11-xinput \
+				--disable-video-x11-xrandr \
+				--disable-video-x11-scrnsaver \
+				--disable-video-x11-xshape \
+				--disable-video-x11-vm \
+				--disable-esd \
+				--disable-video-mir \
+				--enable-video-wayland \
+				--enable-video-rpi \
+				--enable-video-opengl \
+				--enable-video-opengles \
+				--enable-video-opengles1 \
+				--enable-video-opengles2 \
+				--enable-video-dummy \
+				--enable-video-directfb \
+				--enable-video-kmsdrm \
+				--disable-haptic \
+				--disable-directfb-shared \
+				--disable-pulseaudio \
+				CFLAGS="-DPATH_MAX=4096 -DMESA_EGL_NO_X11_HEADERS" || exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
@@ -1047,6 +1050,47 @@ then
 
 		make ${MAKE_FLAGS} ${NBCORE} || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# V4L Utils
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_V4LUTILS:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+		create_build_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		create_meson_crossfile meson_cross.txt
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir v4lutils
+		cd v4lutils || exit 1
+
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} -D gconv=disabled -D doxygen-doc=disabled -D udevdir=${TARGET_ROOTFS}/lib/udev/ --prefix=${TARGET_ROOTFS} --buildtype=release --cross-file ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/meson_cross.txt \
+		|| exit 1
+
+		ninja || exit 1
+		ninja install || exit 1
 
 		delete_build_dir
 		delete_src_dir

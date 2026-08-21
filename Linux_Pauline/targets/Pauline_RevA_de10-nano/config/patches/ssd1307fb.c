@@ -13,7 +13,9 @@
  * Sept-2023 : Kernel 5.x/6.x support
  *             Fixes + Workqueue usages
  *
- * (c) 2020-2023 Jean-François DEL NERO
+ * Aug-2026 : Kernel 6.1x support
+ *
+ * (c) 2020-2026 Jean-François DEL NERO
  */
 #include <linux/backlight.h>
 #include <linux/delay.h>
@@ -368,7 +370,7 @@ static void ssd1307fb_timer_fn(struct timer_list * t)
 {
 	struct ssd1307fb_par *par;
 
-	par = from_timer(par, t, timer);
+	par = timer_container_of(par, t, timer);
 
 	schedule_work(&par->frame_wq);
 
@@ -499,13 +501,13 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
 
 		pwm_init_state(par->pwm, &pwmstate);
 		pwm_set_relative_duty_cycle(&pwmstate, 50, 100);
-		pwm_apply_state(par->pwm, &pwmstate);
+		pwm_apply_might_sleep(par->pwm, &pwmstate);
 
 		/* Enable the PWM */
 		pwm_enable(par->pwm);
 
 		dev_dbg(&par->client->dev, "Using PWM%d with a %lluns period.\n",
-			par->pwm->pwm, pwm_get_period(par->pwm));
+			par->pwm->hwpwm, pwm_get_period(par->pwm));
 	}
 
 	/* Display off */
@@ -765,17 +767,10 @@ static int ssd1307fb_get_brightness(struct backlight_device *bdev)
 	return par->contrast;
 }
 
-static int ssd1307fb_check_fb(struct backlight_device *bdev,
-				   struct fb_info *info)
-{
-	return (info->bl_dev == bdev);
-}
-
 static const struct backlight_ops ssd1307fb_bl_ops = {
 	.options	= BL_CORE_SUSPENDRESUME,
 	.update_status	= ssd1307fb_update_bl,
 	.get_brightness	= ssd1307fb_get_brightness,
-	.check_fb	= ssd1307fb_check_fb,
 };
 
 static struct ssd1307fb_deviceinfo ssd1307fb_ssd1305_deviceinfo = {
@@ -825,7 +820,7 @@ static const struct of_device_id ssd1307fb_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
 
-void frames_handler(struct work_struct *work)
+static void frames_handler(struct work_struct *work)
 {
 	int ret;
 	struct ssd1307fb_par * par;
@@ -1039,7 +1034,7 @@ static void ssd1307fb_remove(struct i2c_client *client)
 	struct fb_info *info = i2c_get_clientdata(client);
 	struct ssd1307fb_par *par = info->par;
 
-	del_timer_sync(&par->timer);
+	timer_delete_sync(&par->timer);
 	cancel_work_sync(&par->frame_wq);
 
 	ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_OFF);
@@ -1072,7 +1067,7 @@ static const struct i2c_device_id ssd1307fb_i2c_id[] = {
 MODULE_DEVICE_TABLE(i2c, ssd1307fb_i2c_id);
 
 static struct i2c_driver ssd1307fb_driver = {
-	.probe_new = ssd1307fb_probe,
+	.probe = ssd1307fb_probe,
 	.remove = ssd1307fb_remove,
 	.id_table = ssd1307fb_i2c_id,
 	.driver = {

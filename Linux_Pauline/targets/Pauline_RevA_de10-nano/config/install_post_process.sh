@@ -1,19 +1,18 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2021 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # DE10-Nano target post install process
 #
 
 source ${TARGET_CONFIG}/config.sh || exit 1
 
-# setup the altera env
-export _SOCEDS_ROOT=${ALTERA_TOOLS_ROOT}/embedded
-export SOCEDS_DEST_ROOT="${_SOCEDS_ROOT}"
-source ${_SOCEDS_ROOT}/env.sh || exit 1
-
 mkdir ${TARGET_HOME}/output_objects
+
+export ALTERA_SOPC2DTS_FOLDER=/media/jeff/ExtData/altera_lite/20.1/embedded/host_tools/altera/device_tree
+export ALTERA_SOPCINFO_FOLDER=${PAULINE_BASE}/FPGA_Pauline/Rev_A
+export ALTERA_QUARTUS_CPF_FOLDER=/media/jeff/ExtData/altera_lite/20.1/qprogrammer/linux64
 
 #
 # Build the cross compiled hxc tool
@@ -100,6 +99,10 @@ fi
 # Generate the dts and build the dtb
 #
 
+${ALTERA_SOPC2DTS_FOLDER}/sopc2dts --input ${ALTERA_SOPCINFO_FOLDER}/soc_system.sopcinfo --output ${TARGET_HOME}/output_objects/soc_system_fpga.dts --type dts --board ${TARGET_CONFIG}/fpga/soc_system_board_info.xml --board ${TARGET_CONFIG}/fpga/hps_common_board_info.xml --bridge-removal all --clocks  || exit 1
+
+dtc -I dts -O dtb -o ${TARGET_HOME}/output_objects/soc_system_fpga.dtb ${TARGET_HOME}/output_objects/soc_system_fpga.dts  || exit 1 
+
 #echo --- Generate the dts and build the dtb ---
 
 #cd ${FPGA_GHRD_FOLDER} || exit 1
@@ -128,35 +131,35 @@ cd ${FPGA_GHRD_FOLDER}/software/spl_bsp
 # build the preloader
 #
 
-if [ ! -f ${TARGET_HOME}/output_objects/preloader-mkpimage.bin ]
-then
-(
-	echo --- build the preloader ---
+#if [ ! -f ${TARGET_HOME}/output_objects/preloader-mkpimage.bin ]
+#then
+#(
+#	echo --- build the preloader ---
 
-	cd ${FPGA_GHRD_FOLDER}/software/spl_bsp
-	cp Makefile_old Makefile
+#	cd ${FPGA_GHRD_FOLDER}/software/spl_bsp
+#	cp Makefile_old Makefile
 
-	rm -rf uboot-socfpga
+#	rm -rf uboot-socfpga
 
-	tar -xvJf old-uboot-socfpga-2013-01-01.tar.xz   || exit 1
+#	tar -xvJf old-uboot-socfpga-2013-01-01.tar.xz   || exit 1
 
-	cp  old-uboot-socfpga-2013-01-01.tar.xz uboot-socfpga.tar.gz
+#	cp  old-uboot-socfpga-2013-01-01.tar.xz uboot-socfpga.tar.gz
 
-	cp -rfv ${FPGA_GHRD_FOLDER}/software/spl_bsp/generated/* ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/board/altera/socfpga || exit 1
+#	cp -rfv ${FPGA_GHRD_FOLDER}/software/spl_bsp/generated/* ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/board/altera/socfpga || exit 1
 
-	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc6.h ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc10.h
-	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc6.h ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc12.h
+#	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc6.h ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc10.h
+#	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc6.h ${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga/include/linux/compiler-gcc12.h
 
-	make clean CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-        || exit 1
-	echo stamp > uboot-socfpga/.untar
-	make  CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-  TGZ=${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga.tar.gz || exit 1
+#	make clean CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-        || exit 1
+#	echo stamp > uboot-socfpga/.untar
+#	make  CROSS_COMPILE=armv7a-hardfloat-linux-gnueabi-  TGZ=${FPGA_GHRD_FOLDER}/software/spl_bsp/uboot-socfpga.tar.gz || exit 1
 
-	rm uboot-socfpga.tar.gz
+#	rm uboot-socfpga.tar.gz
 
-	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/preloader-mkpimage.bin ${TARGET_HOME}/output_objects/  || exit 1
+#	cp ${FPGA_GHRD_FOLDER}/software/spl_bsp/preloader-mkpimage.bin ${TARGET_HOME}/output_objects/  || exit 1
 
-) || exit 1
-fi
+#) || exit 1
+#fi
 
 #############################################################################"
 
@@ -180,15 +183,14 @@ fi
 #############################################################################"
 
 # Make the u-boot script image
-
-mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "Boot Script Name" -d ${TARGET_CONFIG}/boot.script ${TARGET_HOME}/output_objects/u-boot.scr
+mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "Boot Script" -d ${TARGET_CONFIG}/boot.script ${TARGET_HOME}/output_objects/u-boot.scr
 
 # convert the fpga sof file to rbf.
 
-${ALTERA_TOOLS_ROOT}/quartus/bin/quartus_cpf -c -o bitstream_compression=on ${FPGA_GHRD_FOLDER}/output_files/FPGA_Pauline_Rev_A.sof ${TARGET_HOME}/output_objects/soc_system.rbf || exit 1
-${ALTERA_TOOLS_ROOT}/quartus/bin/quartus_cpf -c -o bitstream_compression=off ${FPGA_GHRD_FOLDER}/output_files/FPGA_Pauline_Rev_A.sof ${TARGET_HOME}/output_objects/soc_system_unpacked.rbf || exit 1
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${ALTERA_QUARTUS_CPF_FOLDER}
 
-#exit 0
+${ALTERA_QUARTUS_CPF_FOLDER}/quartus_cpf -c -o bitstream_compression=on ${ALTERA_SOPCINFO_FOLDER}/output_files/FPGA_Pauline_Rev_A.sof ${TARGET_HOME}/output_objects/soc_system.rbf || exit 1
+cd ${TARGET_HOME}
 
 ############################################################################################
 # Create the update ramdisk image
@@ -209,9 +211,9 @@ ${ALTERA_TOOLS_ROOT}/quartus/bin/quartus_cpf -c -o bitstream_compression=off ${F
 ############################################################################################
 # Create SD Card image
 
-dd if=/dev/zero of=${TARGET_HOME}/output_objects/pauline_sdcard.img iflag=fullblock bs=1M count=1024 && sync
-sudo losetup loop6 --sector-size 512  ${TARGET_HOME}/output_objects/pauline_sdcard.img || exit 1
-sudo sfdisk -f /dev/loop6 < ${TARGET_CONFIG}/sfdisk_pauline.txt || exit 1
+dd if=/dev/zero of=${TARGET_HOME}/output_objects/sdcard.img iflag=fullblock bs=1M count=1024 && sync
+sudo losetup loop6 --sector-size 512  ${TARGET_HOME}/output_objects/sdcard.img || exit 1
+sudo sfdisk -f /dev/loop6 < ${TARGET_CONFIG}/sfdisk.txt || exit 1
 sudo losetup -d /dev/loop6
 
 ############################################################################################
@@ -222,19 +224,18 @@ sudo losetup -d /dev/loop6
 #sudo losetup -d /dev/loop6
 
 #1040384
-dd if=${TARGET_HOME}/output_objects/preloader-mkpimage.bin of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=2088960  conv=notrunc || exit 1 && sync
-dd if=${TARGET_HOME}/output_objects/u-boot.img of=${TARGET_HOME}/output_objects/pauline_sdcard.img bs=512 seek=2089472 conv=notrunc || exit 1 && sync
+dd if=${TARGET_HOME}/output_objects/u-boot-with-spl.sfp of=${TARGET_HOME}/output_objects/sdcard.img bs=512 seek=2088960  conv=notrunc || exit 1 && sync
 
-fdisk -l ${TARGET_HOME}/output_objects/pauline_sdcard.img || exit 1
+fdisk -l ${TARGET_HOME}/output_objects/sdcard.img || exit 1
 
 ############################################################################################
 
 sleep 1
-sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/pauline_sdcard.img || exit 1
+sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/sdcard.img || exit 1
 sleep 1
 
 sudo mkfs.vfat /dev/loop6p1 || exit 1
-sudo mkfs.ext2 /dev/loop6p2 || exit 1
+#sudo mkfs.ext2 /dev/loop6p2 || exit 1
 sudo losetup -d /dev/loop6
 
 ############################################################################################
@@ -242,7 +243,7 @@ echo "Copy boot files to the file image ..."
 mkdir ${TARGET_HOME}/output_objects/tmp_mount_point
 
 sleep 1
-sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
+sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/sdcard.img
 sleep 1
 
 sudo mount /dev/loop6p1 ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1
@@ -256,10 +257,14 @@ sudo losetup -d /dev/loop6
 ############################################################################################
 echo "Copy rootfs to the file image ..."
 
-sleep 1
-sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/pauline_sdcard.img
-sleep 1
-sudo mount /dev/loop6p2 ${TARGET_HOME}/output_objects/tmp_mount_point
+sudo rm ${TARGET_HOME}/output_objects/rootfs.sqsh
+sudo rm -rf ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1
+mkdir   ${TARGET_HOME}/output_objects/tmp_mount_point || exit 1
+
+#sleep 1
+#sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/sdcard.img
+#sleep 1
+#sudo mount /dev/loop6p2 -o compress_algorithm=zstd:6,compress_extension=* ${TARGET_HOME}/output_objects/tmp_mount_point
 
 sudo cp -av ${TARGET_ROOTFS_MIRROR}/* ${TARGET_HOME}/output_objects/tmp_mount_point/.
 
@@ -309,9 +314,17 @@ sudo chmod go+r    ${TARGET_HOME}/output_objects/tmp_mount_point/etc/passwd
 
 cd ${TARGET_HOME}/output_objects/tmp_mount_point
 ${SCRIPTS_HOME}/fix_fs_perm.sh
-cd ${PAULINE_BASE}
+cd ${TARGET_HOME}
 
-sudo umount ${TARGET_HOME}/output_objects/tmp_mount_point
+
+sudo mksquashfs ${TARGET_HOME}/output_objects/tmp_mount_point/ ${TARGET_HOME}/output_objects/rootfs.sqsh || exit 1
+
+sleep 1
+sudo losetup loop6 --show --sector-size 512 -P ${TARGET_HOME}/output_objects/sdcard.img
+sleep 1
+
+sudo dd if=${TARGET_HOME}/output_objects/rootfs.sqsh of=/dev/loop6p2 bs=32M status=progress ; sync
+
 sudo losetup -d /dev/loop6
 
 ############################################################################################

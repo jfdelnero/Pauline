@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2023 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # Network support
 #
@@ -39,7 +39,7 @@ then
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
- 				--build=$MACHTYPE \
+				--build=$MACHTYPE \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH || exit 1
 
@@ -170,12 +170,16 @@ then
 		mkdir ntp
 		cd ntp || exit 1
 
+		# gcc 14 support workaround patch ... should be removed with version > ntp-4.2.8p18
+		sed -i s#ol_cv_func_pthread_detach\=no#ol_cv_func_pthread_detach\=yes#g ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure || exit 1
+		sed -i s#ol_cv_func_pthread_detach\=no#ol_cv_func_pthread_detach\=yes#g ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/sntp/configure || exit 1
+
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
 				--target=$TGT_MACH \
-				CFLAGS="-DMAX_PATH=4096 -DMB_LEN_MAX=16"\
+				CFLAGS="-std=gnu17 -DMAX_PATH=4096 -DMB_LEN_MAX=16"\
 				--with-yielding-select=yes || exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
@@ -207,13 +211,16 @@ then
 
 		unpack ${CUR_PACKAGE} ""
 
+		export CROSS=${TGT_MACH}
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
-				--prefix= \
-				--build=$MACHTYPE \
-				--host=$TGT_MACH \
-				--target=$TGT_MACH || exit 1
+				--prefix="${TARGET_ROOTFS}" || exit 1
 
 		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
 		make ${MAKE_FLAGS} ${NBCORE} install DESTDIR=${TARGET_ROOTFS} || exit 1
@@ -256,12 +263,12 @@ then
 		# x86-x86 cross compilation : Force the cross compile mode !
 		cd bind
 		tar -xvzf bind.tar.gz
-		sed -i s#cross_compiling\=no#cross_compiling\=yes#g bind-9.11.14/configure || exit 1
-		sed -i s#=\ val\;#=\ value\;#g bind-9.11.14/lib/isc/stats.c || exit 1
+		sed -i s#cross_compiling\=no#cross_compiling\=yes#g bind-9.11.36/configure || exit 1
+		sed -i s#=\ val\;#=\ value\;#g bind-9.11.36/lib/isc/stats.c || exit 1
 
 		rm bind.tar.gz
-		tar -cvzf bind.tar.gz bind-9.11.14
-		rm -R bind-9.11.14
+		tar -cvzf bind.tar.gz bind-9.11.36
+		rm -R bind-9.11.36
 		cd ..
 
 		sed -i s#u_int16_t\ local_port#u_int16_t\ local_port____#g client/dhclient.c || exit 1
@@ -271,6 +278,7 @@ then
 		sed -i s#omapi_object_type_t#//omapi_object_type_t#g server/mdb.c || exit 1
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				CFLAGS=" -std=gnu17 -O3" \
 				--prefix= \
 				--sysconfdir=${TARGET_ROOTFS}/etc/dhcp \
 				--localstatedir=/var \
@@ -291,6 +299,83 @@ then
 		delete_src_dir
 
 		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# kea server
+####################################################################
+CUR_PACKAGE=${SRC_PACKAGE_KEADHCPSERVER:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_BUILD_FOLDER} || exit 1
+		mkdir -pv keadhcp || exit 1
+		cd keadhcp || exit 1
+
+		create_meson_crossfile meson_cross.txt
+
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS}/usr --buildtype=release --cross-file meson_cross.txt \
+			-D tests=disabled \
+			-D fuzz=disabled \
+		|| exit 1
+
+		ninja || exit 1
+		ninja install || exit 1
+
+		delete_build_dir
+		delete_src_dir
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+	) || exit 1
+	fi
+) || exit 1
+fi
+
+####################################################################
+# DNSMASQ
+####################################################################
+
+CUR_PACKAGE=${SRC_PACKAGE_DNSMASQ:-"UNDEF"}
+CUR_PACKAGE="${CUR_PACKAGE##*/}"
+if [ "$CUR_PACKAGE" != "UNDEF" ]
+then
+(
+	if [ ! -f ${TARGET_BUILD}/${CUR_PACKAGE}_DONE ]
+	then
+	(
+		create_src_dir
+
+		unpack ${CUR_PACKAGE} ""
+
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
+
+		export CROSS=${TGT_MACH}
+		export CC=${TGT_MACH}-gcc
+		export LD=${TGT_MACH}-ld
+		export AS=${TGT_MACH}-as
+		export AR=${TGT_MACH}-ar
+		export DESTDIR=${TARGET_ROOTFS}
+		export PREFIX=${TARGET_ROOTFS}
+
+		make ${MAKE_FLAGS} ${NBCORE} DESTDIR=${TARGET_ROOTFS} CC=${TGT_MACH}-gcc         || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} DESTDIR=${TARGET_ROOTFS} install CC=${TGT_MACH}-gcc || exit 1
+
+		echo "" > ${TARGET_BUILD}/${CUR_PACKAGE}_DONE
+
+		delete_src_dir
 
 	) || exit 1
 	fi
@@ -430,8 +515,8 @@ then
 
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		make ${MAKE_FLAGS} ${NBCORE} CC=${TGT_MACH}-gcc                      || exit 1
-		cp iw ${TARGET_ROOTFS}/sbin/                || exit 1
+		make ${MAKE_FLAGS} ${NBCORE} CC=${TGT_MACH}-gcc       || exit 1
+		cp iw ${TARGET_ROOTFS}/sbin/                          || exit 1
 
 		delete_src_dir
 

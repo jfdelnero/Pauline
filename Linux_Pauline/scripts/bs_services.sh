@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2023 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # Services
 #
@@ -78,17 +78,15 @@ then
 		mkdir lighttpd
 		cd lighttpd || exit 1
 
-		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
-				--prefix="${TARGET_ROOTFS}" \
-				--build=$MACHTYPE \
-				--host=$TGT_MACH \
-				--target=$TGT_MACH \
-				--without-pcre \
-				--without-pcre2 \
-				--without-bzip2 || exit 1
+		create_meson_crossfile meson_cross.txt
 
-		make ${MAKE_FLAGS} ${NBCORE}         || exit 1
-		make ${MAKE_FLAGS} ${NBCORE} install || exit 1
+		meson setup ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} --prefix=${TARGET_ROOTFS} --buildtype=release --cross-file meson_cross.txt \
+			-D with_pcre=disabled \
+			-D with_pcre2=false \
+		|| exit 1
+
+		ninja || exit 1
+		ninja install || exit 1
 
 		delete_build_dir
 		delete_src_dir
@@ -122,6 +120,7 @@ then
 		cd cvs || exit 1
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
+				CFLAGS="-std=gnu17 -O3" \
 				--prefix="${TARGET_ROOTFS}" \
 				--build=$MACHTYPE \
 				--host=$TGT_MACH \
@@ -239,9 +238,11 @@ then
 
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}  || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
-		sed -i s#sigjmp_buf\ toplevel#extern\ sigjmp_buf\ toplevel#g tftp/tftp.c || exit 1
+		#sed -i s#sigjmp_buf\ toplevel#extern\ sigjmp_buf\ toplevel#g tftp/tftp.c || exit 1
+
+		./autogen.sh
 
 		./configure \
 				--prefix="${TARGET_ROOTFS}" \
@@ -316,9 +317,10 @@ then
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}  || exit 1
 
 		./configure \
+				CFLAGS="-std=gnu17 -O3" \
+				LDFLAGS="-ltinfo" \
 				--disable-python \
 				--prefix="${TARGET_ROOTFS}" \
-				--build=$MACHTYPE \
 				--host=$TGT_MACH \
 				--without-gssapi \
 				--target=$TGT_MACH || exit 1
@@ -428,7 +430,7 @@ then
 		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}  || exit 1
 
 # Native build just to get the right embedded asn1_compile and compile_et...
- 
+
 		rm ${TARGET_CROSS_TOOLS}/bin/asn1_compile
 		rm ${TARGET_CROSS_TOOLS}/bin/compile_et
 
