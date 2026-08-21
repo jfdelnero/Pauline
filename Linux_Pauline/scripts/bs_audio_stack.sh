@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Cross compiler and Linux generation scripts
-# (c)2014-2023 Jean-François DEL NERO
+# (c)2014-2026 Jean-François DEL NERO
 #
 # Audio stack
 #
@@ -73,9 +73,7 @@ then
 
 		unpack ${CUR_PACKAGE} ""
 
-		cd ${TMP_BUILD_FOLDER} || exit 1
-		mkdir utilsalsa
-		cd utilsalsa || exit 1
+		cd ${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER} || exit 1
 
 		${TMP_SRC_FOLDER}/${TMP_ARCHIVE_FOLDER}/configure \
 				--prefix="${TARGET_ROOTFS}" \
