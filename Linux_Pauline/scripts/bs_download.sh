@@ -37,7 +37,7 @@ function download_list {
 					echo "-----------------------------------------------------------"
 					echo "$COUNT/$TOTALCOUNT : Downloading $line ..."
 					echo "-----------------------------------------------------------"
-					wget -c $line --no-check-certificate --no-clobber --directory-prefix=$2 --user-agent="Mozilla/5.0 (Linux)"
+					wget -c $line --no-check-certificate --no-clobber --directory-prefix=$2 # --user-agent="Mozilla/5.0 (Linux)"
 					echo "$COUNT/$TOTALCOUNT : Testing $FILE ..."
 					test_archive ${line##*/}
 					if [ "$?" -eq "0" ]; then
@@ -51,7 +51,7 @@ function download_list {
 				echo "-----------------------------------------------------------"
 				echo "$COUNT/$TOTALCOUNT : Downloading $line ..."
 				echo "-----------------------------------------------------------"
-				wget -c $line --no-check-certificate --no-clobber --directory-prefix=$2 --user-agent="Mozilla/5.0 (Linux)"
+				wget -c $line --no-check-certificate --no-clobber --directory-prefix=$2 # --user-agent="Mozilla/5.0 (Linux)"
 				echo "$COUNT/$TOTALCOUNT : Testing $FILE ..."
 				test_archive ${line##*/}
 				if [ "$?" -eq "0" ]; then

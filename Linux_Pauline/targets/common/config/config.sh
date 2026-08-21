@@ -77,7 +77,7 @@ SRC_PACKAGE_BUILD_P11KIT="@COMMON@""https://github.com/p11-glue/p11-kit/releases
 SRC_PACKAGE_BUILD_GNUTLS="@COMMON@""https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.13.tar.xz"
 
 SRC_PACKAGE_BUILD_DTC="@COMMON@""https://github.com/dgibson/dtc/archive/refs/tags/v1.8.1.tar.gz"
-SRC_PACKAGE_BUILD_F2FSTOOLS="@COMMON@""https://hxc2001.com/vrac/f2fs-tools.tar.gz"
+#SRC_PACKAGE_BUILD_F2FSTOOLS="@COMMON@""https://hxc2001.com/vrac/f2fs-tools.tar.gz"
 SRC_PACKAGE_BUILD_SQUASHFSTOOLS="@COMMON@""https://github.com/plougher/squashfs-tools/releases/download/4.7.5/squashfs-tools-4.7.5.tar.gz"
 
 CUR_PART=${GOLANG_SUPPORT:-"UNDEF"}
